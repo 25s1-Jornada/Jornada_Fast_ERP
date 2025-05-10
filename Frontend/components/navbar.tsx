@@ -1,5 +1,15 @@
 import Link from "next/link"
+import { User } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export function Navbar() {
   return (
@@ -9,24 +19,28 @@ export function Navbar() {
           <Link href="/" className="text-xl font-bold">
             Sistema OS
           </Link>
-
-          <nav className="hidden md:flex items-center gap-6">
-            <Link href="/clientes" className="text-sm font-medium hover:underline">
-              Clientes
-            </Link>
-            <Link href="/tecnicos" className="text-sm font-medium hover:underline">
-              Técnicos
-            </Link>
-            <Link href="/chamados" className="text-sm font-medium hover:underline">
-              Chamados
-            </Link>
-          </nav>
         </div>
 
         <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm">
-            Ajuda
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <Avatar>
+                  <AvatarFallback>
+                    <User className="h-5 w-5" />
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>Perfil</DropdownMenuItem>
+              <DropdownMenuItem>Configurações</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>Sair</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>
