@@ -8,8 +8,8 @@ import { Sidebar } from "@/components/sidebar"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Sistema de Ordens de Serviço",
-  description: "Aplicação para gerenciamento de ordens de serviço",
+  title: "FAST - Sistema de gerenciamento de estoque e ordens de serviço",
+  description: "FAST - Aplicação para gerenciamento de estoque e ordens de serviço",
 }
 
 export default function RootLayout({

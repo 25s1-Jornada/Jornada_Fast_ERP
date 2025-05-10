@@ -5,7 +5,7 @@ import Link from "next/link"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Edit, Search, RefreshCw, Filter } from "lucide-react"
+import { Edit, Search, RefreshCw, Filter } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
@@ -62,7 +62,7 @@ export function ClientesTable() {
   const [clientes, setClientes] = useState(clientesIniciais)
   const [filtro, setFiltro] = useState("")
   const [tipoFiltro, setTipoFiltro] = useState("todos")
-  const [filtroUF, setFiltroUF] = useState("")
+  const [filtroUF, setFiltroUF] = useState("todos")
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   // Lista de estados para filtro
@@ -86,7 +86,7 @@ export function ClientesTable() {
       cliente.contato.toLowerCase().includes(filtro.toLowerCase())
 
     // Filtro por UF
-    const matchesUF = filtroUF === "" || cliente.uf === filtroUF
+    const matchesUF = filtroUF === "todos" || cliente.uf === filtroUF
 
     // Filtro por tipo
     if (tipoFiltro === "todos") {
@@ -144,7 +144,7 @@ export function ClientesTable() {
                       <SelectValue placeholder="Selecione o estado" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Todos</SelectItem>
+                      <SelectItem value="todos">Todos</SelectItem>
                       {estados.map((estado) => (
                         <SelectItem key={estado} value={estado}>
                           {estado}
