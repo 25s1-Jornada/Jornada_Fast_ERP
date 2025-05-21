@@ -3,7 +3,18 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { ChevronDown, ChevronRight, ClipboardList, Package, Users, UserCog, PhoneCall, Archive } from "lucide-react"
+import {
+  ChevronDown,
+  ChevronRight,
+  ClipboardList,
+  Package,
+  Users,
+  UserCog,
+  PhoneCall,
+  Archive,
+  BarChart3,
+  History,
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 
@@ -13,18 +24,18 @@ export function Sidebar() {
   // Estado para controlar quais seções estão expandidas
   const [openSections, setOpenSections] = useState({
     ordemServico: true, // Começa expandido por padrão
-    estoque: false,
+    estoqueGeral: false,
   })
 
   // Verifica se o caminho atual está dentro da seção de Ordem de Serviço
   const isOrdemServicoActive =
     pathname.includes("/clientes") || pathname.includes("/tecnicos") || pathname.includes("/chamados")
 
-  // Verifica se o caminho atual está dentro da seção de Estoque
-  const isEstoqueActive = pathname.includes("/estoque")
+  // Verifica se o caminho atual está dentro da seção de Estoque Geral
+  const isEstoqueGeralActive = pathname.includes("/estoque-geral")
 
   // Toggle para abrir/fechar seções
-  const toggleSection = (section: "ordemServico" | "estoque") => {
+  const toggleSection = (section: "ordemServico" | "estoqueGeral") => {
     setOpenSections((prev) => ({
       ...prev,
       [section]: !prev[section],
@@ -87,21 +98,25 @@ export function Sidebar() {
           </CollapsibleContent>
         </Collapsible>
 
-        {/* Seção de Estoque */}
-        <Collapsible open={openSections.estoque} onOpenChange={() => toggleSection("estoque")} className="w-full">
+        {/* Seção de Estoque Geral */}
+        <Collapsible
+          open={openSections.estoqueGeral}
+          onOpenChange={() => toggleSection("estoqueGeral")}
+          className="w-full"
+        >
           <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-100">
             <div className="flex items-center gap-3">
               <Package className="h-5 w-5" />
-              <span>Estoque</span>
+              <span>Estoque Geral</span>
             </div>
-            {openSections.estoque ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            {openSections.estoqueGeral ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
           </CollapsibleTrigger>
           <CollapsibleContent className="pl-4 pt-1">
             <Link
-              href="/estoque/produtos"
+              href="/estoque-geral/produtos"
               className={cn(
                 "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                pathname === "/estoque/produtos" || pathname.startsWith("/estoque/produtos/")
+                pathname === "/estoque-geral/produtos" || pathname.startsWith("/estoque-geral/produtos/")
                   ? "bg-gray-100 text-gray-900"
                   : "text-gray-500 hover:bg-gray-100 hover:text-gray-900",
               )}
@@ -110,16 +125,40 @@ export function Sidebar() {
               Produtos
             </Link>
             <Link
-              href="/estoque/armarios"
+              href="/estoque-geral/armarios"
               className={cn(
                 "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                pathname === "/estoque/armarios" || pathname.startsWith("/estoque/armarios/")
+                pathname === "/estoque-geral/armarios" || pathname.startsWith("/estoque-geral/armarios/")
                   ? "bg-gray-100 text-gray-900"
                   : "text-gray-500 hover:bg-gray-100 hover:text-gray-900",
               )}
             >
               <Archive className="h-4 w-4" />
               Armários
+            </Link>
+            <Link
+              href="/estoque-geral/estoque"
+              className={cn(
+                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                pathname === "/estoque-geral/estoque" || pathname.startsWith("/estoque-geral/estoque/")
+                  ? "bg-gray-100 text-gray-900"
+                  : "text-gray-500 hover:bg-gray-100 hover:text-gray-900",
+              )}
+            >
+              <BarChart3 className="h-4 w-4" />
+              Estoque
+            </Link>
+            <Link
+              href="/estoque-geral/movimentacoes"
+              className={cn(
+                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                pathname === "/estoque-geral/movimentacoes" || pathname.startsWith("/estoque-geral/movimentacoes/")
+                  ? "bg-gray-100 text-gray-900"
+                  : "text-gray-500 hover:bg-gray-100 hover:text-gray-900",
+              )}
+            >
+              <History className="h-4 w-4" />
+              Movimentações
             </Link>
           </CollapsibleContent>
         </Collapsible>
