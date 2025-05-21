@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { ChevronDown, ChevronRight, ClipboardList, Package, Users, UserCog, PhoneCall } from "lucide-react"
+import { ChevronDown, ChevronRight, ClipboardList, Package, Users, UserCog, PhoneCall, Archive } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 
@@ -108,6 +108,18 @@ export function Sidebar() {
             >
               <Package className="h-4 w-4" />
               Produtos
+            </Link>
+            <Link
+              href="/estoque/armarios"
+              className={cn(
+                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                pathname === "/estoque/armarios" || pathname.startsWith("/estoque/armarios/")
+                  ? "bg-gray-100 text-gray-900"
+                  : "text-gray-500 hover:bg-gray-100 hover:text-gray-900",
+              )}
+            >
+              <Archive className="h-4 w-4" />
+              Armários
             </Link>
           </CollapsibleContent>
         </Collapsible>
