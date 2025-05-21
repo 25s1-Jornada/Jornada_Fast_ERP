@@ -28,8 +28,7 @@ export function Sidebar() {
   })
 
   // Verifica se o caminho atual está dentro da seção de Ordem de Serviço
-  const isOrdemServicoActive =
-    pathname.includes("/clientes") || pathname.includes("/tecnicos") || pathname.includes("/chamados")
+  const isOrdemServicoActive = pathname.includes("/ordem-de-servico")
 
   // Verifica se o caminho atual está dentro da seção de Estoque Geral
   const isEstoqueGeralActive = pathname.includes("/estoque-geral")
@@ -60,10 +59,10 @@ export function Sidebar() {
           </CollapsibleTrigger>
           <CollapsibleContent className="pl-4 pt-1">
             <Link
-              href="/clientes"
+              href="/ordem-de-servico/clientes"
               className={cn(
                 "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                pathname === "/clientes" || pathname.startsWith("/clientes/")
+                pathname === "/ordem-de-servico/clientes" || pathname.startsWith("/ordem-de-servico/clientes/")
                   ? "bg-gray-100 text-gray-900"
                   : "text-gray-500 hover:bg-gray-100 hover:text-gray-900",
               )}
@@ -72,10 +71,10 @@ export function Sidebar() {
               Clientes
             </Link>
             <Link
-              href="/tecnicos"
+              href="/ordem-de-servico/tecnicos"
               className={cn(
                 "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                pathname === "/tecnicos" || pathname.startsWith("/tecnicos/")
+                pathname === "/ordem-de-servico/tecnicos" || pathname.startsWith("/ordem-de-servico/tecnicos/")
                   ? "bg-gray-100 text-gray-900"
                   : "text-gray-500 hover:bg-gray-100 hover:text-gray-900",
               )}
@@ -84,10 +83,10 @@ export function Sidebar() {
               Técnicos
             </Link>
             <Link
-              href="/chamados"
+              href="/ordem-de-servico/chamados"
               className={cn(
                 "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                pathname === "/chamados" || pathname.startsWith("/chamados/")
+                pathname === "/ordem-de-servico/chamados" || pathname.startsWith("/ordem-de-servico/chamados/")
                   ? "bg-gray-100 text-gray-900"
                   : "text-gray-500 hover:bg-gray-100 hover:text-gray-900",
               )}
