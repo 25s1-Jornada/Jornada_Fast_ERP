@@ -1,6 +1,6 @@
 ﻿using api_erp.Model;
 
-namespace api_erp.Interfaces
+namespace api_erp.Repositories.Interfaces
 {
     public interface IPecaQrCodeRepository
     {

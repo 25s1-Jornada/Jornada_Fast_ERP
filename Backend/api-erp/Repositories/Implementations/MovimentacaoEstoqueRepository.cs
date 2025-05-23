@@ -1,9 +1,9 @@
 ﻿using api_erp.EntityConfig;
-using api_erp.Interfaces;
 using api_erp.Model;
+using api_erp.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace api_erp.Repositories
+namespace api_erp.Repositories.Implementations
 {
     public class MovimentacaoEstoqueRepository : IMovimentacaoEstoqueRepository
     {
