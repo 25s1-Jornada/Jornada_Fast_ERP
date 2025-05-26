@@ -1,5 +1,7 @@
 
 using api_erp.EntityConfig;
+using api_erp.Repositories.Implementations;
+using api_erp.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace api_erp
@@ -12,6 +14,16 @@ namespace api_erp
 
             builder.Services.AddControllers();
 
+            builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
+            builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
+            builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+            builder.Services.AddScoped<IEmpresaRepository, EmpresaRepository>();
+            builder.Services.AddScoped<IEnderecoRepository, EnderecoRepository>();
+            builder.Services.AddScoped<IPerfilRepository, PerfilRepository>();
+            //builder.Services.AddScoped<IArmarioRepository, ArmarioRepository>();
+            builder.Services.AddScoped<IEstoqueRepository, EstoqueRepository>();
+            builder.Services.AddScoped<IMovimentacaoEstoqueRepository, MovimentacaoEstoqueRepository>();
+            builder.Services.AddScoped<IPecaQrCodeRepository, PecaQrCodeRepository>();
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
