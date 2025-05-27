@@ -115,6 +115,39 @@ export function EstoqueForm({ itemEstoque }: EstoqueFormProps) {
     router.push("/estoque-geral/estoque")
   }
 
+  const handleCadastrarNovo = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    // Simulando o salvamento do item de estoque
+    console.log("Dados do item de estoque:", formData)
+    console.log("Observação da movimentação inicial:", movimentacaoInicial.observacao)
+
+    // Exibir mensagem de sucesso (em um sistema real, isso viria após a resposta da API)
+    const produtoSelecionado = produtosDisponiveis.find((p) => p.id === formData.produto_id)
+    const armarioSelecionado = armariosDisponiveis.find((a) => a.id === formData.armario_id)
+
+    if (produtoSelecionado && armarioSelecionado) {
+      alert(
+        `Item de estoque "${produtoSelecionado.nome}" no armário "${armarioSelecionado.nome}" cadastrado com sucesso!`,
+      )
+    } else {
+      alert("Item de estoque cadastrado com sucesso!")
+    }
+
+    // Limpar o formulário para um novo cadastro
+    setFormData({
+      armario_id: "",
+      produto_id: "",
+      quantidade: 0,
+    })
+
+    setMovimentacaoInicial({
+      observacao: "",
+    })
+
+    // Manter o usuário na página para cadastrar outro item de estoque
+  }
+
   // Obter produto e armário selecionados
   const produtoSelecionado = produtosDisponiveis.find((p) => p.id === formData.produto_id)
   const armarioSelecionado = armariosDisponiveis.find((a) => a.id === formData.armario_id)
@@ -185,6 +218,9 @@ export function EstoqueForm({ itemEstoque }: EstoqueFormProps) {
           <div className="flex justify-end gap-4 mt-6">
             <Button type="button" variant="outline" onClick={() => router.push("/estoque-geral/estoque")}>
               Cancelar
+            </Button>
+            <Button type="button" onClick={handleCadastrarNovo} variant="secondary">
+              Salvar e Cadastrar Novo
             </Button>
             <Button type="submit">Salvar</Button>
           </div>

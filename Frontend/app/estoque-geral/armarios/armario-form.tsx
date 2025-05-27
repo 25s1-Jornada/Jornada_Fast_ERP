@@ -67,6 +67,24 @@ export function ArmarioForm({ armario }: ArmarioFormProps) {
     router.push("/estoque-geral/armarios")
   }
 
+  const handleCadastrarNovo = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    // Simulando o salvamento do armário
+    console.log("Dados do armário:", formData)
+
+    // Exibir mensagem de sucesso (em um sistema real, isso viria após a resposta da API)
+    alert(`Armário "${formData.nome}" cadastrado com sucesso!`)
+
+    // Limpar o formulário para um novo cadastro
+    setFormData({
+      nome: "",
+      empresa: { id: "", nome: "", documento: "" },
+    })
+
+    // Manter o usuário na página para cadastrar outro armário
+  }
+
   return (
     <form onSubmit={handleSubmit}>
       <Card>
@@ -104,6 +122,9 @@ export function ArmarioForm({ armario }: ArmarioFormProps) {
           <div className="flex justify-end gap-4 mt-6">
             <Button type="button" variant="outline" onClick={() => router.push("/estoque-geral/armarios")}>
               Cancelar
+            </Button>
+            <Button type="button" onClick={handleCadastrarNovo} variant="secondary">
+              Salvar e Cadastrar Novo
             </Button>
             <Button type="submit">Salvar</Button>
           </div>
