@@ -1,5 +1,8 @@
-﻿namespace api_erp.Model
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace api_erp.Model
 {
+    [Table("movimentacao_estoque")]
     public class MovimentacaoEstoque
     {
         public int? Id { get; set; }

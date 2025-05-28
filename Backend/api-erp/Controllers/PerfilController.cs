@@ -1,4 +1,5 @@
-﻿using api_erp.Model;
+﻿using api_erp.DTOs;
+using api_erp.Model;
 using api_erp.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,7 +28,7 @@ namespace api_erp.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] Perfil model)
+        public async Task<IActionResult> Post([FromBody] PerfilDTO model)
         {
             await _repository.AddAsync(model);
             await _repository.SaveChangesAsync();
@@ -35,7 +36,7 @@ namespace api_erp.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] Perfil model)
+        public async Task<IActionResult> Put(int id, [FromBody] PerfilDTO model)
         {
             if (id != model.Id) return BadRequest();
             _repository.Update(model);

@@ -1,4 +1,5 @@
-﻿using api_erp.Model;
+﻿using api_erp.DTOs;
+using api_erp.Model;
 using api_erp.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,7 +23,7 @@ namespace api_erp.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] Produto produto)
+        public async Task<IActionResult> Post([FromBody] ProdutoDTO produto)
         {
             await _repository.AddAsync(produto);
             await _repository.SaveChangesAsync();
@@ -30,7 +31,7 @@ namespace api_erp.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] Produto produto)
+        public async Task<IActionResult> Put(int id, [FromBody] ProdutoDTO produto)
         {
             if (id != produto.Id) return BadRequest();
             _repository.Update(produto);

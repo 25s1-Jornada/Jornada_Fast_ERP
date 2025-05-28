@@ -1,9 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace api_erp.Model
+﻿namespace api_erp.DTOs
 {
-    [Table("usuario")]
-    public class Usuario
+    public class UsuarioDTO
     {
         public int? Id { get; set; }
         public string Nome { get; set; } = string.Empty;
@@ -14,11 +11,5 @@ namespace api_erp.Model
         public string? Cpf { get; set; }
         public int? PerfilId { get; set; }
         public int? EmpresaId { get; set; }
-
-        public Endereco? Endereco { get; set; }
-        public Perfil? Perfil { get; set; }
-        public Empresa? Empresa { get; set; }
-        public ICollection<MovimentacaoEstoque>? Movimentacoes { get; set; }
-        public ICollection<PecaQrCode>? PecasQrCode { get; set; }
     }
 }
