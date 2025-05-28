@@ -349,87 +349,104 @@ export function EstoqueTable() {
         </div>
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Produto</TableHead>
-              <TableHead>SKU</TableHead>
-              <TableHead>Armário</TableHead>
-              <TableHead>Quantidade</TableHead>
-              <TableHead>Última Movimentação</TableHead>
-              <TableHead>Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {estoqueFiltrado.length > 0 ? (
-              estoqueFiltrado.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell>{item.produto?.nome}</TableCell>
-                  <TableCell>{item.produto?.sku}</TableCell>
-                  <TableCell>{item.armario?.nome}</TableCell>
-                  <TableCell>{item.quantidade}</TableCell>
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <span className="text-sm">{formatarData(item.ultima_movimentacao.data_movimentacao)}</span>
-                      <Badge className={item.ultima_movimentacao.tipo === "ENTRADA" ? "bg-green-500" : "bg-amber-500"}>
-                        {item.ultima_movimentacao.tipo === "ENTRADA" ? "Entrada" : "Saída"} de{" "}
-                        {item.ultima_movimentacao.quantidade} un.
-                      </Badge>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleAbrirModalMovimentacao(item)}
-                        title="Registrar movimentação"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                      <Link href={`/estoque-geral/estoque/${item.id}`}>
-                        <Button variant="ghost" size="icon" title="Editar">
-                          <Edit className="h-4 w-4" />
+      <div className="rounded-md border overflow-hidden">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="min-w-[150px]">Produto</TableHead>
+                <TableHead className="min-w-[100px] hidden sm:table-cell">SKU</TableHead>
+                <TableHead className="min-w-[120px]">Armário</TableHead>
+                <TableHead className="min-w-[80px]">Qtd</TableHead>
+                <TableHead className="min-w-[180px] hidden md:table-cell">Última Movimentação</TableHead>
+                <TableHead className="w-[120px]">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {estoqueFiltrado.length > 0 ? (
+                estoqueFiltrado.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">{item.produto?.nome}</div>
+                        <div className="text-sm text-gray-500 sm:hidden">{item.produto?.sku}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">{item.produto?.sku}</TableCell>
+                    <TableCell>{item.armario?.nome}</TableCell>
+                    <TableCell className="font-medium">{item.quantidade}</TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      <div className="flex flex-col">
+                        <span className="text-sm">{formatarData(item.ultima_movimentacao.data_movimentacao)}</span>
+                        <Badge
+                          className={item.ultima_movimentacao.tipo === "ENTRADA" ? "bg-green-500" : "bg-amber-500"}
+                        >
+                          {item.ultima_movimentacao.tipo === "ENTRADA" ? "Entrada" : "Saída"} de{" "}
+                          {item.ultima_movimentacao.quantidade} un.
+                        </Badge>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleAbrirModalMovimentacao(item)}
+                          title="Registrar movimentação"
+                          className="h-8 w-8"
+                        >
+                          <Plus className="h-4 w-4" />
                         </Button>
-                      </Link>
-                      <Link href={`/estoque-geral/movimentacoes?produto=${item.produto_id}&armario=${item.armario_id}`}>
-                        <Button variant="ghost" size="icon" title="Ver histórico">
-                          <History className="h-4 w-4" />
-                        </Button>
-                      </Link>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" title="Excluir">
-                            <Trash2 className="h-4 w-4" />
+                        <Link href={`/estoque-geral/estoque/${item.id}`}>
+                          <Button variant="ghost" size="icon" title="Editar" className="h-8 w-8">
+                            <Edit className="h-4 w-4" />
                           </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Excluir item de estoque</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Tem certeza que deseja excluir este item de estoque? Esta ação não pode ser desfeita.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleDelete(item.id)}>Excluir</AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
+                        </Link>
+                        <Link
+                          href={`/estoque-geral/movimentacoes?produto=${item.produto_id}&armario=${item.armario_id}`}
+                        >
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="Ver histórico"
+                            className="h-8 w-8 hidden sm:inline-flex"
+                          >
+                            <History className="h-4 w-4" />
+                          </Button>
+                        </Link>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" title="Excluir" className="h-8 w-8">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Excluir item de estoque</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Tem certeza que deseja excluir este item de estoque? Esta ação não pode ser desfeita.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDelete(item.id)}>Excluir</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-4">
+                    Nenhum item de estoque encontrado
                   </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center py-4">
-                  Nenhum item de estoque encontrado
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
       {/* Modal para registrar movimentação */}

@@ -116,92 +116,103 @@ export function EmpresasTable() {
   return (
     <div className="space-y-4">
       {/* Cabeçalho com botão de adicionar e filtros */}
-      <div className="flex flex-col sm:flex-row justify-between gap-4">
-        <Button onClick={() => handleOpenEmpresaModal()} className="sm:w-auto w-full">
-          <Plus className="mr-2 h-4 w-4" />
-          Nova Empresa
-        </Button>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row justify-between gap-4">
+          <Button onClick={() => handleOpenEmpresaModal()} className="sm:w-auto w-full">
+            <Plus className="mr-2 h-4 w-4" />
+            Nova Empresa
+          </Button>
 
-        <div className="flex flex-col sm:flex-row gap-2 sm:w-auto w-full">
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-            <Input
-              placeholder="Buscar empresa..."
-              className="pl-8 w-full"
-              value={filtros.termo}
-              onChange={(e) => handleFilterChange("termo", e.target.value)}
-            />
+          <div className="flex flex-col sm:flex-row gap-2 sm:w-auto w-full">
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+              <Input
+                placeholder="Buscar empresa..."
+                className="pl-8 w-full"
+                value={filtros.termo}
+                onChange={(e) => handleFilterChange("termo", e.target.value)}
+              />
+            </div>
+
+            <Select value={filtros.tipoEmpresa} onValueChange={(value) => handleFilterChange("tipoEmpresa", value)}>
+              <SelectTrigger className="w-full sm:w-48">
+                <SelectValue placeholder="Tipo de empresa" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os tipos</SelectItem>
+                <SelectItem value={TipoEmpresa.ADMIN}>Administrador</SelectItem>
+                <SelectItem value={TipoEmpresa.REPRESENTANTE}>Representante</SelectItem>
+                <SelectItem value={TipoEmpresa.TECNICO}>Técnico</SelectItem>
+                <SelectItem value={TipoEmpresa.CLIENTE}>Cliente</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-
-          <Select value={filtros.tipoEmpresa} onValueChange={(value) => handleFilterChange("tipoEmpresa", value)}>
-            <SelectTrigger className="w-full sm:w-48">
-              <SelectValue placeholder="Tipo de empresa" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os tipos</SelectItem>
-              <SelectItem value={TipoEmpresa.ADMIN}>Administrador</SelectItem>
-              <SelectItem value={TipoEmpresa.REPRESENTANTE}>Representante</SelectItem>
-              <SelectItem value={TipoEmpresa.TECNICO}>Técnico</SelectItem>
-              <SelectItem value={TipoEmpresa.CLIENTE}>Cliente</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
       </div>
 
       {/* Tabela de empresas */}
-      <div className="border rounded-md">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>CNPJ</TableHead>
-              <TableHead>Tipo</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Endereço</TableHead>
-              <TableHead className="w-[100px]">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {empresasPaginadas.length > 0 ? (
-              empresasPaginadas.map((empresa) => (
-                <TableRow key={empresa.id}>
-                  <TableCell className="font-medium">{empresa.nome}</TableCell>
-                  <TableCell>{formatCNPJ(empresa.cnpj)}</TableCell>
-                  <TableCell>{getTipoEmpresaText(empresa.tipo_empresa)}</TableCell>
-                  <TableCell>{empresa.email}</TableCell>
-                  <TableCell>
-                    {empresa.endereco ? `${empresa.endereco.cidade}/${empresa.endereco.uf}` : "Não definido"}
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleOpenEmpresaModal(empresa)}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Editar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setEmpresaToDelete(empresa)} className="text-red-600">
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Excluir
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+      <div className="border rounded-md overflow-hidden">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="min-w-[150px]">Nome</TableHead>
+                <TableHead className="min-w-[120px]">CNPJ</TableHead>
+                <TableHead className="min-w-[100px]">Tipo</TableHead>
+                <TableHead className="min-w-[200px] hidden sm:table-cell">Email</TableHead>
+                <TableHead className="min-w-[150px] hidden md:table-cell">Endereço</TableHead>
+                <TableHead className="w-[100px]">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {empresasPaginadas.length > 0 ? (
+                empresasPaginadas.map((empresa) => (
+                  <TableRow key={empresa.id}>
+                    <TableCell className="font-medium">
+                      <div>
+                        <div>{empresa.nome}</div>
+                        <div className="text-sm text-gray-500 sm:hidden">{empresa.email}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell>{formatCNPJ(empresa.cnpj)}</TableCell>
+                    <TableCell>
+                      <span className="text-xs sm:text-sm">{getTipoEmpresaText(empresa.tipo_empresa)}</span>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">{empresa.email}</TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {empresa.endereco ? `${empresa.endereco.cidade}/${empresa.endereco.uf}` : "Não definido"}
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleOpenEmpresaModal(empresa)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setEmpresaToDelete(empresa)} className="text-red-600">
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-4">
+                    Nenhuma empresa encontrada
                   </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center py-4">
-                  Nenhuma empresa encontrada
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
       {/* Paginação */}
