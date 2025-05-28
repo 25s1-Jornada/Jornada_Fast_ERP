@@ -1,6 +1,1 @@
-{
-  "/ordem-de-servico/chamados/page": "app/ordem-de-servico/chamados/page.js",
-  "/ordem-de-servico/tecnicos/page": "app/ordem-de-servico/tecnicos/page.js",
-  "/page": "app/page.js",
-  "/ordem-de-servico/clientes/page": "app/ordem-de-servico/clientes/page.js"
-}
+{}
