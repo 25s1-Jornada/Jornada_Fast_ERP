@@ -1,11 +1,11 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { User, Menu } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useState } from "react"
+import Link from "next/link"
+import Image from "next/image"
+import { User, Menu } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,18 +13,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { Sidebar } from "./sidebar";
+} from "@/components/ui/dropdown-menu"
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { Sidebar } from "./sidebar"
 
 export function Navbar() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b">
@@ -51,10 +45,7 @@ export function Navbar() {
                 </SheetTitle>
               </SheetHeader>
               <div className="overflow-y-auto h-[calc(100vh-80px)]">
-                <Sidebar
-                  isMobile={true}
-                  onItemClick={() => setIsMobileMenuOpen(false)}
-                />
+                <Sidebar isMobile={true} onItemClick={() => setIsMobileMenuOpen(false)} />
               </div>
             </SheetContent>
           </Sheet>
@@ -95,5 +86,5 @@ export function Navbar() {
         </div>
       </div>
     </header>
-  );
+  )
 }

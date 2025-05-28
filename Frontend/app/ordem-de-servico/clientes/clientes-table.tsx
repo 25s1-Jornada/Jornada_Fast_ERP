@@ -1,13 +1,32 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/link"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Edit, Search, RefreshCw, Filter } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+
+interface Cliente {
+  id: string
+  nome: string
+  contato: string
+  telefone: string
+  endereco: string
+  numero: string
+  bairro: string
+  cidade: string
+  uf: string
+  codigo: string
+  pedido: string
+  dataFaturamento: string
+  garantia: string
+}
+
+interface ClientesTableProps {
+  onEditarCliente: (cliente: Cliente) => void
+}
 
 // Dados de exemplo para clientes
 const clientesIniciais = [
@@ -58,7 +77,7 @@ const clientesIniciais = [
   },
 ]
 
-export function ClientesTable() {
+export function ClientesTable({ onEditarCliente }: ClientesTableProps) {
   const [clientes, setClientes] = useState(clientesIniciais)
   const [filtro, setFiltro] = useState("")
   const [tipoFiltro, setTipoFiltro] = useState("todos")
@@ -164,16 +183,16 @@ export function ClientesTable() {
         </div>
       </div>
 
-      <div className="rounded-md border">
+      <div className="rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Cód. Cliente</TableHead>
               <TableHead>Cliente</TableHead>
-              <TableHead>Contato</TableHead>
-              <TableHead>Telefone</TableHead>
-              <TableHead>Cidade</TableHead>
-              <TableHead>UF</TableHead>
+              <TableHead className="hidden sm:table-cell">Contato</TableHead>
+              <TableHead className="hidden md:table-cell">Telefone</TableHead>
+              <TableHead className="hidden lg:table-cell">Cidade</TableHead>
+              <TableHead className="hidden lg:table-cell">UF</TableHead>
               <TableHead>Ações</TableHead>
             </TableRow>
           </TableHeader>
@@ -182,17 +201,20 @@ export function ClientesTable() {
               clientesFiltrados.map((cliente) => (
                 <TableRow key={cliente.id}>
                   <TableCell>{cliente.codigo}</TableCell>
-                  <TableCell>{cliente.nome}</TableCell>
-                  <TableCell>{cliente.contato}</TableCell>
-                  <TableCell>{cliente.telefone}</TableCell>
-                  <TableCell>{cliente.cidade}</TableCell>
-                  <TableCell>{cliente.uf}</TableCell>
                   <TableCell>
-                    <Link href={`/ordem-de-servico/clientes/${cliente.id}`}>
-                      <Button variant="ghost" size="icon">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </Link>
+                    <div>
+                      <div className="font-medium">{cliente.nome}</div>
+                      <div className="text-sm text-muted-foreground sm:hidden">{cliente.contato}</div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="hidden sm:table-cell">{cliente.contato}</TableCell>
+                  <TableCell className="hidden md:table-cell">{cliente.telefone}</TableCell>
+                  <TableCell className="hidden lg:table-cell">{cliente.cidade}</TableCell>
+                  <TableCell className="hidden lg:table-cell">{cliente.uf}</TableCell>
+                  <TableCell>
+                    <Button variant="ghost" size="icon" onClick={() => onEditarCliente(cliente)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))

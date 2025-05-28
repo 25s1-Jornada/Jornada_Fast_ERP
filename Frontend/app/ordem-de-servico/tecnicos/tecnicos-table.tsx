@@ -1,13 +1,26 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/link"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Edit, Search, RefreshCw, Filter } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+
+interface Tecnico {
+  id: string
+  nome: string
+  empresa: string
+  telefone: string
+  email: string
+  cidade: string
+  uf: string
+}
+
+interface TecnicosTableProps {
+  onEditarTecnico: (tecnico: Tecnico) => void
+}
 
 // Dados de exemplo para técnicos
 const tecnicosIniciais = [
@@ -40,7 +53,7 @@ const tecnicosIniciais = [
   },
 ]
 
-export function TecnicosTable() {
+export function TecnicosTable({ onEditarTecnico }: TecnicosTableProps) {
   const [tecnicos, setTecnicos] = useState(tecnicosIniciais)
   const [filtro, setFiltro] = useState("")
   const [filtroUF, setFiltroUF] = useState("todos")
@@ -122,16 +135,16 @@ export function TecnicosTable() {
         </div>
       </div>
 
-      <div className="rounded-md border">
+      <div className="rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Técnico</TableHead>
-              <TableHead>Empresa</TableHead>
-              <TableHead>Telefone</TableHead>
-              <TableHead>E-mail</TableHead>
-              <TableHead>Cidade</TableHead>
-              <TableHead>UF</TableHead>
+              <TableHead className="hidden sm:table-cell">Empresa</TableHead>
+              <TableHead className="hidden md:table-cell">Telefone</TableHead>
+              <TableHead className="hidden lg:table-cell">E-mail</TableHead>
+              <TableHead className="hidden lg:table-cell">Cidade</TableHead>
+              <TableHead className="hidden lg:table-cell">UF</TableHead>
               <TableHead>Ações</TableHead>
             </TableRow>
           </TableHeader>
@@ -139,18 +152,21 @@ export function TecnicosTable() {
             {tecnicosFiltrados.length > 0 ? (
               tecnicosFiltrados.map((tecnico) => (
                 <TableRow key={tecnico.id}>
-                  <TableCell>{tecnico.nome}</TableCell>
-                  <TableCell>{tecnico.empresa}</TableCell>
-                  <TableCell>{tecnico.telefone}</TableCell>
-                  <TableCell>{tecnico.email}</TableCell>
-                  <TableCell>{tecnico.cidade}</TableCell>
-                  <TableCell>{tecnico.uf}</TableCell>
                   <TableCell>
-                    <Link href={`/ordem-de-servico/tecnicos/${tecnico.id}`}>
-                      <Button variant="ghost" size="icon">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </Link>
+                    <div>
+                      <div className="font-medium">{tecnico.nome}</div>
+                      <div className="text-sm text-muted-foreground sm:hidden">{tecnico.empresa}</div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="hidden sm:table-cell">{tecnico.empresa}</TableCell>
+                  <TableCell className="hidden md:table-cell">{tecnico.telefone}</TableCell>
+                  <TableCell className="hidden lg:table-cell">{tecnico.email}</TableCell>
+                  <TableCell className="hidden lg:table-cell">{tecnico.cidade}</TableCell>
+                  <TableCell className="hidden lg:table-cell">{tecnico.uf}</TableCell>
+                  <TableCell>
+                    <Button variant="ghost" size="icon" onClick={() => onEditarTecnico(tecnico)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))
