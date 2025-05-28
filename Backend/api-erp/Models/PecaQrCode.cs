@@ -1,5 +1,8 @@
-﻿namespace api_erp.Model
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace api_erp.Model
 {
+    [Table("peca_qrcode")]
     public class PecaQrCode
     {
         public int Id { get; set; }

@@ -1,4 +1,5 @@
-﻿using api_erp.Model;
+﻿using api_erp.DTOs;
+using api_erp.Model;
 
 namespace api_erp.Repositories.Interfaces
 {
@@ -6,8 +7,8 @@ namespace api_erp.Repositories.Interfaces
     {
         Task<IEnumerable<Perfil>> GetAllAsync();
         Task<Perfil?> GetByIdAsync(int id);
-        Task AddAsync(Perfil perfil);
-        void Update(Perfil perfil);
+        Task AddAsync(PerfilDTO perfil);
+        void Update(PerfilDTO perfil);
         void Delete(Perfil perfil);
         Task SaveChangesAsync();
     }

@@ -1,4 +1,5 @@
-﻿using api_erp.Model;
+﻿using api_erp.DTOs;
+using api_erp.Model;
 
 namespace api_erp.Repositories.Interfaces
 {
@@ -6,8 +7,8 @@ namespace api_erp.Repositories.Interfaces
     {
         Task<IEnumerable<Usuario>> GetAllAsync();
         Task<Usuario?> GetByIdAsync(int id);
-        Task AddAsync(Usuario usuario);
-        void Update(Usuario usuario);
+        Task AddAsync(UsuarioDTO usuario);
+        void Update(UsuarioDTO usuario);
         void Delete(Usuario usuario);
         Task SaveChangesAsync();
     }

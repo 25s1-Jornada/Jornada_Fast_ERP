@@ -1,4 +1,5 @@
-﻿using api_erp.Model;
+﻿using api_erp.DTOs;
+using api_erp.Model;
 
 namespace api_erp.Repositories.Interfaces
 {
@@ -6,8 +7,8 @@ namespace api_erp.Repositories.Interfaces
     {
         Task<IEnumerable<Empresa>> GetAllAsync();
         Task<Empresa?> GetByIdAsync(int id);
-        Task AddAsync(Empresa empresa);
-        void Update(Empresa empresa);
+        Task AddAsync(EmpresaDTO empresa);
+        void Update(EmpresaDTO empresa);
         void Delete(Empresa empresa);
         Task SaveChangesAsync();
     }

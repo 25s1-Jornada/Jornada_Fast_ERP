@@ -1,4 +1,5 @@
-﻿using api_erp.Model;
+﻿using api_erp.DTOs;
+using api_erp.Model;
 
 namespace api_erp.Repositories.Interfaces
 {
@@ -6,8 +7,8 @@ namespace api_erp.Repositories.Interfaces
     {
         Task<IEnumerable<Endereco>> GetAllAsync();
         Task<Endereco?> GetByIdAsync(int id);
-        Task AddAsync(Endereco endereco);
-        void Update(Endereco endereco);
+        Task AddAsync(EnderecoDTO endereco);
+        void Update(EnderecoDTO endereco);
         void Delete(Endereco endereco);
         Task SaveChangesAsync();
     }

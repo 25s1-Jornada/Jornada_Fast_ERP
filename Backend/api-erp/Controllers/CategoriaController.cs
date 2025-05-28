@@ -1,4 +1,5 @@
-﻿using api_erp.Model;
+﻿using api_erp.DTOs;
+using api_erp.Model;
 using api_erp.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,15 +23,15 @@ namespace api_erp.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] Categoria categoria)
+        public async Task<IActionResult> Post([FromBody] CategoriaDTO categoria)
         {
             await _repository.AddAsync(categoria);
             await _repository.SaveChangesAsync();
-            return CreatedAtAction(nameof(Get), new { id = categoria.Id }, categoria);
+            return Created(nameof(Get), categoria);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] Categoria categoria)
+        public async Task<IActionResult> Put(int id, [FromBody] CategoriaDTO categoria)
         {
             if (id != categoria.Id) return BadRequest();
             _repository.Update(categoria);
