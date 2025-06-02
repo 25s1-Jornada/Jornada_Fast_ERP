@@ -66,6 +66,9 @@ interface Chamado {
   dataAbertura: string
   dataVisita: string
   status: string
+  pedido: string
+  dataFaturamento: string
+  garantia: string
   descricoes: Descricao[]
   custos: Custos
 }
@@ -83,6 +86,9 @@ const chamadosIniciais: Chamado[] = [
     dataAbertura: "2023-05-15",
     dataVisita: "2023-05-18",
     status: "concluido",
+    pedido: "PED123",
+    dataFaturamento: "15/05/2023",
+    garantia: "12 meses",
     descricoes: [
       {
         id: "1",
@@ -122,6 +128,9 @@ const chamadosIniciais: Chamado[] = [
     dataAbertura: "2023-06-22",
     dataVisita: "2023-06-25",
     status: "em_andamento",
+    pedido: "PED456",
+    dataFaturamento: "22/06/2023",
+    garantia: "24 meses",
     descricoes: [
       {
         id: "2",
@@ -161,6 +170,9 @@ const chamadosIniciais: Chamado[] = [
     dataAbertura: "2023-07-10",
     dataVisita: "",
     status: "aberto",
+    pedido: "PED789",
+    dataFaturamento: "10/07/2023",
+    garantia: "6 meses",
     descricoes: [
       {
         id: "3",

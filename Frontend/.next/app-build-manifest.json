@@ -11,6 +11,16 @@
       "static/chunks/main-app.js",
       "static/chunks/app/page.js"
     ],
+    "/ordem-de-servico/chamados/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/ordem-de-servico/chamados/page.js"
+    ],
+    "/ordem-de-servico/tecnicos/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/ordem-de-servico/tecnicos/page.js"
+    ],
     "/ordem-de-servico/clientes/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",

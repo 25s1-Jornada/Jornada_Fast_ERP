@@ -19,9 +19,6 @@ interface Cliente {
   cidade: string
   uf: string
   codigo: string
-  pedido: string
-  dataFaturamento: string
-  garantia: string
 }
 
 interface ClientesTableProps {
@@ -41,9 +38,6 @@ const clientesIniciais = [
     cidade: "São Paulo",
     uf: "SP",
     codigo: "CLI001",
-    pedido: "PED123",
-    dataFaturamento: "15/05/2023",
-    garantia: "12 meses",
   },
   {
     id: "2",
@@ -56,9 +50,6 @@ const clientesIniciais = [
     cidade: "São Paulo",
     uf: "SP",
     codigo: "CLI002",
-    pedido: "PED456",
-    dataFaturamento: "22/06/2023",
-    garantia: "24 meses",
   },
   {
     id: "3",
@@ -71,9 +62,6 @@ const clientesIniciais = [
     cidade: "Rio de Janeiro",
     uf: "RJ",
     codigo: "CLI003",
-    pedido: "PED789",
-    dataFaturamento: "10/07/2023",
-    garantia: "6 meses",
   },
 ]
 
@@ -108,14 +96,6 @@ export function ClientesTable({ onEditarCliente }: ClientesTableProps) {
     const matchesUF = filtroUF === "todos" || cliente.uf === filtroUF
 
     // Filtro por tipo
-    if (tipoFiltro === "todos") {
-      return matchesText && matchesUF
-    } else if (tipoFiltro === "comGarantia") {
-      return matchesText && matchesUF && cliente.garantia !== ""
-    } else if (tipoFiltro === "semGarantia") {
-      return matchesText && matchesUF && cliente.garantia === ""
-    }
-
     return matchesText && matchesUF
   })
 
@@ -150,8 +130,6 @@ export function ClientesTable({ onEditarCliente }: ClientesTableProps) {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="todos">Todos os clientes</SelectItem>
-                      <SelectItem value="comGarantia">Com garantia</SelectItem>
-                      <SelectItem value="semGarantia">Sem garantia</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

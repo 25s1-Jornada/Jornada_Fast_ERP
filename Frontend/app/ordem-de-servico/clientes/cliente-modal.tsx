@@ -51,9 +51,6 @@ interface Cliente {
   cidade: string
   uf: string
   codigo: string
-  pedido: string
-  dataFaturamento: string
-  garantia: string
 }
 
 interface ClienteModalProps {
@@ -74,9 +71,6 @@ export function ClienteModal({ isOpen, onClose, onSalvar, cliente }: ClienteModa
     cidade: "",
     uf: "",
     codigo: "",
-    pedido: "",
-    dataFaturamento: "",
-    garantia: "",
   })
 
   useEffect(() => {
@@ -93,9 +87,6 @@ export function ClienteModal({ isOpen, onClose, onSalvar, cliente }: ClienteModa
         cidade: "",
         uf: "",
         codigo: "",
-        pedido: "",
-        dataFaturamento: "",
-        garantia: "",
       })
     }
   }, [cliente, isOpen])
@@ -180,29 +171,6 @@ export function ClienteModal({ isOpen, onClose, onSalvar, cliente }: ClienteModa
             <div className="space-y-2">
               <Label htmlFor="codigo">Cód. Cliente</Label>
               <Input id="codigo" value={formData.codigo} onChange={(e) => handleChange("codigo", e.target.value)} />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="pedido">Pedido</Label>
-              <Input id="pedido" value={formData.pedido} onChange={(e) => handleChange("pedido", e.target.value)} />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="dataFaturamento">Data Fat.</Label>
-              <Input
-                id="dataFaturamento"
-                value={formData.dataFaturamento}
-                onChange={(e) => handleChange("dataFaturamento", e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="garantia">Garantia</Label>
-              <Input
-                id="garantia"
-                value={formData.garantia}
-                onChange={(e) => handleChange("garantia", e.target.value)}
-              />
             </div>
           </div>
 

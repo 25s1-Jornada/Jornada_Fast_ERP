@@ -17,9 +17,6 @@ interface Cliente {
   cidade: string
   uf: string
   codigo: string
-  pedido: string
-  dataFaturamento: string
-  garantia: string
 }
 
 export default function ClientesPage() {

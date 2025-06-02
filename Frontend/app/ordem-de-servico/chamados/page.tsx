@@ -63,6 +63,9 @@ interface Chamado {
   dataAbertura: string
   dataVisita: string
   status: string
+  pedido: string
+  dataFaturamento: string
+  garantia: string
   descricoes: Descricao[]
   custos: Custos
 }
