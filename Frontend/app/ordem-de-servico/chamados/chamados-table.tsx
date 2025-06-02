@@ -35,7 +35,9 @@ interface Material {
   totalValor: string
 }
 
-interface Custos {
+interface CustoServico {
+  id: string
+  nome: string
   deslocamento: {
     hrSaidaEmpresa: string
     hrChegadaCliente: string
@@ -56,7 +58,7 @@ interface Custos {
     totalValor: string
   }
   materiais: Material[]
-  valorTotal: string
+  subtotal: string
 }
 
 interface Chamado {
@@ -70,7 +72,8 @@ interface Chamado {
   dataFaturamento: string
   garantia: string
   descricoes: Descricao[]
-  custos: Custos
+  custosServico: CustoServico[]
+  valorTotal: string
 }
 
 interface ChamadosTableProps {
@@ -97,29 +100,34 @@ const chamadosIniciais: Chamado[] = [
         observacao: "Equipamento não está refrigerando adequadamente.",
       },
     ],
-    custos: {
-      deslocamento: {
-        hrSaidaEmpresa: "08:00",
-        hrChegadaCliente: "09:30",
-        hrSaidaCliente: "14:00",
-        hrChegadaEmpresa: "15:30",
-        totalHoras: "5.5",
-        totalValor: "275.00",
+    custosServico: [
+      {
+        id: "custo-1",
+        nome: "Custo Principal",
+        deslocamento: {
+          hrSaidaEmpresa: "08:00",
+          hrChegadaCliente: "09:30",
+          hrSaidaCliente: "14:00",
+          hrChegadaEmpresa: "15:30",
+          totalHoras: "5.5",
+          totalValor: "275.00",
+        },
+        horaTrabalhada: {
+          hrInicio: "09:30",
+          hrTermino: "14:00",
+          totalHoras: "4.5",
+          totalValor: "225.00",
+        },
+        km: {
+          km: "45",
+          valorPorKm: "1.50",
+          totalValor: "67.50",
+        },
+        materiais: [],
+        subtotal: "567.50",
       },
-      horaTrabalhada: {
-        hrInicio: "09:30",
-        hrTermino: "14:00",
-        totalHoras: "4.5",
-        totalValor: "225.00",
-      },
-      km: {
-        km: "45",
-        valorPorKm: "1.50",
-        totalValor: "67.50",
-      },
-      materiais: [],
-      valorTotal: "567.50",
-    },
+    ],
+    valorTotal: "567.50",
   },
   {
     id: "2",
@@ -139,29 +147,34 @@ const chamadosIniciais: Chamado[] = [
         observacao: "Luzes piscando intermitentemente.",
       },
     ],
-    custos: {
-      deslocamento: {
-        hrSaidaEmpresa: "",
-        hrChegadaCliente: "",
-        hrSaidaCliente: "",
-        hrChegadaEmpresa: "",
-        totalHoras: "0",
-        totalValor: "0",
+    custosServico: [
+      {
+        id: "custo-2",
+        nome: "Custo Iluminação",
+        deslocamento: {
+          hrSaidaEmpresa: "",
+          hrChegadaCliente: "",
+          hrSaidaCliente: "",
+          hrChegadaEmpresa: "",
+          totalHoras: "0",
+          totalValor: "0",
+        },
+        horaTrabalhada: {
+          hrInicio: "",
+          hrTermino: "",
+          totalHoras: "0",
+          totalValor: "0",
+        },
+        km: {
+          km: "0",
+          valorPorKm: "1.50",
+          totalValor: "0",
+        },
+        materiais: [],
+        subtotal: "0",
       },
-      horaTrabalhada: {
-        hrInicio: "",
-        hrTermino: "",
-        totalHoras: "0",
-        totalValor: "0",
-      },
-      km: {
-        km: "0",
-        valorPorKm: "1.50",
-        totalValor: "0",
-      },
-      materiais: [],
-      valorTotal: "0",
-    },
+    ],
+    valorTotal: "0",
   },
   {
     id: "3",
@@ -181,29 +194,34 @@ const chamadosIniciais: Chamado[] = [
         observacao: "Suporte de parede com folga.",
       },
     ],
-    custos: {
-      deslocamento: {
-        hrSaidaEmpresa: "",
-        hrChegadaCliente: "",
-        hrSaidaCliente: "",
-        hrChegadaEmpresa: "",
-        totalHoras: "0",
-        totalValor: "0",
+    custosServico: [
+      {
+        id: "custo-3",
+        nome: "Custo Estrutura",
+        deslocamento: {
+          hrSaidaEmpresa: "",
+          hrChegadaCliente: "",
+          hrSaidaCliente: "",
+          hrChegadaEmpresa: "",
+          totalHoras: "0",
+          totalValor: "0",
+        },
+        horaTrabalhada: {
+          hrInicio: "",
+          hrTermino: "",
+          totalHoras: "0",
+          totalValor: "0",
+        },
+        km: {
+          km: "0",
+          valorPorKm: "1.50",
+          totalValor: "0",
+        },
+        materiais: [],
+        subtotal: "0",
       },
-      horaTrabalhada: {
-        hrInicio: "",
-        hrTermino: "",
-        totalHoras: "0",
-        totalValor: "0",
-      },
-      km: {
-        km: "0",
-        valorPorKm: "1.50",
-        totalValor: "0",
-      },
-      materiais: [],
-      valorTotal: "0",
-    },
+    ],
+    valorTotal: "0",
   },
 ]
 
@@ -342,7 +360,7 @@ export function ChamadosTable({ onEditarChamado }: ChamadosTableProps) {
                   <TableCell className="hidden md:table-cell">{formatDate(chamado.dataVisita)}</TableCell>
                   <TableCell className="hidden lg:table-cell">{chamado.descricoes[0]?.defeito || "-"}</TableCell>
                   <TableCell>{renderStatus(chamado.status)}</TableCell>
-                  <TableCell className="hidden lg:table-cell">{formatCurrency(chamado.custos.valorTotal)}</TableCell>
+                  <TableCell className="hidden lg:table-cell">{formatCurrency(chamado.valorTotal)}</TableCell>
                   <TableCell>
                     <div className="flex gap-2">
                       <Button variant="ghost" size="icon" onClick={() => onEditarChamado(chamado)}>

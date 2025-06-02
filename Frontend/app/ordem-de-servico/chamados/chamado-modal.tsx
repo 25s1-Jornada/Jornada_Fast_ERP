@@ -39,7 +39,9 @@ interface Material {
   totalValor: string
 }
 
-interface Custos {
+interface CustoServico {
+  id: string
+  nome: string
   deslocamento: {
     hrSaidaEmpresa: string
     hrChegadaCliente: string
@@ -60,7 +62,7 @@ interface Custos {
     totalValor: string
   }
   materiais: Material[]
-  valorTotal: string
+  subtotal: string
 }
 
 interface Chamado {
@@ -74,7 +76,8 @@ interface Chamado {
   dataFaturamento: string
   garantia: string
   descricoes: Descricao[]
-  custos: Custos
+  custosServico: CustoServico[]
+  valorTotal: string
 }
 
 interface ChamadoModalProps {
@@ -119,29 +122,34 @@ export function ChamadoModal({ isOpen, onClose, onSalvar, chamado }: ChamadoModa
         observacao: "",
       },
     ],
-    custos: {
-      deslocamento: {
-        hrSaidaEmpresa: "",
-        hrChegadaCliente: "",
-        hrSaidaCliente: "",
-        hrChegadaEmpresa: "",
-        totalHoras: "0",
-        totalValor: "0",
+    custosServico: [
+      {
+        id: "custo-1",
+        nome: "Custo Principal",
+        deslocamento: {
+          hrSaidaEmpresa: "",
+          hrChegadaCliente: "",
+          hrSaidaCliente: "",
+          hrChegadaEmpresa: "",
+          totalHoras: "0",
+          totalValor: "0",
+        },
+        horaTrabalhada: {
+          hrInicio: "",
+          hrTermino: "",
+          totalHoras: "0",
+          totalValor: "0",
+        },
+        km: {
+          km: "0",
+          valorPorKm: "1.50",
+          totalValor: "0",
+        },
+        materiais: [],
+        subtotal: "0",
       },
-      horaTrabalhada: {
-        hrInicio: "",
-        hrTermino: "",
-        totalHoras: "0",
-        totalValor: "0",
-      },
-      km: {
-        km: "0",
-        valorPorKm: "1.50",
-        totalValor: "0",
-      },
-      materiais: [],
-      valorTotal: "0",
-    },
+    ],
+    valorTotal: "0",
   })
 
   const [activeTab, setActiveTab] = useState("descricao")
@@ -167,29 +175,34 @@ export function ChamadoModal({ isOpen, onClose, onSalvar, chamado }: ChamadoModa
             observacao: "",
           },
         ],
-        custos: {
-          deslocamento: {
-            hrSaidaEmpresa: "",
-            hrChegadaCliente: "",
-            hrSaidaCliente: "",
-            hrChegadaEmpresa: "",
-            totalHoras: "0",
-            totalValor: "0",
+        custosServico: [
+          {
+            id: "custo-1",
+            nome: "Custo Principal",
+            deslocamento: {
+              hrSaidaEmpresa: "",
+              hrChegadaCliente: "",
+              hrSaidaCliente: "",
+              hrChegadaEmpresa: "",
+              totalHoras: "0",
+              totalValor: "0",
+            },
+            horaTrabalhada: {
+              hrInicio: "",
+              hrTermino: "",
+              totalHoras: "0",
+              totalValor: "0",
+            },
+            km: {
+              km: "0",
+              valorPorKm: "1.50",
+              totalValor: "0",
+            },
+            materiais: [],
+            subtotal: "0",
           },
-          horaTrabalhada: {
-            hrInicio: "",
-            hrTermino: "",
-            totalHoras: "0",
-            totalValor: "0",
-          },
-          km: {
-            km: "0",
-            valorPorKm: "1.50",
-            totalValor: "0",
-          },
-          materiais: [],
-          valorTotal: "0",
-        },
+        ],
+        valorTotal: "0",
       })
     }
   }, [chamado, isOpen])
@@ -233,77 +246,139 @@ export function ChamadoModal({ isOpen, onClose, onSalvar, chamado }: ChamadoModa
     }
     setFormData({
       ...formData,
-      custos: {
-        ...formData.custos,
-        materiais: [...formData.custos.materiais, novoMaterial],
-      },
+      custosServico: formData.custosServico.map((custoServico, index) => {
+        if (index === 0) {
+          return {
+            ...custoServico,
+            materiais: [...custoServico.materiais, novoMaterial],
+          }
+        }
+        return custoServico
+      }),
     })
   }
 
   const handleRemoveMaterial = (id: string) => {
     setFormData({
       ...formData,
-      custos: {
-        ...formData.custos,
-        materiais: formData.custos.materiais.filter((mat) => mat.id !== id),
-      },
+      custosServico: formData.custosServico.map((custoServico, index) => {
+        if (index === 0) {
+          return {
+            ...custoServico,
+            materiais: custoServico.materiais.filter((mat) => mat.id !== id),
+          }
+        }
+        return custoServico
+      }),
     })
   }
 
   const handleMaterialChange = (id: string, field: keyof Material, value: string) => {
     setFormData({
       ...formData,
-      custos: {
-        ...formData.custos,
-        materiais: formData.custos.materiais.map((mat) => {
-          if (mat.id === id) {
-            const updatedMat = { ...mat, [field]: value }
+      custosServico: formData.custosServico.map((custoServico, index) => {
+        if (index === 0) {
+          return {
+            ...custoServico,
+            materiais: custoServico.materiais.map((mat) => {
+              if (mat.id === id) {
+                const updatedMat = { ...mat, [field]: value }
 
-            // Recalcular o valor total se quantidade ou valor unitário mudar
-            if (field === "quantidade" || field === "valorUnitario") {
-              const quantidade = Number.parseFloat(updatedMat.quantidade) || 0
-              const valorUnitario = Number.parseFloat(updatedMat.valorUnitario) || 0
-              updatedMat.totalValor = (quantidade * valorUnitario).toFixed(2)
-            }
+                // Recalcular o valor total se quantidade ou valor unitário mudar
+                if (field === "quantidade" || field === "valorUnitario") {
+                  const quantidade = Number.parseFloat(updatedMat.quantidade) || 0
+                  const valorUnitario = Number.parseFloat(updatedMat.valorUnitario) || 0
+                  updatedMat.totalValor = (quantidade * valorUnitario).toFixed(2)
+                }
 
-            return updatedMat
+                return updatedMat
+              }
+              return mat
+            }),
           }
-          return mat
-        }),
+        }
+        return custoServico
+      }),
+    })
+  }
+
+  // Funções para manipular custos de serviço
+  const handleAddCustoServico = () => {
+    const novoCusto = {
+      id: `custo-${Date.now()}`,
+      nome: `Custo ${formData.custosServico.length + 1}`,
+      deslocamento: {
+        hrSaidaEmpresa: "",
+        hrChegadaCliente: "",
+        hrSaidaCliente: "",
+        hrChegadaEmpresa: "",
+        totalHoras: "0",
+        totalValor: "0",
       },
+      horaTrabalhada: {
+        hrInicio: "",
+        hrTermino: "",
+        totalHoras: "0",
+        totalValor: "0",
+      },
+      km: {
+        km: "0",
+        valorPorKm: "1.50",
+        totalValor: "0",
+      },
+      materiais: [],
+      subtotal: "0",
+    }
+    setFormData({
+      ...formData,
+      custosServico: [...formData.custosServico, novoCusto],
+    })
+  }
+
+  const handleRemoveCustoServico = (id: string) => {
+    setFormData({
+      ...formData,
+      custosServico: formData.custosServico.filter((custo) => custo.id !== id),
     })
   }
 
   // Função para calcular os totais
   const calcularTotais = () => {
-    // Calcular total de custos de KM
-    const km = Number.parseFloat(formData.custos.km.km) || 0
-    const valorPorKm = Number.parseFloat(formData.custos.km.valorPorKm) || 0
-    const totalKm = (km * valorPorKm).toFixed(2)
+    let valorTotalGeral = 0
 
-    // Calcular total de materiais
-    const totalMateriais = formData.custos.materiais.reduce((total, mat) => {
-      return total + (Number.parseFloat(mat.totalValor) || 0)
-    }, 0)
+    const custosAtualizados = formData.custosServico.map((custoServico) => {
+      // Calcular total de custos de KM
+      const km = Number.parseFloat(custoServico.km.km) || 0
+      const valorPorKm = Number.parseFloat(custoServico.km.valorPorKm) || 0
+      const totalKm = (km * valorPorKm).toFixed(2)
 
-    // Calcular valor total
-    const deslocamento = Number.parseFloat(formData.custos.deslocamento.totalValor) || 0
-    const horaTrabalhada = Number.parseFloat(formData.custos.horaTrabalhada.totalValor) || 0
-    const kmTotal = Number.parseFloat(totalKm) || 0
+      // Calcular total de materiais
+      const totalMateriais = custoServico.materiais.reduce((total, mat) => {
+        return total + (Number.parseFloat(mat.totalValor) || 0)
+      }, 0)
 
-    const valorTotal = (deslocamento + horaTrabalhada + kmTotal + totalMateriais).toFixed(2)
+      // Calcular subtotal
+      const deslocamento = Number.parseFloat(custoServico.deslocamento.totalValor) || 0
+      const horaTrabalhada = Number.parseFloat(custoServico.horaTrabalhada.totalValor) || 0
+      const kmTotal = Number.parseFloat(totalKm) || 0
 
-    // Atualizar os totais no estado
-    setFormData({
-      ...formData,
-      custos: {
-        ...formData.custos,
+      const subtotal = (deslocamento + horaTrabalhada + kmTotal + totalMateriais).toFixed(2)
+      valorTotalGeral += Number.parseFloat(subtotal)
+
+      return {
+        ...custoServico,
         km: {
-          ...formData.custos.km,
+          ...custoServico.km,
           totalValor: totalKm,
         },
-        valorTotal: valorTotal,
-      },
+        subtotal: subtotal,
+      }
+    })
+
+    setFormData({
+      ...formData,
+      custosServico: custosAtualizados,
+      valorTotal: valorTotalGeral.toFixed(2),
     })
   }
 
@@ -543,326 +618,435 @@ export function ChamadoModal({ isOpen, onClose, onSalvar, chamado }: ChamadoModa
 
             {/* Conteúdo da aba CUSTOS SERVIÇO */}
             <TabsContent value="custos" className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Custos de Deslocamento */}
-                <Card>
-                  <CardContent className="pt-6">
-                    <h3 className="text-base font-medium mb-4">Custos Deslocamento</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="hrSaidaEmpresa">Hr Saída Empresa:</Label>
-                        <Input
-                          id="hrSaidaEmpresa"
-                          type="time"
-                          value={formData.custos.deslocamento.hrSaidaEmpresa}
-                          onChange={(e) => {
-                            setFormData({
-                              ...formData,
-                              custos: {
-                                ...formData.custos,
-                                deslocamento: {
-                                  ...formData.custos.deslocamento,
-                                  hrSaidaEmpresa: e.target.value,
-                                },
-                              },
-                            })
-                          }}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="hrChegadaCliente">Hr Chegada Cliente:</Label>
-                        <Input
-                          id="hrChegadaCliente"
-                          type="time"
-                          value={formData.custos.deslocamento.hrChegadaCliente}
-                          onChange={(e) => {
-                            setFormData({
-                              ...formData,
-                              custos: {
-                                ...formData.custos,
-                                deslocamento: {
-                                  ...formData.custos.deslocamento,
-                                  hrChegadaCliente: e.target.value,
-                                },
-                              },
-                            })
-                          }}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="hrSaidaCliente">Hr Saída Cliente:</Label>
-                        <Input
-                          id="hrSaidaCliente"
-                          type="time"
-                          value={formData.custos.deslocamento.hrSaidaCliente}
-                          onChange={(e) => {
-                            setFormData({
-                              ...formData,
-                              custos: {
-                                ...formData.custos,
-                                deslocamento: {
-                                  ...formData.custos.deslocamento,
-                                  hrSaidaCliente: e.target.value,
-                                },
-                              },
-                            })
-                          }}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="hrChegadaEmpresa">Hr Chegada Empresa:</Label>
-                        <Input
-                          id="hrChegadaEmpresa"
-                          type="time"
-                          value={formData.custos.deslocamento.hrChegadaEmpresa}
-                          onChange={(e) => {
-                            setFormData({
-                              ...formData,
-                              custos: {
-                                ...formData.custos,
-                                deslocamento: {
-                                  ...formData.custos.deslocamento,
-                                  hrChegadaEmpresa: e.target.value,
-                                },
-                              },
-                            })
-                          }}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="totalHorasDeslocamento">Total Hr:</Label>
-                        <Input id="totalHorasDeslocamento" value={formData.custos.deslocamento.totalHoras} readOnly />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="totalValorDeslocamento">Total R$:</Label>
-                        <Input
-                          id="totalValorDeslocamento"
-                          value={formData.custos.deslocamento.totalValor}
-                          onChange={(e) => {
-                            setFormData({
-                              ...formData,
-                              custos: {
-                                ...formData.custos,
-                                deslocamento: {
-                                  ...formData.custos.deslocamento,
-                                  totalValor: e.target.value,
-                                },
-                              },
-                            })
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-medium">Custos de Serviço</h3>
+                <Button type="button" variant="outline" size="sm" onClick={handleAddCustoServico}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Adicionar Custo
+                </Button>
+              </div>
 
-                {/* Custos Hora Trabalhada */}
-                <Card>
-                  <CardContent className="pt-6">
-                    <h3 className="text-base font-medium mb-4">Custos Hora Trabalhada</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="hrInicio">Hr Início:</Label>
-                        <Input
-                          id="hrInicio"
-                          type="time"
-                          value={formData.custos.horaTrabalhada.hrInicio}
-                          onChange={(e) => {
-                            setFormData({
-                              ...formData,
-                              custos: {
-                                ...formData.custos,
-                                horaTrabalhada: {
-                                  ...formData.custos.horaTrabalhada,
-                                  hrInicio: e.target.value,
-                                },
-                              },
-                            })
-                          }}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="hrTermino">Hr Término:</Label>
-                        <Input
-                          id="hrTermino"
-                          type="time"
-                          value={formData.custos.horaTrabalhada.hrTermino}
-                          onChange={(e) => {
-                            setFormData({
-                              ...formData,
-                              custos: {
-                                ...formData.custos,
-                                horaTrabalhada: {
-                                  ...formData.custos.horaTrabalhada,
-                                  hrTermino: e.target.value,
-                                },
-                              },
-                            })
-                          }}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="totalHorasTrabalhadas">Total Hr:</Label>
-                        <Input id="totalHorasTrabalhadas" value={formData.custos.horaTrabalhada.totalHoras} readOnly />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="totalValorHoraTrabalhada">Total R$:</Label>
-                        <Input
-                          id="totalValorHoraTrabalhada"
-                          value={formData.custos.horaTrabalhada.totalValor}
-                          onChange={(e) => {
-                            setFormData({
-                              ...formData,
-                              custos: {
-                                ...formData.custos,
-                                horaTrabalhada: {
-                                  ...formData.custos.horaTrabalhada,
-                                  totalValor: e.target.value,
-                                },
-                              },
-                            })
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Custos KM */}
-                <Card>
-                  <CardContent className="pt-6">
-                    <h3 className="text-base font-medium mb-4">Custos KM</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="km">KM:</Label>
-                        <Input
-                          id="km"
-                          type="number"
-                          value={formData.custos.km.km}
-                          onChange={(e) => {
-                            setFormData({
-                              ...formData,
-                              custos: {
-                                ...formData.custos,
-                                km: {
-                                  ...formData.custos.km,
-                                  km: e.target.value,
-                                },
-                              },
-                            })
-                          }}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="valorPorKm">R$/KM:</Label>
-                        <Input
-                          id="valorPorKm"
-                          type="number"
-                          step="0.01"
-                          value={formData.custos.km.valorPorKm}
-                          onChange={(e) => {
-                            setFormData({
-                              ...formData,
-                              custos: {
-                                ...formData.custos,
-                                km: {
-                                  ...formData.custos.km,
-                                  valorPorKm: e.target.value,
-                                },
-                              },
-                            })
-                          }}
-                        />
-                      </div>
-                      <div className="space-y-2 col-span-2">
-                        <Label htmlFor="totalValorKm">Total R$:</Label>
-                        <Input id="totalValorKm" value={formData.custos.km.totalValor} readOnly />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Despesas c/ Materiais */}
-                <Card>
+              {formData.custosServico.map((custoServico, custoIndex) => (
+                <Card key={custoServico.id} className="mb-6">
                   <CardContent className="pt-6">
                     <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-base font-medium">Despesas c/ Materiais</h3>
-                      <Button type="button" variant="outline" size="sm" onClick={handleAddMaterial}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Adicionar Material
+                      <div className="space-y-2 flex-1 mr-4">
+                        <Label htmlFor={`nomeCusto-${custoIndex}`}>Nome do Custo:</Label>
+                        <Input
+                          id={`nomeCusto-${custoIndex}`}
+                          value={custoServico.nome}
+                          onChange={(e) => {
+                            setFormData({
+                              ...formData,
+                              custosServico: formData.custosServico.map((custo) =>
+                                custo.id === custoServico.id ? { ...custo, nome: e.target.value } : custo,
+                              ),
+                            })
+                          }}
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleRemoveCustoServico(custoServico.id)}
+                        disabled={formData.custosServico.length === 1}
+                      >
+                        <X className="h-4 w-4" />
                       </Button>
                     </div>
 
-                    {formData.custos.materiais.length > 0 ? (
-                      formData.custos.materiais.map((material, index) => (
-                        <div key={material.id} className="grid grid-cols-12 gap-2 mb-2 items-end">
-                          <div className="col-span-5">
-                            <Label htmlFor={`material-${index}`} className="text-xs">
-                              Material:
-                            </Label>
-                            <Input
-                              id={`material-${index}`}
-                              value={material.material}
-                              onChange={(e) => handleMaterialChange(material.id, "material", e.target.value)}
-                            />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Custos de Deslocamento */}
+                      <Card>
+                        <CardContent className="pt-6">
+                          <h3 className="text-base font-medium mb-4">Custos Deslocamento</h3>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="hrSaidaEmpresa">Hr Saída Empresa:</Label>
+                              <Input
+                                id="hrSaidaEmpresa"
+                                type="time"
+                                value={custoServico.deslocamento.hrSaidaEmpresa}
+                                onChange={(e) => {
+                                  setFormData({
+                                    ...formData,
+                                    custosServico: formData.custosServico.map((custo, index) => {
+                                      if (custo.id === custoServico.id) {
+                                        return {
+                                          ...custo,
+                                          deslocamento: {
+                                            ...custo.deslocamento,
+                                            hrSaidaEmpresa: e.target.value,
+                                          },
+                                        }
+                                      }
+                                      return custo
+                                    }),
+                                  })
+                                }}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="hrChegadaCliente">Hr Chegada Cliente:</Label>
+                              <Input
+                                id="hrChegadaCliente"
+                                type="time"
+                                value={custoServico.deslocamento.hrChegadaCliente}
+                                onChange={(e) => {
+                                  setFormData({
+                                    ...formData,
+                                    custosServico: formData.custosServico.map((custo, index) => {
+                                      if (custo.id === custoServico.id) {
+                                        return {
+                                          ...custo,
+                                          deslocamento: {
+                                            ...custo.deslocamento,
+                                            hrChegadaCliente: e.target.value,
+                                          },
+                                        }
+                                      }
+                                      return custo
+                                    }),
+                                  })
+                                }}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="hrSaidaCliente">Hr Saída Cliente:</Label>
+                              <Input
+                                id="hrSaidaCliente"
+                                type="time"
+                                value={custoServico.deslocamento.hrSaidaCliente}
+                                onChange={(e) => {
+                                  setFormData({
+                                    ...formData,
+                                    custosServico: formData.custosServico.map((custo, index) => {
+                                      if (custo.id === custoServico.id) {
+                                        return {
+                                          ...custo,
+                                          deslocamento: {
+                                            ...custo.deslocamento,
+                                            hrSaidaCliente: e.target.value,
+                                          },
+                                        }
+                                      }
+                                      return custo
+                                    }),
+                                  })
+                                }}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="hrChegadaEmpresa">Hr Chegada Empresa:</Label>
+                              <Input
+                                id="hrChegadaEmpresa"
+                                type="time"
+                                value={custoServico.deslocamento.hrChegadaEmpresa}
+                                onChange={(e) => {
+                                  setFormData({
+                                    ...formData,
+                                    custosServico: formData.custosServico.map((custo, index) => {
+                                      if (custo.id === custoServico.id) {
+                                        return {
+                                          ...custo,
+                                          deslocamento: {
+                                            ...custo.deslocamento,
+                                            hrChegadaEmpresa: e.target.value,
+                                          },
+                                        }
+                                      }
+                                      return custo
+                                    }),
+                                  })
+                                }}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="totalHorasDeslocamento">Total Hr:</Label>
+                              <Input
+                                id="totalHorasDeslocamento"
+                                value={custoServico.deslocamento.totalHoras}
+                                readOnly
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="totalValorDeslocamento">Total R$:</Label>
+                              <Input
+                                id="totalValorDeslocamento"
+                                value={custoServico.deslocamento.totalValor}
+                                onChange={(e) => {
+                                  setFormData({
+                                    ...formData,
+                                    custosServico: formData.custosServico.map((custo, index) => {
+                                      if (custo.id === custoServico.id) {
+                                        return {
+                                          ...custo,
+                                          deslocamento: {
+                                            ...custo.deslocamento,
+                                            totalValor: e.target.value,
+                                          },
+                                        }
+                                      }
+                                      return custo
+                                    }),
+                                  })
+                                }}
+                              />
+                            </div>
                           </div>
-                          <div className="col-span-2">
-                            <Label htmlFor={`quantidade-${index}`} className="text-xs">
-                              Qtd:
-                            </Label>
-                            <Input
-                              id={`quantidade-${index}`}
-                              type="number"
-                              value={material.quantidade}
-                              onChange={(e) => handleMaterialChange(material.id, "quantidade", e.target.value)}
-                            />
+                        </CardContent>
+                      </Card>
+
+                      {/* Custos Hora Trabalhada */}
+                      <Card>
+                        <CardContent className="pt-6">
+                          <h3 className="text-base font-medium mb-4">Custos Hora Trabalhada</h3>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="hrInicio">Hr Início:</Label>
+                              <Input
+                                id="hrInicio"
+                                type="time"
+                                value={custoServico.horaTrabalhada.hrInicio}
+                                onChange={(e) => {
+                                  setFormData({
+                                    ...formData,
+                                    custosServico: formData.custosServico.map((custo, index) => {
+                                      if (custo.id === custoServico.id) {
+                                        return {
+                                          ...custo,
+                                          horaTrabalhada: {
+                                            ...custo.horaTrabalhada,
+                                            hrInicio: e.target.value,
+                                          },
+                                        }
+                                      }
+                                      return custo
+                                    }),
+                                  })
+                                }}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="hrTermino">Hr Término:</Label>
+                              <Input
+                                id="hrTermino"
+                                type="time"
+                                value={custoServico.horaTrabalhada.hrTermino}
+                                onChange={(e) => {
+                                  setFormData({
+                                    ...formData,
+                                    custosServico: formData.custosServico.map((custo, index) => {
+                                      if (custo.id === custoServico.id) {
+                                        return {
+                                          ...custo,
+                                          horaTrabalhada: {
+                                            ...custo.horaTrabalhada,
+                                            hrTermino: e.target.value,
+                                          },
+                                        }
+                                      }
+                                      return custo
+                                    }),
+                                  })
+                                }}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="totalHorasTrabalhadas">Total Hr:</Label>
+                              <Input
+                                id="totalHorasTrabalhadas"
+                                value={custoServico.horaTrabalhada.totalHoras}
+                                readOnly
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="totalValorHoraTrabalhada">Total R$:</Label>
+                              <Input
+                                id="totalValorHoraTrabalhada"
+                                value={custoServico.horaTrabalhada.totalValor}
+                                onChange={(e) => {
+                                  setFormData({
+                                    ...formData,
+                                    custosServico: formData.custosServico.map((custo, index) => {
+                                      if (custo.id === custoServico.id) {
+                                        return {
+                                          ...custo,
+                                          horaTrabalhada: {
+                                            ...custo.horaTrabalhada,
+                                            totalValor: e.target.value,
+                                          },
+                                        }
+                                      }
+                                      return custo
+                                    }),
+                                  })
+                                }}
+                              />
+                            </div>
                           </div>
-                          <div className="col-span-2">
-                            <Label htmlFor={`valorUnitario-${index}`} className="text-xs">
-                              Valor:
-                            </Label>
-                            <Input
-                              id={`valorUnitario-${index}`}
-                              type="number"
-                              step="0.01"
-                              value={material.valorUnitario}
-                              onChange={(e) => handleMaterialChange(material.id, "valorUnitario", e.target.value)}
-                            />
+                        </CardContent>
+                      </Card>
+
+                      {/* Custos KM */}
+                      <Card>
+                        <CardContent className="pt-6">
+                          <h3 className="text-base font-medium mb-4">Custos KM</h3>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="km">KM:</Label>
+                              <Input
+                                id="km"
+                                type="number"
+                                value={custoServico.km.km}
+                                onChange={(e) => {
+                                  setFormData({
+                                    ...formData,
+                                    custosServico: formData.custosServico.map((custo, index) => {
+                                      if (custo.id === custoServico.id) {
+                                        return {
+                                          ...custo,
+                                          km: {
+                                            ...custo.km,
+                                            km: e.target.value,
+                                          },
+                                        }
+                                      }
+                                      return custo
+                                    }),
+                                  })
+                                }}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="valorPorKm">R$/KM:</Label>
+                              <Input
+                                id="valorPorKm"
+                                type="number"
+                                step="0.01"
+                                value={custoServico.km.valorPorKm}
+                                onChange={(e) => {
+                                  setFormData({
+                                    ...formData,
+                                    custosServico: formData.custosServico.map((custo, index) => {
+                                      if (custo.id === custoServico.id) {
+                                        return {
+                                          ...custo,
+                                          km: {
+                                            ...custo.km,
+                                            valorPorKm: e.target.value,
+                                          },
+                                        }
+                                      }
+                                      return custo
+                                    }),
+                                  })
+                                }}
+                              />
+                            </div>
+                            <div className="space-y-2 col-span-2">
+                              <Label htmlFor="totalValorKm">Total R$:</Label>
+                              <Input id="totalValorKm" value={custoServico.km.totalValor} readOnly />
+                            </div>
                           </div>
-                          <div className="col-span-2">
-                            <Label htmlFor={`totalValor-${index}`} className="text-xs">
-                              Total:
-                            </Label>
-                            <Input id={`totalValor-${index}`} value={material.totalValor} readOnly />
-                          </div>
-                          <div className="col-span-1">
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleRemoveMaterial(material.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
+                        </CardContent>
+                      </Card>
+
+                      {/* Despesas c/ Materiais */}
+                      <Card>
+                        <CardContent className="pt-6">
+                          <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-base font-medium">Despesas c/ Materiais</h3>
+                            <Button type="button" variant="outline" size="sm" onClick={handleAddMaterial}>
+                              <Plus className="mr-2 h-4 w-4" />
+                              Adicionar Material
                             </Button>
                           </div>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-sm text-muted-foreground">Nenhum material adicionado</p>
-                    )}
-                  </CardContent>
-                </Card>
 
-                {/* Valor Total */}
-                <Card className="md:col-span-2 bg-muted">
-                  <CardContent className="pt-6">
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-base font-medium">Valor Total R$</h3>
-                      <div className="text-xl font-bold">R$ {formData.custos.valorTotal}</div>
+                          {custoServico.materiais.length > 0 ? (
+                            custoServico.materiais.map((material, index) => (
+                              <div key={material.id} className="grid grid-cols-12 gap-2 mb-2 items-end">
+                                <div className="col-span-5">
+                                  <Label htmlFor={`material-${index}`} className="text-xs">
+                                    Material:
+                                  </Label>
+                                  <Input
+                                    id={`material-${index}`}
+                                    value={material.material}
+                                    onChange={(e) => handleMaterialChange(material.id, "material", e.target.value)}
+                                  />
+                                </div>
+                                <div className="col-span-2">
+                                  <Label htmlFor={`quantidade-${index}`} className="text-xs">
+                                    Qtd:
+                                  </Label>
+                                  <Input
+                                    id={`quantidade-${index}`}
+                                    type="number"
+                                    value={material.quantidade}
+                                    onChange={(e) => handleMaterialChange(material.id, "quantidade", e.target.value)}
+                                  />
+                                </div>
+                                <div className="col-span-2">
+                                  <Label htmlFor={`valorUnitario-${index}`} className="text-xs">
+                                    Valor:
+                                  </Label>
+                                  <Input
+                                    id={`valorUnitario-${index}`}
+                                    type="number"
+                                    step="0.01"
+                                    value={material.valorUnitario}
+                                    onChange={(e) => handleMaterialChange(material.id, "valorUnitario", e.target.value)}
+                                  />
+                                </div>
+                                <div className="col-span-2">
+                                  <Label htmlFor={`totalValor-${index}`} className="text-xs">
+                                    Total:
+                                  </Label>
+                                  <Input id={`totalValor-${index}`} value={material.totalValor} readOnly />
+                                </div>
+                                <div className="col-span-1">
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => handleRemoveMaterial(material.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-sm text-muted-foreground">Nenhum material adicionado</p>
+                          )}
+                        </CardContent>
+                      </Card>
+
+                      {/* Valor Total */}
+                      <Card className="md:col-span-2 bg-muted">
+                        <CardContent className="pt-6">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-base font-medium">Subtotal R$</h3>
+                            <div className="text-xl font-bold">R$ {custoServico.subtotal}</div>
+                          </div>
+                        </CardContent>
+                      </Card>
                     </div>
                   </CardContent>
                 </Card>
-              </div>
+              ))}
+
+              {/* Valor Total */}
+              <Card className="bg-muted">
+                <CardContent className="pt-6">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-base font-medium">Valor Total R$</h3>
+                    <div className="text-xl font-bold">R$ {formData.valorTotal}</div>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
 
