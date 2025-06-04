@@ -87,20 +87,34 @@ interface ChamadoModalProps {
   chamado?: Chamado
 }
 
-// Dados de exemplo para seleção
+// Atualizar os dados de exemplo para seleção com mais clientes e técnicos
 const clientesDisponiveis = [
   { id: "1", nome: "João Silva" },
   { id: "2", nome: "Empresa ABC Ltda" },
   { id: "3", nome: "Comércio XYZ" },
+  { id: "4", nome: "Restaurante Bom Sabor" },
+  { id: "5", nome: "Supermercado Central" },
+  { id: "6", nome: "Hotel Vista Mar" },
+  { id: "7", nome: "Padaria Pão Dourado" },
+  { id: "8", nome: "Clínica Saúde Total" },
+  { id: "9", nome: "Farmácia Popular" },
+  { id: "10", nome: "Escola Futuro Brilhante" },
+  { id: "11", nome: "Oficina Mecânica Silva" },
+  { id: "12", nome: "Loja de Roupas Fashion" },
 ]
 
 const tecnicosDisponiveis = [
   { id: "1", nome: "Carlos Oliveira" },
   { id: "2", nome: "Ana Silva" },
   { id: "3", nome: "Roberto Santos" },
+  { id: "4", nome: "Marina Costa" },
+  { id: "5", nome: "Pedro Almeida" },
+  { id: "6", nome: "Juliana Ferreira" },
+  { id: "7", nome: "Lucas Mendes" },
+  { id: "8", nome: "Fernanda Lima" },
 ]
 
-const tiposDefeito = ["Refrigeração", "Iluminação", "Estrutura", "Outros"]
+const tiposDefeito = ["Refrigeração", "Iluminação", "Estrutura", "Elétrico", "Hidráulico", "Outros"]
 
 export function ChamadoModal({ isOpen, onClose, onSalvar, chamado }: ChamadoModalProps) {
   const hoje = new Date().toISOString().split("T")[0]

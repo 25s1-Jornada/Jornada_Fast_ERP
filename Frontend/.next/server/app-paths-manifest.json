@@ -1,4 +1,4 @@
 {
-  "/page": "app/page.js",
-  "/ordem-de-servico/chamados/page": "app/ordem-de-servico/chamados/page.js"
+  "/ordem-de-servico/chamados/page": "app/ordem-de-servico/chamados/page.js",
+  "/page": "app/page.js"
 }
