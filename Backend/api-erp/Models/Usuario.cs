@@ -11,9 +11,8 @@
         public string? Cpf { get; set; }
         public int? PerfilId { get; set; }
         public int? EmpresaId { get; set; }
-
         public Endereco? Endereco { get; set; }
-        public Perfil? Perfil { get; set; }
+        public Perfil? Perfil { get; set; } //admin, representante (dono do armario), tecnico, cliente
         public Empresa? Empresa { get; set; }
         public ICollection<MovimentacaoEstoque>? Movimentacoes { get; set; }
         public ICollection<PecaQrCode>? PecasQrCode { get; set; }
