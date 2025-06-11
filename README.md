@@ -24,6 +24,6 @@ Além disso, o sistema foi pensado para futuras integrações com outros projeto
 ## 👨‍💻 Desenvolvido por
 
 Grupo ERP da Jornada FAST — 25S1
-
+.
 ---
 
