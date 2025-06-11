@@ -1,4 +1,4 @@
-// File: /home/b2b/Área de Trabalho/Jornada_Fast_ERP/Frontend/app/page.tsx
+// File: C:\Users\Tavinho\Desktop\test\Jornada_Fast_ERP\Frontend\app\page.tsx
 import * as entry from '../../../app/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

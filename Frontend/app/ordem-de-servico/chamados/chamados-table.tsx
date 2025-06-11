@@ -1,13 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Edit, Search, RefreshCw, Filter } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Edit, RefreshCw } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { FiltroAvancadoModal, type FiltroConfig, type FiltroValores } from "@/components/filtro-avancado-modal"
+import { Ordenacao } from "@/components/ordenacao"
 
 // Tipos para os dados do chamado
 interface Cliente {
@@ -79,6 +78,105 @@ interface Chamado {
 interface ChamadosTableProps {
   onEditarChamado: (chamado: Chamado) => void
 }
+
+// Configuração dos filtros para chamados com categorias
+const configuracaoFiltros: FiltroConfig[] = [
+  {
+    campo: "busca_geral",
+    label: "Busca Geral",
+    tipo: "texto",
+    placeholder: "Cliente, técnico, defeito...",
+    categoria: "geral",
+  },
+  {
+    campo: "status",
+    label: "Status",
+    tipo: "multiselect",
+    categoria: "geral",
+    opcoes: [
+      { value: "aberto", label: "Aberto" },
+      { value: "em_andamento", label: "Em Andamento" },
+      { value: "concluido", label: "Concluído" },
+    ],
+  },
+  {
+    campo: "defeito",
+    label: "Tipo de Defeito",
+    tipo: "multiselect",
+    categoria: "geral",
+    opcoes: [
+      { value: "Refrigeração", label: "Refrigeração" },
+      { value: "Iluminação", label: "Iluminação" },
+      { value: "Estrutura", label: "Estrutura" },
+    ],
+  },
+  {
+    campo: "cliente",
+    label: "Cliente",
+    tipo: "multiselect",
+    categoria: "pessoas",
+    opcoes: [
+      { value: "João Silva", label: "João Silva" },
+      { value: "Empresa ABC Ltda", label: "Empresa ABC Ltda" },
+      { value: "Comércio XYZ", label: "Comércio XYZ" },
+      { value: "Restaurante Bom Sabor", label: "Restaurante Bom Sabor" },
+      { value: "Supermercado Central", label: "Supermercado Central" },
+      { value: "Hotel Vista Mar", label: "Hotel Vista Mar" },
+      { value: "Padaria Pão Dourado", label: "Padaria Pão Dourado" },
+      { value: "Clínica Saúde Total", label: "Clínica Saúde Total" },
+    ],
+  },
+  {
+    campo: "tecnico",
+    label: "Técnico",
+    tipo: "multiselect",
+    categoria: "pessoas",
+    opcoes: [
+      { value: "Carlos Oliveira", label: "Carlos Oliveira" },
+      { value: "Ana Silva", label: "Ana Silva" },
+      { value: "Roberto Santos", label: "Roberto Santos" },
+      { value: "Marina Costa", label: "Marina Costa" },
+      { value: "Pedro Almeida", label: "Pedro Almeida" },
+    ],
+  },
+  {
+    campo: "data_abertura",
+    label: "Data de Abertura",
+    tipo: "intervalo_data",
+    categoria: "datas",
+  },
+  {
+    campo: "data_visita",
+    label: "Data da Visita",
+    tipo: "intervalo_data",
+    categoria: "datas",
+  },
+  {
+    campo: "valor_minimo",
+    label: "Valor Mínimo (R$)",
+    tipo: "numero",
+    placeholder: "0.00",
+    categoria: "valores",
+  },
+  {
+    campo: "valor_maximo",
+    label: "Valor Máximo (R$)",
+    tipo: "numero",
+    placeholder: "9999.99",
+    categoria: "valores",
+  },
+]
+
+// Campos disponíveis para ordenação
+const camposOrdenacao = [
+  { value: "id", label: "ID" },
+  { value: "cliente", label: "Cliente" },
+  { value: "tecnico", label: "Técnico" },
+  { value: "dataAbertura", label: "Data Abertura" },
+  { value: "dataVisita", label: "Data Visita" },
+  { value: "status", label: "Status" },
+  { value: "valorTotal", label: "Valor Total" },
+]
 
 // Atualizar os dados de exemplo para chamados com mais variedade
 const chamadosIniciais: Chamado[] = [
@@ -628,34 +726,172 @@ const chamadosIniciais: Chamado[] = [
 
 export function ChamadosTable({ onEditarChamado }: ChamadosTableProps) {
   const [chamados, setChamados] = useState(chamadosIniciais)
-  const [filtro, setFiltro] = useState("")
-  const [filtroStatus, setFiltroStatus] = useState("todos")
+  const [filtros, setFiltros] = useState<FiltroValores>({})
+  const [ordenacao, setOrdenacao] = useState({ campo: "id", direcao: "asc" as "asc" | "desc" })
+  const [filtrosSalvos, setFiltrosSalvos] = useState<{ nome: string; filtro: FiltroValores }[]>([])
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   const handleRefresh = () => {
     setIsRefreshing(true)
-    // Simulando uma atualização de dados
     setTimeout(() => {
-      // Aqui você faria uma chamada para recarregar os dados do servidor
       setIsRefreshing(false)
     }, 1000)
   }
 
-  const chamadosFiltrados = chamados.filter((chamado) => {
-    // Filtro por texto (cliente, técnico ou defeito)
-    const matchesText =
-      filtro === "" ||
-      chamado.cliente.nome.toLowerCase().includes(filtro.toLowerCase()) ||
-      chamado.tecnico.nome.toLowerCase().includes(filtro.toLowerCase()) ||
-      chamado.descricoes.some((desc) => desc.defeito.toLowerCase().includes(filtro.toLowerCase()))
+  const handleSalvarFiltro = (nome: string, filtro: FiltroValores) => {
+    const novosFiltros = [...filtrosSalvos, { nome, filtro }]
+    setFiltrosSalvos(novosFiltros)
+    localStorage.setItem("filtros_salvos_chamados", JSON.stringify(novosFiltros))
+  }
 
-    // Filtro por status
-    const matchesStatus = filtroStatus === "todos" || chamado.status === filtroStatus
+  const handleCarregarFiltro = (filtro: FiltroValores) => {
+    setFiltros(filtro)
+  }
 
-    return matchesText && matchesStatus
-  })
+  const handleExcluirFiltro = (nome: string) => {
+    const novosFiltros = filtrosSalvos.filter((f) => f.nome !== nome)
+    setFiltrosSalvos(novosFiltros)
+    localStorage.setItem("filtros_salvos_chamados", JSON.stringify(novosFiltros))
+  }
 
-  // Função para renderizar o status com a cor apropriada
+  // Aplicar filtros e ordenação (mantendo a mesma lógica)
+  const chamadosFiltrados = useMemo(() => {
+    let resultado = [...chamados]
+
+    // Aplicar filtros (mesma lógica anterior)
+    Object.entries(filtros).forEach(([campo, valor]) => {
+      if (!valor || (Array.isArray(valor) && valor.length === 0)) return
+
+      switch (campo) {
+        case "cliente_rapido":
+        case "cliente_texto":
+          if (typeof valor === "string" && valor.trim()) {
+            resultado = resultado.filter((chamado) => chamado.cliente.nome.toLowerCase().includes(valor.toLowerCase()))
+          }
+          break
+
+        case "tecnico_rapido":
+        case "tecnico_texto":
+          if (typeof valor === "string" && valor.trim()) {
+            resultado = resultado.filter((chamado) => chamado.tecnico.nome.toLowerCase().includes(valor.toLowerCase()))
+          }
+          break
+        case "busca_geral":
+          if (typeof valor === "string" && valor.trim()) {
+            resultado = resultado.filter(
+              (chamado) =>
+                chamado.cliente.nome.toLowerCase().includes(valor.toLowerCase()) ||
+                chamado.tecnico.nome.toLowerCase().includes(valor.toLowerCase()) ||
+                chamado.descricoes.some((desc) => desc.defeito.toLowerCase().includes(valor.toLowerCase())),
+            )
+          }
+          break
+
+        case "status":
+          if (Array.isArray(valor) && valor.length > 0) {
+            resultado = resultado.filter((chamado) => valor.includes(chamado.status))
+          }
+          break
+
+        case "cliente":
+          if (Array.isArray(valor) && valor.length > 0) {
+            resultado = resultado.filter((chamado) => valor.includes(chamado.cliente.nome))
+          }
+          break
+
+        case "tecnico":
+          if (Array.isArray(valor) && valor.length > 0) {
+            resultado = resultado.filter((chamado) => valor.includes(chamado.tecnico.nome))
+          }
+          break
+
+        case "data_abertura":
+          if (typeof valor === "object" && valor.inicio && valor.fim) {
+            resultado = resultado.filter((chamado) => {
+              const dataAbertura = new Date(chamado.dataAbertura)
+              const inicio = new Date(valor.inicio)
+              const fim = new Date(valor.fim)
+              return dataAbertura >= inicio && dataAbertura <= fim
+            })
+          }
+          break
+
+        case "data_visita":
+          if (typeof valor === "object" && valor.inicio && valor.fim) {
+            resultado = resultado.filter((chamado) => {
+              if (!chamado.dataVisita) return false
+              const dataVisita = new Date(chamado.dataVisita)
+              const inicio = new Date(valor.inicio)
+              const fim = new Date(valor.fim)
+              return dataVisita >= inicio && dataVisita <= fim
+            })
+          }
+          break
+
+        case "valor_minimo":
+          if (typeof valor === "string" && valor.trim()) {
+            const valorMin = Number.parseFloat(valor)
+            resultado = resultado.filter((chamado) => Number.parseFloat(chamado.valorTotal) >= valorMin)
+          }
+          break
+
+        case "valor_maximo":
+          if (typeof valor === "string" && valor.trim()) {
+            const valorMax = Number.parseFloat(valor)
+            resultado = resultado.filter((chamado) => Number.parseFloat(chamado.valorTotal) <= valorMax)
+          }
+          break
+
+        case "defeito":
+          if (Array.isArray(valor) && valor.length > 0) {
+            resultado = resultado.filter((chamado) => chamado.descricoes.some((desc) => valor.includes(desc.defeito)))
+          }
+          break
+      }
+    })
+
+    // Aplicar ordenação (mesma lógica anterior)
+    resultado.sort((a, b) => {
+      let valorA: any
+      let valorB: any
+
+      switch (ordenacao.campo) {
+        case "cliente":
+          valorA = a.cliente.nome.toLowerCase()
+          valorB = b.cliente.nome.toLowerCase()
+          break
+        case "tecnico":
+          valorA = a.tecnico.nome.toLowerCase()
+          valorB = b.tecnico.nome.toLowerCase()
+          break
+        case "valorTotal":
+          valorA = Number.parseFloat(a.valorTotal)
+          valorB = Number.parseFloat(b.valorTotal)
+          break
+        case "dataAbertura":
+          valorA = new Date(a.dataAbertura)
+          valorB = new Date(b.dataAbertura)
+          break
+        case "dataVisita":
+          valorA = a.dataVisita ? new Date(a.dataVisita) : new Date(0)
+          valorB = b.dataVisita ? new Date(b.dataVisita) : new Date(0)
+          break
+        default:
+          valorA = a[ordenacao.campo as keyof Chamado]
+          valorB = b[ordenacao.campo as keyof Chamado]
+          if (typeof valorA === "string") valorA = valorA.toLowerCase()
+          if (typeof valorB === "string") valorB = valorB.toLowerCase()
+      }
+
+      if (valorA < valorB) return ordenacao.direcao === "asc" ? -1 : 1
+      if (valorA > valorB) return ordenacao.direcao === "asc" ? 1 : -1
+      return 0
+    })
+
+    return resultado
+  }, [chamados, filtros, ordenacao])
+
+  // Funções de renderização (mantidas as mesmas)
   const renderStatus = (status: string) => {
     switch (status) {
       case "concluido":
@@ -684,45 +920,27 @@ export function ChamadosTable({ onEditarChamado }: ChamadosTableProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar chamado..."
-            className="pl-8"
-            value={filtro}
-            onChange={(e) => setFiltro(e.target.value)}
-          />
-        </div>
+      <div className="flex justify-between items-center">
+        <FiltroAvancadoModal
+          configuracao={configuracaoFiltros}
+          valores={filtros}
+          onFiltroChange={setFiltros}
+          totalResultados={chamadosFiltrados.length}
+          onSalvarFiltro={handleSalvarFiltro}
+          onCarregarFiltro={handleCarregarFiltro}
+          filtrosSalvos={filtrosSalvos}
+          onExcluirFiltro={handleExcluirFiltro}
+          mostrarFiltrosCliente={true}
+          mostrarFiltrosTecnico={true}
+          aplicarEmTempoReal={false}
+        />
 
         <div className="flex gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon">
-                <Filter className="h-4 w-4" />
-                <span className="sr-only">Filtrar</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <div className="p-2">
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Filtrar por status</p>
-                  <Select value={filtroStatus} onValueChange={setFiltroStatus}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="todos">Todos</SelectItem>
-                      <SelectItem value="aberto">Aberto</SelectItem>
-                      <SelectItem value="em_andamento">Em Andamento</SelectItem>
-                      <SelectItem value="concluido">Concluído</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
+          <Ordenacao
+            camposOrdenacao={camposOrdenacao}
+            ordenacaoAtual={ordenacao}
+            onOrdenacaoChange={(campo, direcao) => setOrdenacao({ campo, direcao })}
+          />
           <Button variant="outline" size="icon" onClick={handleRefresh} disabled={isRefreshing}>
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
             <span className="sr-only">Atualizar</span>

@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { Plus, X, Trash2 } from "lucide-react"
+import { DescricaoDefeitoForm } from "./descricao-defeito-form"
 
 // Tipos para os dados do chamado
 interface Cliente {
@@ -78,6 +79,7 @@ interface Chamado {
   descricoes: Descricao[]
   custosServico: CustoServico[]
   valorTotal: string
+  descricaoDefeito?: any // Para armazenar os dados do formulário de descrição do defeito
 }
 
 interface ChamadoModalProps {
@@ -396,6 +398,13 @@ export function ChamadoModal({ isOpen, onClose, onSalvar, chamado }: ChamadoModa
     })
   }
 
+  const handleDescricaoDefeitoSalvar = (dadosDescricaoDefeito: any) => {
+    setFormData({
+      ...formData,
+      descricaoDefeito: dadosDescricaoDefeito,
+    })
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     onSalvar(formData)
@@ -560,8 +569,9 @@ export function ChamadoModal({ isOpen, onClose, onSalvar, chamado }: ChamadoModa
           </Card>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="descricao">DESCRIÇÃO DO CHAMADO</TabsTrigger>
+              <TabsTrigger value="descricao-defeito">DESCRIÇÃO DO DEFEITO</TabsTrigger>
               <TabsTrigger value="custos">CUSTOS SERVIÇO</TabsTrigger>
             </TabsList>
 
@@ -628,6 +638,11 @@ export function ChamadoModal({ isOpen, onClose, onSalvar, chamado }: ChamadoModa
                   </CardContent>
                 </Card>
               ))}
+            </TabsContent>
+
+            {/* Conteúdo da aba DESCRIÇÃO DO DEFEITO */}
+            <TabsContent value="descricao-defeito" className="space-y-4">
+              <DescricaoDefeitoForm onSalvar={handleDescricaoDefeitoSalvar} dadosIniciais={formData.descricaoDefeito} />
             </TabsContent>
 
             {/* Conteúdo da aba CUSTOS SERVIÇO */}

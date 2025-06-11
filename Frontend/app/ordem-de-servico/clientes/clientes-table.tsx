@@ -1,12 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Edit, Search, RefreshCw, Filter } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Edit, RefreshCw } from "lucide-react"
+import { FiltroAvancado, type FiltroConfig, type FiltroValores } from "@/components/filtro-avancado"
+import { Ordenacao } from "@/components/ordenacao"
 
 interface Cliente {
   id: string
@@ -25,8 +24,8 @@ interface ClientesTableProps {
   onEditarCliente: (cliente: Cliente) => void
 }
 
-// Dados de exemplo para clientes
-const clientesIniciais = [
+// Dados de exemplo expandidos para clientes
+const clientesIniciais: Cliente[] = [
   {
     id: "1",
     nome: "João Silva",
@@ -63,103 +62,283 @@ const clientesIniciais = [
     uf: "RJ",
     codigo: "CLI003",
   },
+  {
+    id: "4",
+    nome: "Restaurante Bom Sabor",
+    contato: "Pedro Santos",
+    telefone: "(31) 99999-8888",
+    endereco: "Av. Afonso Pena",
+    numero: "789",
+    bairro: "Centro",
+    cidade: "Belo Horizonte",
+    uf: "MG",
+    codigo: "CLI004",
+  },
+  {
+    id: "5",
+    nome: "Supermercado Central",
+    contato: "Lucia Costa",
+    telefone: "(41) 97777-6666",
+    endereco: "Rua XV de Novembro",
+    numero: "456",
+    bairro: "Centro",
+    cidade: "Curitiba",
+    uf: "PR",
+    codigo: "CLI005",
+  },
+  {
+    id: "6",
+    nome: "Hotel Vista Mar",
+    contato: "Roberto Lima",
+    telefone: "(48) 96666-5555",
+    endereco: "Av. Beira Mar",
+    numero: "321",
+    bairro: "Centro",
+    cidade: "Florianópolis",
+    uf: "SC",
+    codigo: "CLI006",
+  },
+  {
+    id: "7",
+    nome: "Padaria Pão Dourado",
+    contato: "Marina Alves",
+    telefone: "(71) 95555-4444",
+    endereco: "Rua da Padaria",
+    numero: "654",
+    bairro: "Pelourinho",
+    cidade: "Salvador",
+    uf: "BA",
+    codigo: "CLI007",
+  },
+  {
+    id: "8",
+    nome: "Clínica Saúde Total",
+    contato: "Dr. Fernando",
+    telefone: "(85) 94444-3333",
+    endereco: "Av. Dom Luís",
+    numero: "987",
+    bairro: "Meireles",
+    cidade: "Fortaleza",
+    uf: "CE",
+    codigo: "CLI008",
+  },
+]
+
+// Configuração dos filtros para clientes
+const configuracaoFiltros: FiltroConfig[] = [
+  {
+    campo: "busca_geral",
+    label: "Busca Geral",
+    tipo: "texto",
+    placeholder: "Nome, código, contato ou telefone...",
+  },
+  {
+    campo: "codigo",
+    label: "Código do Cliente",
+    tipo: "texto",
+    placeholder: "CLI001, CLI002...",
+  },
+  {
+    campo: "uf",
+    label: "Estado (UF)",
+    tipo: "multiselect",
+    opcoes: [
+      { value: "SP", label: "São Paulo" },
+      { value: "RJ", label: "Rio de Janeiro" },
+      { value: "MG", label: "Minas Gerais" },
+      { value: "PR", label: "Paraná" },
+      { value: "SC", label: "Santa Catarina" },
+      { value: "BA", label: "Bahia" },
+      { value: "CE", label: "Ceará" },
+      { value: "RS", label: "Rio Grande do Sul" },
+      { value: "ES", label: "Espírito Santo" },
+      { value: "GO", label: "Goiás" },
+      { value: "DF", label: "Distrito Federal" },
+    ],
+  },
+  {
+    campo: "cidade",
+    label: "Cidade",
+    tipo: "multiselect",
+    opcoes: [
+      { value: "São Paulo", label: "São Paulo" },
+      { value: "Rio de Janeiro", label: "Rio de Janeiro" },
+      { value: "Belo Horizonte", label: "Belo Horizonte" },
+      { value: "Curitiba", label: "Curitiba" },
+      { value: "Florianópolis", label: "Florianópolis" },
+      { value: "Salvador", label: "Salvador" },
+      { value: "Fortaleza", label: "Fortaleza" },
+    ],
+  },
+  {
+    campo: "bairro",
+    label: "Bairro",
+    tipo: "select",
+    opcoes: [
+      { value: "Centro", label: "Centro" },
+      { value: "Bela Vista", label: "Bela Vista" },
+      { value: "Pelourinho", label: "Pelourinho" },
+      { value: "Meireles", label: "Meireles" },
+    ],
+  },
+  {
+    campo: "tipo_cliente",
+    label: "Tipo de Cliente",
+    tipo: "select",
+    opcoes: [
+      { value: "pessoa_fisica", label: "Pessoa Física" },
+      { value: "pessoa_juridica", label: "Pessoa Jurídica" },
+    ],
+  },
+]
+
+// Campos disponíveis para ordenação
+const camposOrdenacao = [
+  { value: "codigo", label: "Código" },
+  { value: "nome", label: "Nome" },
+  { value: "cidade", label: "Cidade" },
+  { value: "uf", label: "Estado" },
+  { value: "contato", label: "Contato" },
 ]
 
 export function ClientesTable({ onEditarCliente }: ClientesTableProps) {
   const [clientes, setClientes] = useState(clientesIniciais)
-  const [filtro, setFiltro] = useState("")
-  const [tipoFiltro, setTipoFiltro] = useState("todos")
-  const [filtroUF, setFiltroUF] = useState("todos")
+  const [filtros, setFiltros] = useState<FiltroValores>({})
+  const [ordenacao, setOrdenacao] = useState({ campo: "nome", direcao: "asc" as "asc" | "desc" })
   const [isRefreshing, setIsRefreshing] = useState(false)
-
-  // Lista de estados para filtro
-  const estados = ["SP", "RJ", "MG", "RS", "PR", "SC", "BA", "ES", "GO", "DF"]
+  const [filtrosSalvos, setFiltrosSalvos] = useState<{ nome: string; filtro: FiltroValores }[]>([])
 
   const handleRefresh = () => {
     setIsRefreshing(true)
-    // Simulando uma atualização de dados
     setTimeout(() => {
-      // Aqui você faria uma chamada para recarregar os dados do servidor
       setIsRefreshing(false)
     }, 1000)
   }
 
-  const clientesFiltrados = clientes.filter((cliente) => {
-    // Filtro por texto (nome, código ou contato)
-    const matchesText =
-      filtro === "" ||
-      cliente.nome.toLowerCase().includes(filtro.toLowerCase()) ||
-      cliente.codigo.toLowerCase().includes(filtro.toLowerCase()) ||
-      cliente.contato.toLowerCase().includes(filtro.toLowerCase())
+  // Aplicar filtros e ordenação
+  const clientesFiltrados = useMemo(() => {
+    let resultado = [...clientes]
 
-    // Filtro por UF
-    const matchesUF = filtroUF === "todos" || cliente.uf === filtroUF
+    // Aplicar filtros
+    Object.entries(filtros).forEach(([campo, valor]) => {
+      if (!valor || (Array.isArray(valor) && valor.length === 0)) return
 
-    // Filtro por tipo
-    return matchesText && matchesUF
-  })
+      switch (campo) {
+        case "busca_geral":
+          if (typeof valor === "string" && valor.trim()) {
+            resultado = resultado.filter(
+              (cliente) =>
+                cliente.nome.toLowerCase().includes(valor.toLowerCase()) ||
+                cliente.codigo.toLowerCase().includes(valor.toLowerCase()) ||
+                cliente.contato.toLowerCase().includes(valor.toLowerCase()) ||
+                cliente.telefone.includes(valor),
+            )
+          }
+          break
+
+        case "codigo":
+          if (typeof valor === "string" && valor.trim()) {
+            resultado = resultado.filter((cliente) => cliente.codigo.toLowerCase().includes(valor.toLowerCase()))
+          }
+          break
+
+        case "uf":
+          if (Array.isArray(valor) && valor.length > 0) {
+            resultado = resultado.filter((cliente) => valor.includes(cliente.uf))
+          }
+          break
+
+        case "cidade":
+          if (Array.isArray(valor) && valor.length > 0) {
+            resultado = resultado.filter((cliente) => valor.includes(cliente.cidade))
+          }
+          break
+
+        case "bairro":
+          if (typeof valor === "string" && valor.trim()) {
+            resultado = resultado.filter((cliente) => cliente.bairro === valor)
+          }
+          break
+
+        case "tipo_cliente":
+          if (typeof valor === "string" && valor.trim()) {
+            resultado = resultado.filter((cliente) => {
+              const isPessoaJuridica =
+                cliente.nome.includes("Ltda") ||
+                cliente.nome.includes("S.A.") ||
+                cliente.nome.includes("ME") ||
+                cliente.nome.includes("Empresa") ||
+                cliente.nome.includes("Comércio") ||
+                cliente.nome.includes("Restaurante") ||
+                cliente.nome.includes("Supermercado") ||
+                cliente.nome.includes("Hotel") ||
+                cliente.nome.includes("Padaria") ||
+                cliente.nome.includes("Clínica")
+
+              return valor === "pessoa_juridica" ? isPessoaJuridica : !isPessoaJuridica
+            })
+          }
+          break
+      }
+    })
+
+    // Aplicar ordenação
+    resultado.sort((a, b) => {
+      let valorA: any = a[ordenacao.campo as keyof Cliente]
+      let valorB: any = b[ordenacao.campo as keyof Cliente]
+
+      if (typeof valorA === "string") valorA = valorA.toLowerCase()
+      if (typeof valorB === "string") valorB = valorB.toLowerCase()
+
+      if (valorA < valorB) return ordenacao.direcao === "asc" ? -1 : 1
+      if (valorA > valorB) return ordenacao.direcao === "asc" ? 1 : -1
+      return 0
+    })
+
+    return resultado
+  }, [clientes, filtros, ordenacao])
+
+  const handleSalvarFiltro = (nome: string, filtro: FiltroValores) => {
+    const novosFiltros = [...filtrosSalvos, { nome, filtro }]
+    setFiltrosSalvos(novosFiltros)
+    localStorage.setItem("filtros_salvos_clientes", JSON.stringify(novosFiltros))
+  }
+
+  const handleCarregarFiltro = (filtro: FiltroValores) => {
+    setFiltros(filtro)
+  }
+
+  const handleExcluirFiltro = (nome: string) => {
+    const novosFiltros = filtrosSalvos.filter((f) => f.nome !== nome)
+    setFiltrosSalvos(novosFiltros)
+    localStorage.setItem("filtros_salvos_clientes", JSON.stringify(novosFiltros))
+  }
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar cliente..."
-            className="pl-8"
-            value={filtro}
-            onChange={(e) => setFiltro(e.target.value)}
-          />
-        </div>
-
-        <div className="flex gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon">
-                <Filter className="h-4 w-4" />
-                <span className="sr-only">Filtrar</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <div className="p-2">
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Filtrar por tipo</p>
-                  <Select value={tipoFiltro} onValueChange={setTipoFiltro}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="todos">Todos os clientes</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2 mt-4">
-                  <p className="text-sm font-medium">Filtrar por UF</p>
-                  <Select value={filtroUF} onValueChange={setFiltroUF}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o estado" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="todos">Todos</SelectItem>
-                      {estados.map((estado) => (
-                        <SelectItem key={estado} value={estado}>
-                          {estado}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <Button variant="outline" size="icon" onClick={handleRefresh} disabled={isRefreshing}>
-            <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
-            <span className="sr-only">Atualizar</span>
-          </Button>
-        </div>
-      </div>
+      <FiltroAvancado
+        configuracao={configuracaoFiltros}
+        valores={filtros}
+        onFiltroChange={setFiltros}
+        totalResultados={clientesFiltrados.length}
+        onSalvarFiltro={handleSalvarFiltro}
+        onCarregarFiltro={handleCarregarFiltro}
+        filtrosSalvos={filtrosSalvos}
+        onExcluirFiltro={handleExcluirFiltro}
+        acoesDireita={
+          <div className="flex gap-2">
+            <Ordenacao
+              camposOrdenacao={camposOrdenacao}
+              ordenacaoAtual={ordenacao}
+              onOrdenacaoChange={(campo, direcao) => setOrdenacao({ campo, direcao })}
+            />
+            <Button variant="outline" size="icon" onClick={handleRefresh} disabled={isRefreshing}>
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+              <span className="sr-only">Atualizar</span>
+            </Button>
+          </div>
+        }
+      />
 
       <div className="rounded-md border overflow-x-auto">
         <Table>
