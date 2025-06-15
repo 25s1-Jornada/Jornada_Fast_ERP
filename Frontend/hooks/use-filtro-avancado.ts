@@ -17,17 +17,21 @@ export function useFiltroAvancado(valores: FiltroValores, onFiltroChange: (valor
   }, [valores])
 
   // Carregar preferências salvas
-  useEffect(() => {
-    const preferencias = localStorage.getItem("filtro_preferencias")
-    if (preferencias && Object.keys(valores).length === 0) {
-      try {
-        const filtroSalvo = JSON.parse(preferencias)
+useEffect(() => {
+  const preferencias = localStorage.getItem("filtro_preferencias")
+  if (preferencias) {
+    try {
+      const filtroSalvo = JSON.parse(preferencias)
+      if (Object.keys(filtroSalvo).length > 0) {
         onFiltroChange(filtroSalvo)
-      } catch (error) {
-        console.error("Erro ao carregar preferências:", error)
       }
+    } catch (error) {
+      console.error("Erro ao carregar preferências:", error)
     }
-  }, [valores, onFiltroChange])
+  }
+  // Executa apenas uma vez no primeiro render
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []) // <== ESSENCIAL
 
   const handleValorChange = useCallback(
     (campo: string, valor: any) => {
