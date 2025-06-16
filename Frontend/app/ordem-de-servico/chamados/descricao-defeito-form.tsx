@@ -8,7 +8,9 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Trash2 } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Plus, Trash2, Info, Eye } from "lucide-react"
+import Image from "next/image"
 
 interface DefeitoEquipamento {
   id: string
@@ -26,7 +28,7 @@ interface DefeitoEquipamento {
       comBarulho: boolean
       naoSucciona: boolean
       desarmando: boolean
-      nPonto: boolean
+      pontoVazamento: string // Mudança: agora é string para número
       naoGelado: boolean
       filtroEntupido: boolean
       capilarObstruido: boolean
@@ -118,7 +120,7 @@ export function DescricaoDefeitoForm({ onSalvar, dadosIniciais }: DescricaoDefei
               comBarulho: false,
               naoSucciona: false,
               desarmando: false,
-              nPonto: false,
+              pontoVazamento: "", // Inicializado como string vazia
               naoGelado: false,
               filtroEntupido: false,
               capilarObstruido: false,
@@ -190,7 +192,7 @@ export function DescricaoDefeitoForm({ onSalvar, dadosIniciais }: DescricaoDefei
           comBarulho: false,
           naoSucciona: false,
           desarmando: false,
-          nPonto: false,
+          pontoVazamento: "",
           naoGelado: false,
           filtroEntupido: false,
           capilarObstruido: false,
@@ -320,27 +322,84 @@ export function DescricaoDefeitoForm({ onSalvar, dadosIniciais }: DescricaoDefei
               </div>
             </div>
 
-            {/* Vazamento */}
+            {/* Vazamento - Modificado */}
             <div>
               <h5 className="font-medium text-sm mb-2 text-muted-foreground">Vazamento</h5>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                {Object.entries({
-                  nPonto: "N° Ponto",
-                  naoGelado: "Não Gelado",
-                }).map(([key, label]) => (
-                  <div key={key} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`${equipamento.id}-refrigeracao-${key}`}
-                      checked={equipamento.defeitos.refrigeracao[key as keyof typeof equipamento.defeitos.refrigeracao]}
-                      onCheckedChange={(checked) =>
-                        handleEquipamentoChange(equipamento.id, `refrigeracao.${key}`, checked)
-                      }
-                    />
-                    <Label htmlFor={`${equipamento.id}-refrigeracao-${key}`} className="text-xs sm:text-sm">
-                      {label}
+              <div className="space-y-3">
+                {/* Campo para Ponto de Vazamento */}
+                <div className="flex items-center space-x-2">
+                  <div className="flex-1">
+                    <Label htmlFor={`${equipamento.id}-ponto-vazamento`} className="text-xs sm:text-sm">
+                      N° do Ponto de Vazamento:
                     </Label>
+                    <div className="flex items-center space-x-2 mt-1">
+                      <Input
+                        id={`${equipamento.id}-ponto-vazamento`}
+                        type="number"
+                        min="1"
+                        max="17"
+                        value={equipamento.defeitos.refrigeracao.pontoVazamento}
+                        onChange={(e) =>
+                          handleEquipamentoChange(equipamento.id, "refrigeracao.pontoVazamento", e.target.value)
+                        }
+                        placeholder="1-17"
+                        className="w-20"
+                      />
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm" type="button">
+                            <Eye className="h-4 w-4 mr-1" />
+                            Ver Esquema
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle>Esquema de Solda - Pontos de Vazamento</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div className="bg-blue-50 p-3 rounded-lg">
+                              <div className="flex items-start space-x-2">
+                                <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                                <div className="text-sm text-blue-800">
+                                  <p className="font-medium mb-1">Como usar:</p>
+                                  <p>
+                                    Identifique o ponto de vazamento no equipamento e informe o número correspondente (1
+                                    a 17) conforme o esquema abaixo. Cada ponto possui um tipo específico de solda e
+                                    material.
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="border rounded-lg overflow-hidden">
+                              <Image
+                                src="/images/esquema-solda-vazamento.png"
+                                alt="Esquema de Solda - Pontos de Vazamento"
+                                width={800}
+                                height={600}
+                                className="w-full h-auto"
+                                priority
+                              />
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
                   </div>
-                ))}
+                </div>
+
+                {/* Não Gelado - Mantido como checkbox */}
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`${equipamento.id}-refrigeracao-naoGelado`}
+                    checked={equipamento.defeitos.refrigeracao.naoGelado}
+                    onCheckedChange={(checked) =>
+                      handleEquipamentoChange(equipamento.id, "refrigeracao.naoGelado", checked)
+                    }
+                  />
+                  <Label htmlFor={`${equipamento.id}-refrigeracao-naoGelado`} className="text-xs sm:text-sm">
+                    Não Gelado
+                  </Label>
+                </div>
               </div>
             </div>
 
@@ -401,32 +460,76 @@ export function DescricaoDefeitoForm({ onSalvar, dadosIniciais }: DescricaoDefei
 
       case "estrutura":
         return (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-sm">
-            {Object.entries({
-              perfilCurvoVidro: "01-Perfil Curvo Vidro",
-              perfilSuporteIlum: "02-Perfil Suporte Ilum.",
-              lenteVedacao: "03-Lente Vedação",
-              perfilPortaEsquerda: "04-Perfil Porta Esquerda",
-              perfilPortaDireita: "05-Perfil Porta Direita",
-              pivotadorParaboque: "06-Pivotador Paraboque",
-              pontaParaboque: "07-Ponta Paraboque",
-              cantoGeral: "08-Canto Geral",
-              acriloGeral: "09-Acrilo Geral",
-              perfilFrontal: "10-Perfil Frontal",
-              paraboqueFrontal: "11-Paraboque Frontal",
-              paraboqueLateral: "12-Paraboque Lateral",
-            }).map(([key, label]) => (
-              <div key={key} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`${equipamento.id}-estrutura-${key}`}
-                  checked={equipamento.defeitos.estrutura[key as keyof typeof equipamento.defeitos.estrutura]}
-                  onCheckedChange={(checked) => handleEquipamentoChange(equipamento.id, `estrutura.${key}`, checked)}
-                />
-                <Label htmlFor={`${equipamento.id}-estrutura-${key}`} className="text-xs sm:text-sm leading-tight">
-                  {label}
-                </Label>
-              </div>
-            ))}
+          <div className="space-y-4">
+            {/* Botão Ver Esquema */}
+            <div className="flex justify-start">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" type="button">
+                    <Eye className="h-4 w-4 mr-1" />
+                    Ver Esquema da Estrutura
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Esquema da Estrutura - Componentes</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="bg-green-50 p-3 rounded-lg">
+                      <div className="flex items-start space-x-2">
+                        <Info className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm text-green-800">
+                          <p className="font-medium mb-1">Componentes da Estrutura:</p>
+                          <p>
+                            Identifique os componentes estruturais que precisam de reparo ou substituição. Cada número
+                            no esquema corresponde a uma parte específica da estrutura do equipamento.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="border rounded-lg overflow-hidden bg-white">
+                      <Image
+                        src="/images/esquema-estrutura.png"
+                        alt="Esquema da Estrutura - Componentes"
+                        width={800}
+                        height={600}
+                        className="w-full h-auto"
+                        priority
+                      />
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            {/* Grid de Componentes */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-sm">
+              {Object.entries({
+                perfilCurvoVidro: "01-Perfil Curvo Vidro",
+                perfilSuporteIlum: "02-Perfil Suporte Ilum.",
+                lenteVedacao: "03-Lente Vedação",
+                perfilPortaEsquerda: "04-Perfil Porta Esquerda",
+                perfilPortaDireita: "05-Perfil Porta Direita",
+                pivotadorParaboque: "06-Pivotador Paraboque",
+                pontaParaboque: "07-Ponta Paraboque",
+                cantoGeral: "08-Canto Geral",
+                acriloGeral: "09-Acrilo Geral",
+                perfilFrontal: "10-Perfil Frontal",
+                paraboqueFrontal: "11-Paraboque Frontal",
+                paraboqueLateral: "12-Paraboque Lateral",
+              }).map(([key, label]) => (
+                <div key={key} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`${equipamento.id}-estrutura-${key}`}
+                    checked={equipamento.defeitos.estrutura[key as keyof typeof equipamento.defeitos.estrutura]}
+                    onCheckedChange={(checked) => handleEquipamentoChange(equipamento.id, `estrutura.${key}`, checked)}
+                  />
+                  <Label htmlFor={`${equipamento.id}-estrutura-${key}`} className="text-xs sm:text-sm leading-tight">
+                    {label}
+                  </Label>
+                </div>
+              ))}
+            </div>
           </div>
         )
 
