@@ -1,5 +1,6 @@
 ﻿using api_erp.EntityConfig;
 using api_erp.Model;
+using api_erp.Models.OSModels;
 using Microsoft.EntityFrameworkCore;
 
 namespace api_erp.EntityConfig
@@ -18,6 +19,7 @@ namespace api_erp.EntityConfig
         public DbSet<Estoque> Estoques { get; set; }
         public DbSet<MovimentacaoEstoque> MovimentacoesEstoque { get; set; }
         public DbSet<PecaQrCode> PecasQrCode { get; set; }
+        public DbSet<DescricaoDoChamado> DescricoesDoChamado { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -31,10 +33,6 @@ namespace api_erp.EntityConfig
 
             modelBuilder.Entity<Usuario>()
                 .HasIndex(u => u.Email)
-                .IsUnique();
-
-            modelBuilder.Entity<Usuario>()
-                .HasIndex(u => u.Cpf)
                 .IsUnique();
 
             modelBuilder.Entity<PecaQrCode>()

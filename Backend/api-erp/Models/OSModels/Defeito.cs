@@ -6,7 +6,7 @@
 //        DEFEITO{
 //- id
 //- os_id
-//- conformacao_cliente_id
+//- confirmacao_cliente_id
 //-list<descricao_defeito>
 //    }
 

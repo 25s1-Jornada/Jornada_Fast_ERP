@@ -5,7 +5,7 @@
 //        PROBLEMA_CATEGORIA{
 //- id
 //- nome
-//- categoria_id
+//- id_descricao_defeito_problema
 //    }
 }
 }

@@ -3,12 +3,13 @@
     public class ConfirmacaoCliente
     {
 
-//        CONFORMAÇÃO CLIENTE
+//        CONFIRMAÇÃO CLIENTE
 //        {
 //- id
 //- data
 //- telefone
 //- carimbo: bool
+//- nome
 //- defeito_id -> virtual
 //    }
 }

@@ -6,14 +6,28 @@ namespace api_erp.Models.OSModels
 {
     public class OrdemServico
     {
+        public int Id { get; set; } 
+
+        public int ClientId { get; set; }
+        public Empresa Empresa { get; set; }
+
+        public int? TecnicoId { get; set; } 
+        public Usuario Tecnico { get; set; }
+
+        public DateTime DataAbertura { get; set; }
+
+        public int? StatusId { get; set; } //enum Status
+        
+        public int? GarantiaId { get; set; } //enum Garantia
+
+        public DateTime? DataFaturamento { get; set; }
+
+        public string? Pedido { get; set; }
+        public string? NumeroOS { get; set; }
+  
+        public virtual List<DescricaoDoChamado> DescricaoDoChamadoList { get; set; } //Descrição do Chamado
+
+
         //*obs: devolver como string todos os enuns
-        //        - codigo(numero)
-        //- cliente_id(usuário - cliente) 1:N
-        //- tecnico_id(usuário - tecnico) 1:N
-        //- dataAbertura(datetime)
-        //- status_id(numero)  -> (aberto, em andamento, concluído, fechado)
-        //-descrição(Descricao) N:1
-        //- garantia(datetime)
-        //-dataFaturamento(datetime)
     }
 }

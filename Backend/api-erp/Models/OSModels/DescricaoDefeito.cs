@@ -7,10 +7,9 @@
 //        {
 //- id
 //- numero serie produto
-//- serviço finalizado
 //- observação
-//- pendencias
-//-defeito_id
+//- pendencias -> caso o serviço finalizado for não
+//-defeito_id+
 //- list<descricao_defeito_categorio>
 //}
 
