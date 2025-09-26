@@ -19,7 +19,15 @@ namespace api_erp.EntityConfig
         public DbSet<Estoque> Estoques { get; set; }
         public DbSet<MovimentacaoEstoque> MovimentacoesEstoque { get; set; }
         public DbSet<PecaQrCode> PecasQrCode { get; set; }
-        public DbSet<DescricaoDoChamado> DescricoesDoChamado { get; set; }
+        public DbSet<ConfirmacaoCliente> ConfirmacoesCliente { get; set; }
+        public DbSet<Custo> Custos { get; set; }
+        public DbSet<DescricaoDefeito> DescricoesDefeito { get; set; }
+        public DbSet<DescricaoDoChamado> DescricoesDoChamado { get; set; } // você já tinha
+        public DbSet<Deslocamento> Deslocamentos { get; set; }
+        public DbSet<HoraTrabalhada> HorasTrabalhadas { get; set; }
+        public DbSet<KM> Kms { get; set; }
+        public DbSet<Material> Materiais { get; set; }
+        public DbSet<OrdemServico> OrdensServico { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
