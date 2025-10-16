@@ -27,6 +27,10 @@ namespace api_erp
             builder.Services.AddScoped<IMovimentacaoEstoqueRepository, MovimentacaoEstoqueRepository>();
             builder.Services.AddScoped<IPecaQrCodeRepository, PecaQrCodeRepository>();
             builder.Services.AddScoped<IDescricaoDoChamadoRepository, DescricaoDoChamadoRepository>();
+            builder.Services.AddScoped<ICustoRepository, CustoRepository>();
+            builder.Services.AddScoped<IMaterialRepository, MaterialRepository>();
+            builder.Services.AddScoped<IConfirmacaoClienteRepository, ConfirmacaoClienteRepository>();
+            builder.Services.AddScoped<IImagemRepository, ImagemRepository>();
             builder.Services.AddScoped<IOrdemServicoRepository, OrdemServicoRepository>();
             builder.Services.AddScoped<IDeslocamentoRepository, DeslocamentoRepository>();
             builder.Services.AddScoped<IHoraTrabalhadaRepository, HoraTrabalhadaRepository>();

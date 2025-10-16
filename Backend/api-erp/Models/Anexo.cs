@@ -1,4 +1,6 @@
-﻿namespace api_erp.Models
+using api_erp.Models.OSModels;
+
+namespace api_erp.Models
 {
     public class Imagem
     {
@@ -11,5 +13,11 @@
         public DateTime CreatedAtUtc { get; set; }
         public string? Titulo { get; set; }
         public string? Descricao { get; set; }
+
+        public int? OrdemServicoId { get; set; }
+        public OrdemServico? OrdemServico { get; set; }
+
+        public int? DescricaoDoChamadoId { get; set; }
+        public DescricaoDoChamado? DescricaoDoChamado { get; set; }
     }
 }

@@ -2,15 +2,13 @@
 {
     public class Material
     {
-        public int? id { get; set; }
+        public int? Id { get; set; }
         public int? CustoId { get; set; }
+        public Custo? Custo { get; set; }
 
-//        id: string
-//custo_id(int)
-//  material: string
-//  quantidade: string
-//  valorUnitario: string
-//  totalValor: string
-//    }
+        public string? Nome { get; set; }
+        public double Quantidade { get; set; }
+        public double ValorUnitario { get; set; }
+        public double TotalValor { get; set; }
     }
 }
