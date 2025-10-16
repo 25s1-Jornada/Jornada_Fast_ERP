@@ -7,6 +7,8 @@
         public DateTime Termino { get; set; }
         public int TotalHoras { get; set; }
         public double TotalValor { get; set; }
+        public int? IdOrdemServico { get; set; }
+        public OrdemServico OrdemServico { get; set; }
 
     }
 }

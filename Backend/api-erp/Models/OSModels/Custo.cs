@@ -1,11 +1,15 @@
-﻿namespace api_erp.Models.OSModels
+﻿using api_erp.Model;
+
+namespace api_erp.Models.OSModels
 {
     public class Custo
     {
-//        CUSTO
-//- dataVisita
-//- valorTotal(soma de tudo)
-//ids necessários: deslocamento, hr trabalhada, km, os
-//lista: material, descricao
+        public DateTime? dataVisita {  get; set; }
+        public int? TecnicoId { get; set; }
+        public Usuario Tecnico { get; set; }
+        public string AjudanteName { get; set; }
+        public virtual List<Deslocamento> Deslocamento_List { get; set; } //A - CUSTO DESLOCAMENTO
+        public virtual List<HoraTrabalhada> HoraTrabalhada_List { get; set; } 
+
     }
 }
