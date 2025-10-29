@@ -7,9 +7,8 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Search, SlidersHorizontal, RotateCcw, ChevronDown, ChevronUp } from "lucide-react"
 import { useFiltroAvancado } from "@/hooks/use-filtro-avancado"
-import { RenderizadorCampo } from "./renderizador-campo"
-import { FiltrosSalvos } from "./filtros-salvos"
-
+import { RenderizadorCampo } from "./filtro-avancado/renderizador-campo"
+import { FiltrosSalvos } from "./filtro-avancado/filtros-salvos"
 
 export interface FiltroConfig {
   campo: string

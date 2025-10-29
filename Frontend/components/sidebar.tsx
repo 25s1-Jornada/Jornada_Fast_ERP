@@ -1,231 +1,223 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import {
-  ChevronDown,
-  ChevronRight,
-  ClipboardList,
+  Menu,
+  Home,
   Package,
   Users,
-  UserCog,
-  PhoneCall,
+  ClipboardList,
+  FileText,
+  Settings,
+  ChevronDown,
+  ChevronRight,
+  Building2,
+  UserCheck,
+  Wrench,
   Archive,
   BarChart3,
-  History,
-  Building,
+  Truck,
+  MapPin,
   User,
 } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 
-interface SidebarProps {
-  onItemClick?: () => void
-  isMobile?: boolean
+interface MenuItem {
+  title: string
+  href?: string
+  icon: React.ComponentType<{ className?: string }>
+  children?: MenuItem[]
 }
 
-export function Sidebar({ onItemClick, isMobile = false }: SidebarProps) {
+const menuItems: MenuItem[] = [
+  {
+    title: "Dashboard",
+    href: "/",
+    icon: Home,
+  },
+  {
+    title: "Ordem de Serviço",
+    icon: Wrench,
+    children: [
+      {
+        title: "Visão Geral",
+        href: "/ordem-de-servico",
+        icon: BarChart3,
+      },
+      {
+        title: "Chamados",
+        href: "/ordem-de-servico/chamados",
+        icon: ClipboardList,
+      },
+      {
+        title: "Clientes",
+        href: "/ordem-de-servico/clientes",
+        icon: Users,
+      },
+      {
+        title: "Técnicos",
+        href: "/ordem-de-servico/tecnicos",
+        icon: UserCheck,
+      },
+    ],
+  },
+  {
+    title: "Estoque Geral",
+    icon: Package,
+    children: [
+      {
+        title: "Visão Geral",
+        href: "/estoque-geral",
+        icon: BarChart3,
+      },
+      {
+        title: "Produtos",
+        href: "/estoque-geral/produtos",
+        icon: Package,
+      },
+      {
+        title: "Estoque",
+        href: "/estoque-geral/estoque",
+        icon: Archive,
+      },
+      {
+        title: "Movimentações",
+        href: "/estoque-geral/movimentacoes",
+        icon: Truck,
+      },
+      {
+        title: "Armários",
+        href: "/estoque-geral/armarios",
+        icon: MapPin,
+      },
+    ],
+  },
+  {
+    title: "Usuários",
+    icon: User,
+    children: [
+      {
+        title: "Usuários",
+        href: "/usuarios/usuarios",
+        icon: User,
+      },
+      {
+        title: "Empresas",
+        href: "/usuarios/empresas",
+        icon: Building2,
+      },
+    ],
+  },
+  {
+    title: "Relatórios",
+    href: "/relatorios",
+    icon: FileText,
+  },
+  {
+    title: "Configurações",
+    href: "/configuracoes",
+    icon: Settings,
+  },
+]
+
+interface SidebarContentProps {
+  onItemClick?: () => void
+}
+
+function SidebarContent({ onItemClick }: SidebarContentProps) {
   const pathname = usePathname()
+  const [expandedItems, setExpandedItems] = useState<string[]>([])
 
-  // Estado para controlar quais seções estão expandidas
-  const [openSections, setOpenSections] = useState({
-    ordemServico: true, // Começa expandido por padrão
-    estoqueGeral: false,
-    usuarios: false,
-  })
-
-  // Toggle para abrir/fechar seções
-  const toggleSection = (section: "ordemServico" | "estoqueGeral" | "usuarios") => {
-    setOpenSections((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }))
+  const toggleExpanded = (title: string) => {
+    setExpandedItems((prev) => (prev.includes(title) ? prev.filter((item) => item !== title) : [...prev, title]))
   }
 
-  const handleLinkClick = () => {
-    if (onItemClick) {
-      onItemClick()
+  const renderMenuItem = (item: MenuItem, level = 0) => {
+    const isExpanded = expandedItems.includes(item.title)
+    const hasChildren = item.children && item.children.length > 0
+    const isActive = item.href ? pathname === item.href : false
+
+    if (hasChildren) {
+      return (
+        <div key={item.title}>
+          <Button
+            variant="ghost"
+            className={cn("w-full justify-start", level > 0 && "ml-4", isActive && "bg-accent text-accent-foreground")}
+            onClick={() => toggleExpanded(item.title)}
+          >
+            <item.icon className="mr-2 h-4 w-4" />
+            {item.title}
+            {isExpanded ? <ChevronDown className="ml-auto h-4 w-4" /> : <ChevronRight className="ml-auto h-4 w-4" />}
+          </Button>
+          {isExpanded && (
+            <div className="ml-4 space-y-1">{item.children.map((child) => renderMenuItem(child, level + 1))}</div>
+          )}
+        </div>
+      )
     }
+
+    return (
+      <Button
+        key={item.title}
+        variant="ghost"
+        className={cn("w-full justify-start", level > 0 && "ml-4", isActive && "bg-accent text-accent-foreground")}
+        asChild
+        onClick={onItemClick}
+      >
+        <Link href={item.href!}>
+          <item.icon className="mr-2 h-4 w-4" />
+          {item.title}
+        </Link>
+      </Button>
+    )
   }
 
-  const sidebarContent = (
-    <div className="flex flex-col gap-1 p-4">
-      {/* Seção de Ordem de Serviço */}
-      <Collapsible
-        open={openSections.ordemServico}
-        onOpenChange={() => toggleSection("ordemServico")}
-        className="w-full"
-      >
-        <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-100">
-          <div className="flex items-center gap-3">
-            <ClipboardList className="h-5 w-5" />
-            <span>Ordem de Serviço</span>
-          </div>
-          {openSections.ordemServico ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-        </CollapsibleTrigger>
-        <CollapsibleContent className="pl-4 pt-1">
-          <Link
-            href="/ordem-de-servico/clientes"
-            onClick={handleLinkClick}
-            className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-              pathname === "/ordem-de-servico/clientes" || pathname.startsWith("/ordem-de-servico/clientes/")
-                ? "bg-gray-100 text-gray-900"
-                : "text-gray-500 hover:bg-gray-100 hover:text-gray-900",
-            )}
-          >
-            <Users className="h-4 w-4" />
-            Clientes
-          </Link>
-          <Link
-            href="/ordem-de-servico/tecnicos"
-            onClick={handleLinkClick}
-            className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-              pathname === "/ordem-de-servico/tecnicos" || pathname.startsWith("/ordem-de-servico/tecnicos/")
-                ? "bg-gray-100 text-gray-900"
-                : "text-gray-500 hover:bg-gray-100 hover:text-gray-900",
-            )}
-          >
-            <UserCog className="h-4 w-4" />
-            Técnicos
-          </Link>
-          <Link
-            href="/ordem-de-servico/chamados"
-            onClick={handleLinkClick}
-            className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-              pathname === "/ordem-de-servico/chamados" || pathname.startsWith("/ordem-de-servico/chamados/")
-                ? "bg-gray-100 text-gray-900"
-                : "text-gray-500 hover:bg-gray-100 hover:text-gray-900",
-            )}
-          >
-            <PhoneCall className="h-4 w-4" />
-            Chamados
-          </Link>
-        </CollapsibleContent>
-      </Collapsible>
-
-      {/* Seção de Estoque Geral */}
-      <Collapsible
-        open={openSections.estoqueGeral}
-        onOpenChange={() => toggleSection("estoqueGeral")}
-        className="w-full"
-      >
-        <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-100">
-          <div className="flex items-center gap-3">
-            <Package className="h-5 w-5" />
-            <span>Estoque Geral</span>
-          </div>
-          {openSections.estoqueGeral ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-        </CollapsibleTrigger>
-        <CollapsibleContent className="pl-4 pt-1">
-          <Link
-            href="/estoque-geral/produtos"
-            onClick={handleLinkClick}
-            className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-              pathname === "/estoque-geral/produtos" || pathname.startsWith("/estoque-geral/produtos/")
-                ? "bg-gray-100 text-gray-900"
-                : "text-gray-500 hover:bg-gray-100 hover:text-gray-900",
-            )}
-          >
-            <Package className="h-4 w-4" />
-            Produtos
-          </Link>
-          <Link
-            href="/estoque-geral/armarios"
-            onClick={handleLinkClick}
-            className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-              pathname === "/estoque-geral/armarios" || pathname.startsWith("/estoque-geral/armarios/")
-                ? "bg-gray-100 text-gray-900"
-                : "text-gray-500 hover:bg-gray-100 hover:text-gray-900",
-            )}
-          >
-            <Archive className="h-4 w-4" />
-            Armários
-          </Link>
-          <Link
-            href="/estoque-geral/estoque"
-            onClick={handleLinkClick}
-            className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-              pathname === "/estoque-geral/estoque" || pathname.startsWith("/estoque-geral/estoque/")
-                ? "bg-gray-100 text-gray-900"
-                : "text-gray-500 hover:bg-gray-100 hover:text-gray-900",
-            )}
-          >
-            <BarChart3 className="h-4 w-4" />
-            Estoque
-          </Link>
-          <Link
-            href="/estoque-geral/movimentacoes"
-            onClick={handleLinkClick}
-            className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-              pathname === "/estoque-geral/movimentacoes" || pathname.startsWith("/estoque-geral/movimentacoes/")
-                ? "bg-gray-100 text-gray-900"
-                : "text-gray-500 hover:bg-gray-100 hover:text-gray-900",
-            )}
-          >
-            <History className="h-4 w-4" />
-            Movimentações
-          </Link>
-        </CollapsibleContent>
-      </Collapsible>
-
-      {/* Seção de Usuários */}
-      <Collapsible open={openSections.usuarios} onOpenChange={() => toggleSection("usuarios")} className="w-full">
-        <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-100">
-          <div className="flex items-center gap-3">
-            <User className="h-5 w-5" />
-            <span>Usuários</span>
-          </div>
-          {openSections.usuarios ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-        </CollapsibleTrigger>
-        <CollapsibleContent className="pl-4 pt-1">
-          <Link
-            href="/usuarios/empresas"
-            onClick={handleLinkClick}
-            className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-              pathname === "/usuarios/empresas" || pathname.startsWith("/usuarios/empresas/")
-                ? "bg-gray-100 text-gray-900"
-                : "text-gray-500 hover:bg-gray-100 hover:text-gray-900",
-            )}
-          >
-            <Building className="h-4 w-4" />
-            Empresas
-          </Link>
-          <Link
-            href="/usuarios"
-            onClick={handleLinkClick}
-            className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-              pathname === "/usuarios" && !pathname.includes("/empresas")
-                ? "bg-gray-100 text-gray-900"
-                : "text-gray-500 hover:bg-gray-100 hover:text-gray-900",
-            )}
-          >
-            <User className="h-4 w-4" />
-            Usuários
-          </Link>
-        </CollapsibleContent>
-      </Collapsible>
+  return (
+    <div className="flex h-full flex-col">
+      <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
+        <Link href="/" className="flex items-center gap-2 font-semibold">
+          <Package className="h-6 w-6" />
+          <span>Fast Com</span>
+        </Link>
+      </div>
+      <ScrollArea className="flex-1">
+        <div className="space-y-1 p-4">{menuItems.map((item) => renderMenuItem(item))}</div>
+      </ScrollArea>
     </div>
   )
+}
 
-  // Se for mobile, retorna apenas o conteúdo
-  if (isMobile) {
-    return sidebarContent
-  }
+export function Sidebar() {
+  const [open, setOpen] = useState(false)
 
-  // Se for desktop, retorna com o container fixo
   return (
-    <div className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 border-r bg-white overflow-y-auto hidden lg:block">
-      {sidebarContent}
-    </div>
+    <>
+      {/* Mobile Sidebar */}
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetTrigger asChild>
+          <Button variant="outline" size="icon" className="shrink-0 md:hidden bg-transparent">
+            <Menu className="h-5 w-5" />
+            <span className="sr-only">Toggle navigation menu</span>
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="flex flex-col p-0">
+          <SidebarContent onItemClick={() => setOpen(false)} />
+        </SheetContent>
+      </Sheet>
+
+      {/* Desktop Sidebar */}
+      <div className="hidden border-r bg-muted/40 md:block">
+        <div className="flex h-full max-h-screen flex-col gap-2">
+          <SidebarContent />
+        </div>
+      </div>
+    </>
   )
 }
