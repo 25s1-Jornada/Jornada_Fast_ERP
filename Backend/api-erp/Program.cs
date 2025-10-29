@@ -40,7 +40,16 @@ namespace api_erp
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
             builder.Services.AddDbContext<AppDbContext>(options =>
-            options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+            {
+                if (string.IsNullOrWhiteSpace(connectionString))
+                {
+                    options.UseInMemoryDatabase("ApiErpDev");
+                }
+                else
+                {
+                    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+                }
+            });
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();

@@ -1,4 +1,5 @@
 using api_erp.Models.OSModels;
+using api_erp.Mappers;
 using api_erp.Repositories.Interfaces.OSInterfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,10 +10,12 @@ namespace api_erp.Controllers.OSControllers
     public class OrdensServicoController : ControllerBase
     {
         private readonly IOrdemServicoRepository _repo;
+        private readonly ICustoRepository _custoRepo;
 
-        public OrdensServicoController(IOrdemServicoRepository repo)
+        public OrdensServicoController(IOrdemServicoRepository repo, ICustoRepository custoRepo)
         {
             _repo = repo;
+            _custoRepo = custoRepo;
         }
 
         [HttpGet]
@@ -20,6 +23,17 @@ namespace api_erp.Controllers.OSControllers
         {
             var items = await _repo.GetAllAsync(includeRelacionamentos, ct);
             return Ok(items);
+        }
+
+        // Lista enriquecida para o Front (DTO)
+        [HttpGet("lista")]
+        public async Task<IActionResult> GetList([FromQuery] bool includeRelacionamentos = true, CancellationToken ct = default)
+        {
+            var ordens = await _repo.GetAllAsync(includeRelacionamentos, ct);
+            var custos = await _custoRepo.GetAllAsync(includeRelacionamentos: true, ct: ct);
+            var custosLookup = custos.Where(c => c.OrdemServicoId.HasValue).ToLookup(c => c.OrdemServicoId!.Value);
+            var dtos = ordens.Select(os => os.ToListDto(custosLookup[os.Id].FirstOrDefault()));
+            return Ok(dtos);
         }
 
         [HttpGet("{id:int}")]
@@ -52,4 +66,3 @@ namespace api_erp.Controllers.OSControllers
         }
     }
 }
-
