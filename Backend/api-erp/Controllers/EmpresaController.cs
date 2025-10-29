@@ -13,9 +13,14 @@ namespace api_erp.Controllers
         public EmpresaController(IEmpresaRepository repository) => _repository = repository;
 
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get([FromQuery] string? tipo)
         {
             var result = await _repository.GetAllAsync();
+            if (!string.IsNullOrWhiteSpace(tipo))
+            {
+                var tipoLower = tipo.Trim().ToLowerInvariant();
+                result = result.Where(e => (e.TipoEmpresa ?? string.Empty).ToLowerInvariant() == tipoLower);
+            }
             return Ok(result);
         }
 
@@ -52,6 +57,41 @@ namespace api_erp.Controllers
             _repository.Delete(item);
             await _repository.SaveChangesAsync();
             return NoContent();
+        }
+
+        // Lista com shape alinhado ao Front (snake_case e campos esperados)
+        [HttpGet("lista")]
+        public async Task<IActionResult> GetLista([FromQuery] string? tipo)
+        {
+            var all = await _repository.GetAllAsync();
+            if (!string.IsNullOrWhiteSpace(tipo))
+            {
+                var tipoLower = tipo.Trim().ToLowerInvariant();
+                all = all.Where(e => (e.TipoEmpresa ?? string.Empty).ToLowerInvariant() == tipoLower);
+            }
+
+            var dtos = all.Select(e => new EmpresaListDto
+            {
+                Id = e.Id?.ToString(),
+                Nome = e.Nome,
+                Cnpj = e.Documento,
+                EnderecoId = e.EnderecoId?.ToString(),
+                Endereco = e.Endereco == null ? null : new EnderecoDto
+                {
+                    Id = e.Endereco.Id?.ToString(),
+                    Logradouro = e.Endereco.Logradouro,
+                    Numero = e.Endereco.Numero,
+                    Bairro = e.Endereco.Bairro,
+                    Cidade = e.Endereco.Cidade,
+                    Uf = e.Endereco.UF
+                },
+                TipoEmpresa = e.TipoEmpresa,
+                Email = e.Email,
+                CreatedAt = null,
+                UpdatedAt = null
+            });
+
+            return Ok(dtos);
         }
     }
 

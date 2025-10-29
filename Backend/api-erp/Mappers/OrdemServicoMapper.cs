@@ -1,6 +1,7 @@
 using api_erp.DTOs;
 using api_erp.Models.OSModels;
 using api_erp.Enums;
+using System.Globalization;
 
 namespace api_erp.Mappers
 {
@@ -121,22 +122,25 @@ namespace api_erp.Mappers
 
             var categoriaPrincipalId = e.DescricaoDoChamadoList?.FirstOrDefault()?.CategoriaId;
 
+            var br = new CultureInfo("pt-BR");
+
             return new OrdemServicoListDto
             {
-                Id = e.Id,
+                Id = e.Id.ToString(),
                 NumeroOS = e.NumeroOS,
-                ClientId = e.ClientId,
+                ClientId = e.ClientId.ToString(),
                 ClienteNome = e.Empresa?.Nome,
-                TecnicoId = e.TecnicoId,
+                TecnicoId = e.TecnicoId?.ToString(),
                 TecnicoNome = e.Tecnico?.Nome,
-                DataAbertura = e.DataAbertura,
-                DataVisita = custo?.dataVisita,
+                DataAbertura = e.DataAbertura.ToString("dd/MM/yyyy", br),
+                DataVisita = custo?.dataVisita?.ToString("dd/MM/yyyy", br),
                 Status = StatusToString(e.StatusId),
                 Garantia = GarantiaToString(e.GarantiaId),
-                DataFaturamento = e.DataFaturamento,
+                DataFaturamento = e.DataFaturamento?.ToString("dd/MM/yyyy", br),
                 Pedido = e.Pedido,
                 CategoriaPrincipal = CategoriaToString(categoriaPrincipalId),
-                ValorTotal = custo?.ValorTotal
+                Defeito = CategoriaToString(categoriaPrincipalId),
+                ValorTotal = (custo?.ValorTotal ?? 0).ToString("C", br)
             };
         }
     }

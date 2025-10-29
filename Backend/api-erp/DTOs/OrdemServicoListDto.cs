@@ -6,31 +6,32 @@ namespace api_erp.DTOs
     public class OrdemServicoListDto
     {
         [Required]
-        public int Id { get; set; }
+        public string Id { get; set; } = string.Empty;
 
         public string? NumeroOS { get; set; }
 
-        public int ClientId { get; set; }
+        public string ClientId { get; set; } = string.Empty;
         public string? ClienteNome { get; set; }
 
-        public int? TecnicoId { get; set; }
+        public string? TecnicoId { get; set; }
         public string? TecnicoNome { get; set; }
 
-        public DateTime DataAbertura { get; set; }
-        public DateTime? DataVisita { get; set; }
+        public string DataAbertura { get; set; } = string.Empty;
+        public string? DataVisita { get; set; }
 
         // Enums como string legível
         public string? Status { get; set; }
         public string? Garantia { get; set; }
 
-        public DateTime? DataFaturamento { get; set; }
+        public string? DataFaturamento { get; set; }
         public string? Pedido { get; set; }
 
         // Resumo (primeira categoria dos descritores do chamado)
         public string? CategoriaPrincipal { get; set; }
+        public string? Defeito { get; set; }
 
         // Total consolidado de custos (se disponível)
-        public double? ValorTotal { get; set; }
+        public string? ValorTotal { get; set; }
     }
 }
 

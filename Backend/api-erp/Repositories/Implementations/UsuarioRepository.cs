@@ -30,11 +30,9 @@ namespace api_erp.Repositories.Implementations
             var usuario = new Usuario
             {
                 Nome = usuarioDto.Nome,
-                EnderecoId = usuarioDto.EnderecoId,
                 Telefone = usuarioDto.Telefone,
                 Email = usuarioDto.Email,
                 Senha = usuarioDto.Senha,
-                Cpf = usuarioDto.Cpf,
                 PerfilId = usuarioDto.PerfilId,
                 EmpresaId = usuarioDto.EmpresaId
             };
@@ -48,11 +46,9 @@ namespace api_erp.Repositories.Implementations
             {
                 Id = usuarioDto.Id ?? 0,
                 Nome = usuarioDto.Nome,
-                EnderecoId = usuarioDto.EnderecoId,
                 Telefone = usuarioDto.Telefone,
                 Email = usuarioDto.Email,
                 Senha = usuarioDto.Senha,
-                Cpf = usuarioDto.Cpf,
                 PerfilId = usuarioDto.PerfilId,
                 EmpresaId = usuarioDto.EmpresaId
             };
