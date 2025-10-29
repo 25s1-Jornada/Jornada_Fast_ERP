@@ -1,7 +1,9 @@
 
 using api_erp.EntityConfig;
 using api_erp.Repositories.Implementations;
+using api_erp.Repositories.Implementations.OSImplementations;
 using api_erp.Repositories.Interfaces;
+using api_erp.Repositories.Interfaces.OSInterfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace api_erp
@@ -24,11 +26,30 @@ namespace api_erp
             builder.Services.AddScoped<IEstoqueRepository, EstoqueRepository>();
             builder.Services.AddScoped<IMovimentacaoEstoqueRepository, MovimentacaoEstoqueRepository>();
             builder.Services.AddScoped<IPecaQrCodeRepository, PecaQrCodeRepository>();
+            builder.Services.AddScoped<IDescricaoDoChamadoRepository, DescricaoDoChamadoRepository>();
+            builder.Services.AddScoped<ICustoRepository, CustoRepository>();
+            builder.Services.AddScoped<IMaterialRepository, MaterialRepository>();
+            builder.Services.AddScoped<IConfirmacaoClienteRepository, ConfirmacaoClienteRepository>();
+            builder.Services.AddScoped<IImagemRepository, ImagemRepository>();
+            builder.Services.AddScoped<IOrdemServicoRepository, OrdemServicoRepository>();
+            builder.Services.AddScoped<IDeslocamentoRepository, DeslocamentoRepository>();
+            builder.Services.AddScoped<IHoraTrabalhadaRepository, HoraTrabalhadaRepository>();
+            builder.Services.AddScoped<IKMRepository, KMRepository>();
+            builder.Services.AddScoped<IDescricaoDefeitoRepository, DescricaoDefeitoRepository>();
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
             builder.Services.AddDbContext<AppDbContext>(options =>
-            options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+            {
+                if (string.IsNullOrWhiteSpace(connectionString))
+                {
+                    options.UseInMemoryDatabase("ApiErpDev");
+                }
+                else
+                {
+                    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+                }
+            });
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
