@@ -30,7 +30,8 @@ namespace api_erp.Repositories.Implementations
             var categoria = new Categoria
             {
                 Nome = categoriaDto.Nome,
-                Descricao = categoriaDto.Descricao
+                Descricao = categoriaDto.Descricao,
+                TipoCategoria = categoriaDto.TipoCategoria
             };
 
             await _context.Categorias.AddAsync(categoria);
@@ -42,7 +43,8 @@ namespace api_erp.Repositories.Implementations
             {
                 Id = categoria.Id,
                 Nome = categoria.Nome,
-                Descricao = categoria.Descricao
+                Descricao = categoria.Descricao,
+                TipoCategoria = categoria.TipoCategoria
             };
             _context.Categorias.Update(categoriaEdit);
         }

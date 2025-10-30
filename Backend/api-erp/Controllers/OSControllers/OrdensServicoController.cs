@@ -2,6 +2,9 @@ using api_erp.Models.OSModels;
 using api_erp.Mappers;
 using api_erp.Repositories.Interfaces.OSInterfaces;
 using Microsoft.AspNetCore.Mvc;
+using api_erp.DTOs;
+using api_erp.Model;
+using System;
 
 namespace api_erp.Controllers.OSControllers
 {
@@ -44,16 +47,26 @@ namespace api_erp.Controllers.OSControllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] OrdemServico entity, CancellationToken ct = default)
+        public async Task<IActionResult> Create([FromBody] OrdemServicoCreateDto dto, CancellationToken ct = default)
         {
+            var entity = dto.FromCreateDto();
+            // Vincular empresa apenas por ID (sem objeto aninhado)
+            entity.Empresa = new Empresa { Id = dto.ClientId };
+            if (entity.DataAbertura == default)
+                entity.DataAbertura = DateTime.UtcNow;
+
             var created = await _repo.AddAsync(entity, ct);
-            return CreatedAtAction(nameof(GetById), new { id = created.Id, includeRelacionamentos = true }, created);
+            var read = created.ToReadDto();
+            return CreatedAtAction(nameof(GetById), new { id = read.Id, includeRelacionamentos = true }, read);
         }
 
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> Update(int id, [FromBody] OrdemServico entity, CancellationToken ct = default)
+        public async Task<IActionResult> Update(int id, [FromBody] OrdemServicoUpdateDto dto, CancellationToken ct = default)
         {
-            if (id != entity.Id) return BadRequest();
+            var entity = dto.FromUpdateDto(id);
+            // Vincular empresa apenas por ID (sem objeto aninhado)
+            entity.Empresa = new Empresa { Id = dto.ClientId };
+
             var ok = await _repo.UpdateAsync(entity, ct);
             return ok ? NoContent() : NotFound();
         }

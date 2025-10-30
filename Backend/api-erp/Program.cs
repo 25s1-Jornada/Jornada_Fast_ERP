@@ -45,6 +45,10 @@ namespace api_erp
                 {
                     options.UseInMemoryDatabase("ApiErpDev");
                 }
+                else if (connectionString.Contains("Data Source=", StringComparison.OrdinalIgnoreCase))
+                {
+                    options.UseSqlite(connectionString);
+                }
                 else
                 {
                     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
