@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Edit, RefreshCw } from "lucide-react"
@@ -77,6 +77,7 @@ interface Chamado {
 
 interface ChamadosTableProps {
   onEditarChamado: (chamado: Chamado) => void
+  chamadosExternos?: Chamado[]
 }
 
 // Configuração dos filtros para chamados com categorias
@@ -724,12 +725,22 @@ const chamadosIniciais: Chamado[] = [
   },
 ]
 
-export function ChamadosTable({ onEditarChamado }: ChamadosTableProps) {
+export function ChamadosTable({ onEditarChamado, chamadosExternos }: ChamadosTableProps) {
   const [chamados, setChamados] = useState(chamadosIniciais)
   const [filtros, setFiltros] = useState<FiltroValores>({})
   const [ordenacao, setOrdenacao] = useState({ campo: "id", direcao: "asc" as "asc" | "desc" })
   const [filtrosSalvos, setFiltrosSalvos] = useState<{ nome: string; filtro: FiltroValores }[]>([])
   const [isRefreshing, setIsRefreshing] = useState(false)
+
+  useEffect(() => {
+    if (chamadosExternos && chamadosExternos.length > 0) {
+      setChamados((prev) => {
+        const chamadosMap = new Map(prev.map((c) => [c.id, c]))
+        chamadosExternos.forEach((c) => chamadosMap.set(c.id, c))
+        return Array.from(chamadosMap.values())
+      })
+    }
+  }, [chamadosExternos])
 
   const handleRefresh = () => {
     setIsRefreshing(true)
@@ -754,11 +765,9 @@ export function ChamadosTable({ onEditarChamado }: ChamadosTableProps) {
     localStorage.setItem("filtros_salvos_chamados", JSON.stringify(novosFiltros))
   }
 
-  // Aplicar filtros e ordenação (mantendo a mesma lógica)
   const chamadosFiltrados = useMemo(() => {
     let resultado = [...chamados]
 
-    // Aplicar filtros (mesma lógica anterior)
     Object.entries(filtros).forEach(([campo, valor]) => {
       if (!valor || (Array.isArray(valor) && valor.length === 0)) return
 
@@ -850,7 +859,6 @@ export function ChamadosTable({ onEditarChamado }: ChamadosTableProps) {
       }
     })
 
-    // Aplicar ordenação (mesma lógica anterior)
     resultado.sort((a, b) => {
       let valorA: any
       let valorB: any
@@ -891,7 +899,6 @@ export function ChamadosTable({ onEditarChamado }: ChamadosTableProps) {
     return resultado
   }, [chamados, filtros, ordenacao])
 
-  // Funções de renderização (mantidas as mesmas)
   const renderStatus = (status: string) => {
     switch (status) {
       case "concluido":

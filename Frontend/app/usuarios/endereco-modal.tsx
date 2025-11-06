@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -9,12 +9,43 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { type Endereco, ufs } from "./types"
+import type { Endereco } from "./usuarios/types"
 
-// Schema de validação para o endereço
+const ufs = [
+  "AC",
+  "AL",
+  "AP",
+  "AM",
+  "BA",
+  "CE",
+  "DF",
+  "ES",
+  "GO",
+  "MA",
+  "MT",
+  "MS",
+  "MG",
+  "PA",
+  "PB",
+  "PR",
+  "PE",
+  "PI",
+  "RJ",
+  "RN",
+  "RS",
+  "RO",
+  "RR",
+  "SC",
+  "SP",
+  "SE",
+  "TO",
+]
+
 const enderecoSchema = z.object({
+  cep: z.string().min(8, "CEP deve ter pelo menos 8 caracteres"),
   logradouro: z.string().min(3, "Logradouro deve ter pelo menos 3 caracteres"),
   numero: z.string().min(1, "Número é obrigatório"),
+  complemento: z.string().optional(),
   bairro: z.string().min(2, "Bairro deve ter pelo menos 2 caracteres"),
   cidade: z.string().min(2, "Cidade deve ter pelo menos 2 caracteres"),
   uf: z.string().length(2, "UF deve ter 2 caracteres"),
@@ -25,32 +56,52 @@ type EnderecoFormValues = z.infer<typeof enderecoSchema>
 interface EnderecoModalProps {
   isOpen: boolean
   onClose: () => void
-  onSave: (endereco: Endereco) => void
+  onSalvar: (endereco: Endereco) => void
   endereco?: Endereco
 }
 
-export function EnderecoModal({ isOpen, onClose, onSave, endereco }: EnderecoModalProps) {
+export function EnderecoModal({ isOpen, onClose, onSalvar, endereco }: EnderecoModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Inicializa o formulário com os valores do endereço, se existir
   const form = useForm<EnderecoFormValues>({
     resolver: zodResolver(enderecoSchema),
-    defaultValues: endereco
-      ? {
-          logradouro: endereco.logradouro,
-          numero: endereco.numero,
-          bairro: endereco.bairro,
-          cidade: endereco.cidade,
-          uf: endereco.uf,
-        }
-      : {
+    defaultValues: {
+      cep: "",
+      logradouro: "",
+      numero: "",
+      complemento: "",
+      bairro: "",
+      cidade: "",
+      uf: "",
+    },
+  })
+
+  useEffect(() => {
+    if (isOpen) {
+      if (endereco) {
+        form.reset({
+          cep: endereco.cep || "",
+          logradouro: endereco.logradouro || "",
+          numero: endereco.numero || "",
+          complemento: endereco.complemento || "",
+          bairro: endereco.bairro || "",
+          cidade: endereco.cidade || "",
+          uf: endereco.uf || "",
+        })
+      } else {
+        form.reset({
+          cep: "",
           logradouro: "",
           numero: "",
+          complemento: "",
           bairro: "",
           cidade: "",
           uf: "",
-        },
-  })
+        })
+      }
+    }
+  }, [isOpen, endereco, form])
 
   // Função para salvar o endereço
   const handleSave = (values: EnderecoFormValues) => {
@@ -63,15 +114,15 @@ export function EnderecoModal({ isOpen, onClose, onSave, endereco }: EnderecoMod
         ...values,
       }
 
-      onSave(savedEndereco)
+      onSalvar(savedEndereco)
       setIsSubmitting(false)
-      onClose()
+      form.reset()
     }, 500)
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{endereco ? "Editar Endereço" : "Novo Endereço"}</DialogTitle>
         </DialogHeader>
@@ -80,59 +131,91 @@ export function EnderecoModal({ isOpen, onClose, onSave, endereco }: EnderecoMod
           <form onSubmit={form.handleSubmit(handleSave)} className="space-y-4">
             <FormField
               control={form.control}
-              name="logradouro"
+              name="cep"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Logradouro</FormLabel>
+                  <FormLabel>CEP</FormLabel>
                   <FormControl>
-                    <Input placeholder="Av. Brasil" {...field} />
+                    <Input placeholder="12345-678" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="logradouro"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Logradouro</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Av. Brasil" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="numero"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Número</FormLabel>
+                    <FormControl>
+                      <Input placeholder="123" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
             <FormField
               control={form.control}
-              name="numero"
+              name="complemento"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Número</FormLabel>
+                  <FormLabel>Complemento (opcional)</FormLabel>
                   <FormControl>
-                    <Input placeholder="123" {...field} />
+                    <Input placeholder="Apto 101, Bloco A" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="bairro"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Bairro</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Centro" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="bairro"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Bairro</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Centro" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="cidade"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Cidade</FormLabel>
-                  <FormControl>
-                    <Input placeholder="São Paulo" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="cidade"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cidade</FormLabel>
+                    <FormControl>
+                      <Input placeholder="São Paulo" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}
@@ -141,7 +224,7 @@ export function EnderecoModal({ isOpen, onClose, onSave, endereco }: EnderecoMod
                 <FormItem>
                   <FormLabel>UF</FormLabel>
                   <FormControl>
-                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value || undefined}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione a UF" />
                       </SelectTrigger>

@@ -1,96 +1,79 @@
 "use client"
 
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { User, UserCog, X } from "lucide-react"
-import type { FiltroConfig, FiltroValores } from "@/components/filtro-avancado"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { ChevronDown, X } from "lucide-react"
 
 interface CampoMultiSelectProps {
-  config: FiltroConfig
-  valores: FiltroValores
-  onChange: (campo: string, valor: any) => void
-  onMultiSelectChange: (campo: string, valor: string, checked: boolean) => void
-  mostrarFiltroTexto?: boolean
+  campo: string
+  opcoes: { value: string; label: string }[]
+  valores: string[]
+  onChange: (campo: string, valor: string, checked: boolean) => void
 }
 
-export function CampoMultiSelect({
-  config,
-  valores,
-  onChange,
-  onMultiSelectChange,
-  mostrarFiltroTexto = false,
-}: CampoMultiSelectProps) {
-  const valor = valores[config.campo] || []
-  const filtroTexto = valores[`${config.campo}_texto`] || ""
+export function CampoMultiSelect({ campo, opcoes, valores, onChange }: CampoMultiSelectProps) {
+  const [isOpen, setIsOpen] = useState(false)
 
-  const opcoesFiltradasPorTexto =
-    config.opcoes?.filter((opcao) => opcao.label.toLowerCase().includes(filtroTexto.toLowerCase())) || []
+  const handleRemoveItem = (valor: string) => {
+    onChange(campo, valor, false)
+  }
+
+  const handleClearAll = () => {
+    valores.forEach((valor) => {
+      onChange(campo, valor, false)
+    })
+  }
 
   return (
-    <div className="space-y-3">
-      {/* Campo de filtro por texto para cliente/técnico */}
-      {mostrarFiltroTexto && (
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            {config.campo === "cliente" ? (
-              <User className="h-4 w-4 text-muted-foreground" />
-            ) : (
-              <UserCog className="h-4 w-4 text-muted-foreground" />
-            )}
-            <Label className="text-xs font-medium text-muted-foreground">Buscar {config.label.toLowerCase()}</Label>
-          </div>
-          <Input
-            placeholder={`Digite para filtrar ${config.label.toLowerCase()}...`}
-            value={filtroTexto}
-            onChange={(e) => onChange(`${config.campo}_texto`, e.target.value)}
-            className="w-full"
-          />
-        </div>
-      )}
-
-      {/* Lista de opções filtradas */}
-      <div className="space-y-2">
-        <Label className="text-xs font-medium text-muted-foreground">Selecionar {config.label.toLowerCase()}</Label>
-        <ScrollArea className="h-32 w-full border rounded-md p-2">
-          {opcoesFiltradasPorTexto.length > 0 ? (
-            opcoesFiltradasPorTexto.map((opcao) => (
-              <div key={opcao.value} className="flex items-center space-x-2 py-1">
+    <div className="space-y-2">
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <PopoverTrigger asChild>
+          <Button variant="outline" className="w-full justify-between bg-transparent">
+            <span>
+              {valores.length > 0 ? `${valores.length} selecionado${valores.length > 1 ? "s" : ""}` : "Selecione..."}
+            </span>
+            <ChevronDown className="h-4 w-4" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-full p-0" align="start">
+          <div className="max-h-60 overflow-y-auto p-2">
+            {opcoes.map((opcao) => (
+              <div key={opcao.value} className="flex items-center space-x-2 p-2 hover:bg-muted rounded">
                 <Checkbox
-                  id={`${config.campo}-${opcao.value}`}
-                  checked={valor.includes(opcao.value)}
-                  onCheckedChange={(checked) => onMultiSelectChange(config.campo, opcao.value, checked as boolean)}
+                  id={`${campo}-${opcao.value}`}
+                  checked={valores.includes(opcao.value)}
+                  onCheckedChange={(checked) => onChange(campo, opcao.value, !!checked)}
                 />
-                <Label htmlFor={`${config.campo}-${opcao.value}`} className="text-sm font-normal cursor-pointer">
+                <label htmlFor={`${campo}-${opcao.value}`} className="text-sm cursor-pointer flex-1">
                   {opcao.label}
-                </Label>
+                </label>
               </div>
-            ))
-          ) : (
-            <div className="text-sm text-muted-foreground py-2">
-              {filtroTexto ? "Nenhum resultado encontrado" : "Carregando..."}
-            </div>
-          )}
-        </ScrollArea>
-      </div>
+            ))}
+          </div>
+        </PopoverContent>
+      </Popover>
 
-      {/* Badges dos valores selecionados */}
-      {valor.length > 0 && (
+      {valores.length > 0 && (
         <div className="flex flex-wrap gap-1">
-          {valor.map((val: string) => {
-            const opcao = config.opcoes?.find((o) => o.value === val)
+          {valores.map((valor) => {
+            const opcao = opcoes.find((o) => o.value === valor)
             return (
-              <Badge key={val} variant="secondary" className="text-xs">
-                {opcao?.label}
-                <X
-                  className="ml-1 h-3 w-3 cursor-pointer"
-                  onClick={() => onMultiSelectChange(config.campo, val, false)}
-                />
+              <Badge key={valor} variant="secondary" className="text-xs">
+                {opcao?.label || valor}
+                <Button variant="ghost" size="sm" className="h-auto p-0 ml-1" onClick={() => handleRemoveItem(valor)}>
+                  <X className="h-3 w-3" />
+                </Button>
               </Badge>
             )
           })}
+          {valores.length > 1 && (
+            <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={handleClearAll}>
+              Limpar todos
+            </Button>
+          )}
         </div>
       )}
     </div>

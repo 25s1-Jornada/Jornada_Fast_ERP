@@ -22,6 +22,7 @@ interface Cliente {
 export default function ClientesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [clienteParaEditar, setClienteParaEditar] = useState<Cliente | undefined>(undefined)
+  const [clientes, setClientes] = useState<Cliente[]>([])
 
   const handleNovoCliente = () => {
     setClienteParaEditar(undefined)
@@ -39,8 +40,14 @@ export default function ClientesPage() {
   }
 
   const handleSalvarCliente = (cliente: Cliente) => {
-    // Aqui você implementaria a lógica para salvar o cliente
-    console.log("Cliente salvo:", cliente)
+    if (clienteParaEditar?.id) {
+      // Editing existing cliente
+      setClientes((prev) => prev.map((c) => (c.id === cliente.id ? cliente : c)))
+    } else {
+      // Adding new cliente
+      const novoCliente = { ...cliente, id: Date.now().toString() }
+      setClientes((prev) => [...prev, novoCliente])
+    }
     handleCloseModal()
   }
 
@@ -54,7 +61,7 @@ export default function ClientesPage() {
         </Button>
       </div>
 
-      <ClientesTable onEditarCliente={handleEditarCliente} />
+      <ClientesTable onEditarCliente={handleEditarCliente} clientes={clientes} setClientes={setClientes} />
 
       <ClienteModal
         isOpen={isModalOpen}

@@ -1,21 +1,23 @@
 "use client"
 
 import { Input } from "@/components/ui/input"
-import type { FiltroConfig } from "@/components/filtro-avancado"
 
 interface CampoTextoProps {
-  config: FiltroConfig
+  campo: string
+  placeholder?: string
   valor: string
   onChange: (campo: string, valor: string) => void
+  mostrarFiltrosCliente?: boolean
+  mostrarFiltrosTecnico?: boolean
 }
 
-export function CampoTexto({ config, valor, onChange }: CampoTextoProps) {
-  return (
-    <Input
-      placeholder={config.placeholder || `Buscar por ${config.label.toLowerCase()}...`}
-      value={valor || ""}
-      onChange={(e) => onChange(config.campo, e.target.value)}
-      className="w-full"
-    />
-  )
+export function CampoTexto({
+  campo,
+  placeholder,
+  valor,
+  onChange,
+  mostrarFiltrosCliente = false,
+  mostrarFiltrosTecnico = false,
+}: CampoTextoProps) {
+  return <Input placeholder={placeholder} value={valor} onChange={(e) => onChange(campo, e.target.value)} />
 }

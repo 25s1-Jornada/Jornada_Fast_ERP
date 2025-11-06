@@ -1,24 +1,22 @@
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import type { FiltroConfig } from "@/components/filtro-avancado"
 
 interface CampoCheckboxProps {
-  config: FiltroConfig
+  campo: string
   valor: boolean
   onChange: (campo: string, valor: boolean) => void
+  label?: string
 }
 
-export function CampoCheckbox({ config, valor, onChange }: CampoCheckboxProps) {
+export function CampoCheckbox({ campo, valor, onChange, label }: CampoCheckboxProps) {
   return (
     <div className="flex items-center space-x-2">
-      <Checkbox
-        id={config.campo}
-        checked={valor || false}
-        onCheckedChange={(checked) => onChange(config.campo, checked as boolean)}
-      />
-      <Label htmlFor={config.campo} className="text-sm font-normal cursor-pointer">
-        {config.label}
-      </Label>
+      <Checkbox id={campo} checked={valor} onCheckedChange={(checked) => onChange(campo, !!checked)} />
+      {label && (
+        <Label htmlFor={campo} className="text-sm cursor-pointer">
+          {label}
+        </Label>
+      )}
     </div>
   )
 }

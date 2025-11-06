@@ -1,3 +1,4 @@
+// Tipos para Endereço
 export interface Endereco {
   id: string
   logradouro: string

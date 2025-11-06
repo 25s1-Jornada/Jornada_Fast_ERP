@@ -60,36 +60,27 @@ interface ClienteModalProps {
   cliente?: Cliente
 }
 
-export function ClienteModal({ isOpen, onClose, onSalvar, cliente }: ClienteModalProps) {
-  const [formData, setFormData] = useState<Cliente>({
-    nome: "",
-    contato: "",
-    telefone: "",
-    endereco: "",
-    numero: "",
-    bairro: "",
-    cidade: "",
-    uf: "",
-    codigo: "",
-  })
+const clienteVazio: Cliente = {
+  nome: "",
+  contato: "",
+  telefone: "",
+  endereco: "",
+  numero: "",
+  bairro: "",
+  cidade: "",
+  uf: "",
+  codigo: "",
+}
 
+export function ClienteModal({ isOpen, onClose, onSalvar, cliente }: ClienteModalProps) {
+  const [formData, setFormData] = useState<Cliente>(clienteVazio)
+
+  // Sincronizar dados do cliente quando o modal abrir ou cliente mudar
   useEffect(() => {
-    if (cliente) {
-      setFormData(cliente)
-    } else {
-      setFormData({
-        nome: "",
-        contato: "",
-        telefone: "",
-        endereco: "",
-        numero: "",
-        bairro: "",
-        cidade: "",
-        uf: "",
-        codigo: "",
-      })
+    if (isOpen) {
+      setFormData(cliente || clienteVazio)
     }
-  }, [cliente, isOpen])
+  }, [isOpen, cliente])
 
   const handleChange = (field: keyof Cliente, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -98,10 +89,16 @@ export function ClienteModal({ isOpen, onClose, onSalvar, cliente }: ClienteModa
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     onSalvar(formData)
+    setFormData(clienteVazio)
+  }
+
+  const handleClose = () => {
+    setFormData(clienteVazio)
+    onClose()
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{cliente ? "Editar Cliente" : "Novo Cliente"}</DialogTitle>
@@ -175,7 +172,7 @@ export function ClienteModal({ isOpen, onClose, onSalvar, cliente }: ClienteModa
           </div>
 
           <div className="flex justify-end gap-4">
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={handleClose}>
               Cancelar
             </Button>
             <Button type="submit">Salvar</Button>

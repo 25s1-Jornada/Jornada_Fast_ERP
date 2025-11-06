@@ -1,6 +1,5 @@
 "use client"
 
-import { memo } from "react"
 import { CampoTexto } from "./campo-texto"
 import { CampoNumero } from "./campo-numero"
 import { CampoSelect } from "./campo-select"
@@ -8,18 +7,18 @@ import { CampoMultiSelect } from "./campo-multiselect"
 import { CampoData } from "./campo-data"
 import { CampoIntervaloData } from "./campo-intervalo-data"
 import { CampoCheckbox } from "./campo-checkbox"
-import type { FiltroConfig, FiltroValores } from "@/components/filtro-avancado"
+import type { FiltroConfig, FiltroValores } from "../filtro-avancado"
 
 interface RenderizadorCampoProps {
   config: FiltroConfig
   valores: FiltroValores
   onChange: (campo: string, valor: any) => void
-  onMultiSelectChange: (campo: string, valor: string, checked: boolean) => void
+  onMultiSelectChange?: (campo: string, valor: string, checked: boolean) => void
   mostrarFiltrosCliente?: boolean
   mostrarFiltrosTecnico?: boolean
 }
 
-export const RenderizadorCampo = memo(function RenderizadorCampo({
+export function RenderizadorCampo({
   config,
   valores,
   onChange,
@@ -31,38 +30,53 @@ export const RenderizadorCampo = memo(function RenderizadorCampo({
 
   switch (config.tipo) {
     case "texto":
-      return <CampoTexto config={config} valor={valor} onChange={onChange} />
+      return (
+        <CampoTexto
+          campo={config.campo}
+          placeholder={config.placeholder}
+          valor={valor || ""}
+          onChange={onChange}
+          mostrarFiltrosCliente={mostrarFiltrosCliente}
+          mostrarFiltrosTecnico={mostrarFiltrosTecnico}
+        />
+      )
 
     case "numero":
-      return <CampoNumero config={config} valor={valor} onChange={onChange} />
+      return (
+        <CampoNumero campo={config.campo} placeholder={config.placeholder} valor={valor || ""} onChange={onChange} />
+      )
 
     case "select":
-      return <CampoSelect config={config} valor={valor} onChange={onChange} />
+      return (
+        <CampoSelect
+          campo={config.campo}
+          opcoes={config.opcoes || []}
+          valor={valor || ""}
+          onChange={onChange}
+          placeholder={config.placeholder}
+        />
+      )
 
     case "multiselect":
-      const mostrarFiltroTexto =
-        (config.campo === "cliente" && mostrarFiltrosCliente) || (config.campo === "tecnico" && mostrarFiltrosTecnico)
-
       return (
         <CampoMultiSelect
-          config={config}
-          valores={valores}
-          onChange={onChange}
-          onMultiSelectChange={onMultiSelectChange}
-          mostrarFiltroTexto={mostrarFiltroTexto}
+          campo={config.campo}
+          opcoes={config.opcoes || []}
+          valores={valor || []}
+          onChange={onMultiSelectChange || (() => {})}
         />
       )
 
     case "data":
-      return <CampoData config={config} valor={valor} onChange={onChange} />
+      return <CampoData campo={config.campo} valor={valor || ""} onChange={onChange} />
 
     case "intervalo_data":
-      return <CampoIntervaloData config={config} valor={valor} onChange={onChange} />
+      return <CampoIntervaloData campo={config.campo} valor={valor || {}} onChange={onChange} />
 
     case "checkbox":
-      return <CampoCheckbox config={config} valor={valor} onChange={onChange} />
+      return <CampoCheckbox campo={config.campo} valor={valor || false} onChange={onChange} />
 
     default:
       return null
   }
-})
+}

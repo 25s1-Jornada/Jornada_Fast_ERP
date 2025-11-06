@@ -1,33 +1,12 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useCallback } from "react"
 import type { FiltroValores } from "@/components/filtro-avancado"
 
 export function useFiltroAvancado(valores: FiltroValores, onFiltroChange: (valores: FiltroValores) => void) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [nomeFiltroSalvar, setNomeFiltroSalvar] = useState("")
   const [filtrosSalvosExpanded, setFiltrosSalvosExpanded] = useState(false)
-
-  // Debounce para atualizações em tempo real
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      localStorage.setItem("filtro_preferencias", JSON.stringify(valores))
-    }, 500)
-    return () => clearTimeout(timer)
-  }, [valores])
-
-  // Carregar preferências salvas
-  useEffect(() => {
-    const preferencias = localStorage.getItem("filtro_preferencias")
-    if (preferencias && Object.keys(valores).length === 0) {
-      try {
-        const filtroSalvo = JSON.parse(preferencias)
-        onFiltroChange(filtroSalvo)
-      } catch (error) {
-        console.error("Erro ao carregar preferências:", error)
-      }
-    }
-  }, [valores, onFiltroChange])
 
   const handleValorChange = useCallback(
     (campo: string, valor: any) => {
@@ -55,7 +34,6 @@ export function useFiltroAvancado(valores: FiltroValores, onFiltroChange: (valor
 
   const limparFiltros = useCallback(() => {
     onFiltroChange({})
-    localStorage.removeItem("filtro_preferencias")
   }, [onFiltroChange])
 
   const contarFiltrosAtivos = useCallback(

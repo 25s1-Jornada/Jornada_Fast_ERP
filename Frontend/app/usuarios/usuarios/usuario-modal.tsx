@@ -177,15 +177,9 @@ export function UsuarioModal({ isOpen, onClose, onSalvar, usuario }: UsuarioModa
                     <SelectValue placeholder="Selecione o perfil" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="admin">
-                      <span className="text-red-600 font-medium">Administrador</span>
-                    </SelectItem>
-                    <SelectItem value="tecnico">
-                      <span className="text-blue-600 font-medium">Técnico</span>
-                    </SelectItem>
-                    <SelectItem value="cliente">
-                      <span className="text-gray-600 font-medium">Cliente</span>
-                    </SelectItem>
+                    <SelectItem value="admin">Administrador</SelectItem>
+                    <SelectItem value="tecnico">Técnico</SelectItem>
+                    <SelectItem value="cliente">Cliente</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -202,10 +196,7 @@ export function UsuarioModal({ isOpen, onClose, onSalvar, usuario }: UsuarioModa
                   <SelectContent>
                     {empresasMock.map((empresa) => (
                       <SelectItem key={empresa.id} value={empresa.id}>
-                        <div>
-                          <div className="font-medium">{empresa.nome}</div>
-                          <div className="text-sm text-muted-foreground">{empresa.tipo}</div>
-                        </div>
+                        {empresa.nome} - {empresa.tipo}
                       </SelectItem>
                     ))}
                   </SelectContent>

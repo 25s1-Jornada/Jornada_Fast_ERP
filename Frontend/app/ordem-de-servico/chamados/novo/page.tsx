@@ -1,3 +1,5 @@
+"use client"
+
 import { ChamadoForm } from "../chamado-form"
 
 export default function NovoChamadoPage() {

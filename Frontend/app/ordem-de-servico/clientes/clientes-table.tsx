@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useCallback, useEffect } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Edit, RefreshCw } from "lucide-react"
@@ -22,6 +22,8 @@ interface Cliente {
 
 interface ClientesTableProps {
   onEditarCliente: (cliente: Cliente) => void
+  clientes: Cliente[]
+  setClientes: (clientes: Cliente[]) => void
 }
 
 // Dados de exemplo expandidos para clientes
@@ -124,7 +126,7 @@ const clientesIniciais: Cliente[] = [
   },
 ]
 
-// Configuração dos filtros para clientes
+// Configuração dos filtros para clientes - definida fora do componente para evitar recriação
 const configuracaoFiltros: FiltroConfig[] = [
   {
     campo: "busca_geral",
@@ -192,7 +194,7 @@ const configuracaoFiltros: FiltroConfig[] = [
   },
 ]
 
-// Campos disponíveis para ordenação
+// Campos disponíveis para ordenação - definidos fora do componente
 const camposOrdenacao = [
   { value: "codigo", label: "Código" },
   { value: "nome", label: "Nome" },
@@ -201,19 +203,28 @@ const camposOrdenacao = [
   { value: "contato", label: "Contato" },
 ]
 
-export function ClientesTable({ onEditarCliente }: ClientesTableProps) {
-  const [clientes, setClientes] = useState(clientesIniciais)
+export function ClientesTable({ onEditarCliente, clientes, setClientes }: ClientesTableProps) {
+  useEffect(() => {
+    if (clientes.length === 0) {
+      setClientes(clientesIniciais)
+    }
+  }, [clientes, setClientes])
+
   const [filtros, setFiltros] = useState<FiltroValores>({})
   const [ordenacao, setOrdenacao] = useState({ campo: "nome", direcao: "asc" as "asc" | "desc" })
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [filtrosSalvos, setFiltrosSalvos] = useState<{ nome: string; filtro: FiltroValores }[]>([])
 
-  const handleRefresh = () => {
+  const handleRefresh = useCallback(() => {
     setIsRefreshing(true)
     setTimeout(() => {
       setIsRefreshing(false)
     }, 1000)
-  }
+  }, [])
+
+  const handleOrdenacaoChange = useCallback((campo: string, direcao: "asc" | "desc") => {
+    setOrdenacao({ campo, direcao })
+  }, [])
 
   // Aplicar filtros e ordenação
   const clientesFiltrados = useMemo(() => {
@@ -298,21 +309,27 @@ export function ClientesTable({ onEditarCliente }: ClientesTableProps) {
     return resultado
   }, [clientes, filtros, ordenacao])
 
-  const handleSalvarFiltro = (nome: string, filtro: FiltroValores) => {
-    const novosFiltros = [...filtrosSalvos, { nome, filtro }]
-    setFiltrosSalvos(novosFiltros)
-    localStorage.setItem("filtros_salvos_clientes", JSON.stringify(novosFiltros))
-  }
+  const handleSalvarFiltro = useCallback(
+    (nome: string, filtro: FiltroValores) => {
+      const novosFiltros = [...filtrosSalvos, { nome, filtro }]
+      setFiltrosSalvos(novosFiltros)
+      localStorage.setItem("filtros_salvos_clientes", JSON.stringify(novosFiltros))
+    },
+    [filtrosSalvos],
+  )
 
-  const handleCarregarFiltro = (filtro: FiltroValores) => {
+  const handleCarregarFiltro = useCallback((filtro: FiltroValores) => {
     setFiltros(filtro)
-  }
+  }, [])
 
-  const handleExcluirFiltro = (nome: string) => {
-    const novosFiltros = filtrosSalvos.filter((f) => f.nome !== nome)
-    setFiltrosSalvos(novosFiltros)
-    localStorage.setItem("filtros_salvos_clientes", JSON.stringify(novosFiltros))
-  }
+  const handleExcluirFiltro = useCallback(
+    (nome: string) => {
+      const novosFiltros = filtrosSalvos.filter((f) => f.nome !== nome)
+      setFiltrosSalvos(novosFiltros)
+      localStorage.setItem("filtros_salvos_clientes", JSON.stringify(novosFiltros))
+    },
+    [filtrosSalvos],
+  )
 
   return (
     <div className="space-y-4">
@@ -330,7 +347,7 @@ export function ClientesTable({ onEditarCliente }: ClientesTableProps) {
             <Ordenacao
               camposOrdenacao={camposOrdenacao}
               ordenacaoAtual={ordenacao}
-              onOrdenacaoChange={(campo, direcao) => setOrdenacao({ campo, direcao })}
+              onOrdenacaoChange={handleOrdenacaoChange}
             />
             <Button variant="outline" size="icon" onClick={handleRefresh} disabled={isRefreshing}>
               <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />

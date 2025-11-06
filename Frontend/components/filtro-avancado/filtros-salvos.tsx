@@ -1,9 +1,12 @@
 "use client"
+
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Save, Trash2, ChevronDown, ChevronUp } from "lucide-react"
-import type { FiltroValores } from "@/components/filtro-avancado"
+import { Badge } from "@/components/ui/badge"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { ChevronDown, ChevronUp, Save, Trash2, Download } from "lucide-react"
+import type { FiltroValores } from "../filtro-avancado"
 
 interface FiltrosSalvosProps {
   filtrosAtivos: number
@@ -30,59 +33,78 @@ export function FiltrosSalvos({
   onExcluirFiltro,
   valores,
 }: FiltrosSalvosProps) {
-  const salvarFiltro = () => {
-    if (nomeFiltroSalvar.trim() && onSalvarFiltro) {
-      onSalvarFiltro(nomeFiltroSalvar.trim(), valores)
-      setNomeFiltroSalvar("")
-    }
+  const [salvandoFiltro, setSalvandoFiltro] = useState(false)
+
+  const handleSalvarFiltro = () => {
+    if (!nomeFiltroSalvar.trim() || !onSalvarFiltro) return
+
+    setSalvandoFiltro(true)
+    onSalvarFiltro(nomeFiltroSalvar, valores)
+    setNomeFiltroSalvar("")
+    setSalvandoFiltro(false)
+  }
+
+  const contarFiltrosNoFiltroSalvo = (filtro: FiltroValores) => {
+    return Object.values(filtro).filter((valor) => {
+      if (Array.isArray(valor)) return valor.length > 0
+      if (typeof valor === "string") return valor.trim() !== ""
+      return valor !== "" && valor !== null && valor !== undefined
+    }).length
   }
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <Label className="text-sm font-medium">Filtros Salvos</Label>
-        <Button variant="ghost" size="sm" onClick={() => setFiltrosSalvosExpanded(!filtrosSalvosExpanded)}>
-          {filtrosSalvosExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-        </Button>
-      </div>
+    <div className="space-y-4">
+      {/* Salvar filtro atual */}
+      {onSalvarFiltro && filtrosAtivos > 0 && (
+        <div className="flex gap-2">
+          <Input
+            placeholder="Nome do filtro..."
+            value={nomeFiltroSalvar}
+            onChange={(e) => setNomeFiltroSalvar(e.target.value)}
+            className="flex-1"
+          />
+          <Button onClick={handleSalvarFiltro} disabled={!nomeFiltroSalvar.trim() || salvandoFiltro} size="sm">
+            <Save className="h-4 w-4 mr-2" />
+            Salvar
+          </Button>
+        </div>
+      )}
 
-      {filtrosSalvosExpanded && (
-        <div className="space-y-2">
-          {/* Salvar Filtro Atual */}
-          {filtrosAtivos > 0 && onSalvarFiltro && (
-            <div className="flex gap-2">
-              <Input
-                placeholder="Nome do filtro..."
-                value={nomeFiltroSalvar}
-                onChange={(e) => setNomeFiltroSalvar(e.target.value)}
-                className="flex-1"
-              />
-              <Button onClick={salvarFiltro} disabled={!nomeFiltroSalvar.trim()}>
-                <Save className="h-4 w-4 mr-1" />
-                Salvar
-              </Button>
-            </div>
-          )}
-
-          {/* Lista de Filtros Salvos */}
-          {filtrosSalvos.length > 0 && (
-            <div className="space-y-1">
-              {filtrosSalvos.map((filtroSalvo, index) => (
-                <div key={index} className="flex items-center justify-between p-2 border rounded">
-                  <span className="text-sm">{filtroSalvo.nome}</span>
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="sm" onClick={() => onCarregarFiltro?.(filtroSalvo.filtro)}>
-                      Aplicar
+      {/* Lista de filtros salvos */}
+      {filtrosSalvos.length > 0 && (
+        <Collapsible open={filtrosSalvosExpanded} onOpenChange={setFiltrosSalvosExpanded}>
+          <CollapsibleTrigger asChild>
+            <Button variant="outline" size="sm" className="w-full justify-between bg-transparent">
+              <span>Filtros Salvos ({filtrosSalvos.length})</span>
+              {filtrosSalvosExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="space-y-2 mt-2">
+            {filtrosSalvos.map((filtroSalvo, index) => (
+              <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{filtroSalvo.nome}</span>
+                  <Badge variant="secondary" className="text-xs">
+                    {contarFiltrosNoFiltroSalvo(filtroSalvo.filtro)} filtro
+                    {contarFiltrosNoFiltroSalvo(filtroSalvo.filtro) !== 1 ? "s" : ""}
+                  </Badge>
+                </div>
+                <div className="flex gap-1">
+                  {onCarregarFiltro && (
+                    <Button variant="ghost" size="sm" onClick={() => onCarregarFiltro(filtroSalvo.filtro)}>
+                      <Download className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => onExcluirFiltro?.(filtroSalvo.nome)}>
+                  )}
+                  {onExcluirFiltro && (
+                    <Button variant="ghost" size="sm" onClick={() => onExcluirFiltro(filtroSalvo.nome)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
-                  </div>
+                  )}
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+              </div>
+            ))}
+          </CollapsibleContent>
+        </Collapsible>
       )}
     </div>
   )

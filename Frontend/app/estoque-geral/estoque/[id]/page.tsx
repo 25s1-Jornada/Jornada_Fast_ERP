@@ -111,7 +111,20 @@ async function getItemEstoque(id: string) {
   return item
 }
 
+function isNovoRoute(id: string): boolean {
+  return id === "novo"
+}
+
 export default async function EditarEstoquePage({ params }: { params: { id: string } }) {
+  if (isNovoRoute(params.id)) {
+    return (
+      <div className="container mx-auto py-10">
+        <h1 className="text-3xl font-bold mb-6">Novo Item de Estoque</h1>
+        <EstoqueForm />
+      </div>
+    )
+  }
+
   const itemEstoque = await getItemEstoque(params.id)
 
   if (!itemEstoque) {

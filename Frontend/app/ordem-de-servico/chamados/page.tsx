@@ -73,6 +73,8 @@ interface Chamado {
 export default function ChamadosPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [chamadoParaEditar, setChamadoParaEditar] = useState<Chamado | undefined>(undefined)
+  const [chamados, setChamados] = useState<Chamado[]>([])
+  const [refreshKey, setRefreshKey] = useState(0)
 
   const handleNovoChamado = () => {
     setChamadoParaEditar(undefined)
@@ -90,8 +92,17 @@ export default function ChamadosPage() {
   }
 
   const handleSalvarChamado = (chamado: Chamado) => {
-    // Aqui você implementaria a lógica para salvar o chamado
-    console.log("Chamado salvo:", chamado)
+    if (chamado.id) {
+      // Editando chamado existente
+      setChamados((prev) => prev.map((c) => (c.id === chamado.id ? chamado : c)))
+    } else {
+      // Criando novo chamado
+      const novoChamado = { ...chamado, id: Date.now().toString() }
+      setChamados((prev) => [...prev, novoChamado])
+    }
+
+    // Força atualização da tabela
+    setRefreshKey((prev) => prev + 1)
     handleCloseModal()
   }
 
@@ -105,7 +116,7 @@ export default function ChamadosPage() {
         </Button>
       </div>
 
-      <ChamadosTable onEditarChamado={handleEditarChamado} />
+      <ChamadosTable key={refreshKey} onEditarChamado={handleEditarChamado} chamadosExternos={chamados} />
 
       <ChamadoModal
         isOpen={isModalOpen}

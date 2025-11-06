@@ -1,17 +1,12 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Edit, Trash2, Search, RefreshCw } from "lucide-react"
 import type { Usuario, PerfilUsuario } from "./types"
-
-interface UsuariosTableProps {
-  onEditarUsuario: (usuario: Usuario) => void
-  onExcluirUsuario: (id: string) => void
-}
 
 // Dados mockados de usuários
 const usuariosMock: Usuario[] = [
@@ -90,8 +85,20 @@ const empresasMap = {
   "5": { nome: "Refrigeração Total", tipo: "Técnico" },
 }
 
-export function UsuariosTable({ onEditarUsuario, onExcluirUsuario }: UsuariosTableProps) {
-  const [usuarios] = useState<Usuario[]>(usuariosMock)
+interface UsuariosTableProps {
+  onEditarUsuario: (usuario: Usuario) => void
+  onExcluirUsuario: (id: string) => void
+  usuarios: Usuario[]
+  setUsuarios: (usuarios: Usuario[]) => void
+}
+
+export function UsuariosTable({ onEditarUsuario, onExcluirUsuario, usuarios, setUsuarios }: UsuariosTableProps) {
+  useEffect(() => {
+    if (usuarios.length === 0) {
+      setUsuarios(usuariosMock)
+    }
+  }, [])
+
   const [busca, setBusca] = useState("")
   const [isRefreshing, setIsRefreshing] = useState(false)
 

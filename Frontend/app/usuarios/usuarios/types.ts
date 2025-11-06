@@ -1,3 +1,4 @@
+// Enum para Perfil de Usuário
 export enum PerfilUsuario {
   ADMIN = "admin",
   TECNICO = "tecnico",
@@ -28,6 +29,7 @@ export interface Usuario {
   ativo: boolean
   dataCriacao?: string
   dataAtualizacao?: string
+  empresa?: any // Added to accommodate the new mock data
 }
 
 // Interface para Dados de Formulário de Usuário
@@ -152,3 +154,33 @@ export const perfilLabels = {
   [PerfilUsuario.TECNICO]: "Técnico",
   [PerfilUsuario.CLIENTE]: "Cliente",
 }
+
+export const ufs = [
+  "AC",
+  "AL",
+  "AP",
+  "AM",
+  "BA",
+  "CE",
+  "DF",
+  "ES",
+  "GO",
+  "MA",
+  "MT",
+  "MS",
+  "MG",
+  "PA",
+  "PB",
+  "PR",
+  "PE",
+  "PI",
+  "RJ",
+  "RN",
+  "RS",
+  "RO",
+  "RR",
+  "SC",
+  "SP",
+  "SE",
+  "TO",
+]

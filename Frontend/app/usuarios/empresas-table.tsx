@@ -78,9 +78,12 @@ export function EmpresasTable() {
       // Atualiza a empresa existente
       setEmpresas(empresas.map((e) => (e.id === empresa.id ? empresa : e)))
     } else {
-      // Adiciona a nova empresa
-      setEmpresas([...empresas, empresa])
+      // Adiciona a nova empresa com ID gerado
+      const novaEmpresa = { ...empresa, id: Date.now().toString() }
+      setEmpresas([...empresas, novaEmpresa])
     }
+    setIsEmpresaModalOpen(false)
+    setCurrentEmpresa(undefined)
   }
 
   // Função para confirmar a exclusão de uma empresa

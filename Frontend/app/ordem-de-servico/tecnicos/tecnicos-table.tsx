@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Edit, RefreshCw } from "lucide-react"
@@ -21,6 +21,8 @@ interface Tecnico {
 
 interface TecnicosTableProps {
   onEditarTecnico: (tecnico: Tecnico) => void
+  tecnicos: Tecnico[]
+  setTecnicos: (tecnicos: Tecnico[]) => void
 }
 
 // Dados de exemplo expandidos para técnicos
@@ -146,8 +148,13 @@ const camposOrdenacao = [
   { value: "especialidade", label: "Especialidade" },
 ]
 
-export function TecnicosTable({ onEditarTecnico }: TecnicosTableProps) {
-  const [tecnicos, setTecnicos] = useState(tecnicosIniciais)
+export function TecnicosTable({ onEditarTecnico, tecnicos, setTecnicos }: TecnicosTableProps) {
+  useEffect(() => {
+    if (tecnicos.length === 0) {
+      setTecnicos(tecnicosIniciais)
+    }
+  }, [])
+
   const [filtros, setFiltros] = useState<FiltroValores>({})
   const [ordenacao, setOrdenacao] = useState({ campo: "nome", direcao: "asc" as "asc" | "desc" })
   const [isRefreshing, setIsRefreshing] = useState(false)

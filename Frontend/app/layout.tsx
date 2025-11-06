@@ -1,9 +1,10 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Inter } from 'next/font/google'
+import { Inter } from "next/font/google"
 import "./globals.css"
 import { Navbar } from "@/components/navbar"
 import { Sidebar } from "@/components/sidebar"
+import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -15,6 +16,7 @@ export const metadata: Metadata = {
     shortcut: "/favicon.ico",
     apple: "/favicon.ico",
   },
+    generator: 'v0.app'
 }
 
 export default function RootLayout({
@@ -33,8 +35,9 @@ export default function RootLayout({
         <Navbar />
         <div className="flex min-h-screen pt-16">
           <Sidebar />
-          <main className="flex-1 lg:ml-64 bg-gray-50 p-3 sm:p-4 lg:p-6 w-full min-w-0">{children}</main>
+          <main className="flex-1 md:ml-[220px] bg-gray-50 p-3 sm:p-4 lg:p-6 w-full min-w-0">{children}</main>
         </div>
+        <Toaster />
       </body>
     </html>
   )

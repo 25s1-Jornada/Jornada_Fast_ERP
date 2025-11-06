@@ -19,6 +19,7 @@ interface Tecnico {
 export default function TecnicosPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [tecnicoParaEditar, setTecnicoParaEditar] = useState<Tecnico | undefined>(undefined)
+  const [tecnicos, setTecnicos] = useState<Tecnico[]>([])
 
   const handleNovoTecnico = () => {
     setTecnicoParaEditar(undefined)
@@ -36,8 +37,14 @@ export default function TecnicosPage() {
   }
 
   const handleSalvarTecnico = (tecnico: Tecnico) => {
-    // Aqui você implementaria a lógica para salvar o técnico
-    console.log("Técnico salvo:", tecnico)
+    if (tecnicoParaEditar?.id) {
+      // Editing existing tecnico
+      setTecnicos((prev) => prev.map((t) => (t.id === tecnico.id ? tecnico : t)))
+    } else {
+      // Adding new tecnico
+      const novoTecnico = { ...tecnico, id: Date.now().toString() }
+      setTecnicos((prev) => [...prev, novoTecnico])
+    }
     handleCloseModal()
   }
 
@@ -51,7 +58,7 @@ export default function TecnicosPage() {
         </Button>
       </div>
 
-      <TecnicosTable onEditarTecnico={handleEditarTecnico} />
+      <TecnicosTable onEditarTecnico={handleEditarTecnico} tecnicos={tecnicos} setTecnicos={setTecnicos} />
 
       <TecnicoModal
         isOpen={isModalOpen}

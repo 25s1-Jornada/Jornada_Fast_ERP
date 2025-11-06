@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation"
 import { ChamadoDetalhes } from "../chamado-detalhes"
+import { ChamadoForm } from "../chamado-form"
 
 // Função para simular a busca de um chamado pelo ID
 async function getChamado(id: string) {
@@ -204,7 +205,20 @@ async function getChamado(id: string) {
   return chamado
 }
 
+function isNovoRoute(id: string): boolean {
+  return id === "novo"
+}
+
 export default async function ChamadoPage({ params }: { params: { id: string } }) {
+  if (isNovoRoute(params.id)) {
+    return (
+      <div className="container mx-auto py-10">
+        <h1 className="text-3xl font-bold mb-6">Novo Chamado</h1>
+        <ChamadoForm />
+      </div>
+    )
+  }
+
   const chamado = await getChamado(params.id)
 
   if (!chamado) {

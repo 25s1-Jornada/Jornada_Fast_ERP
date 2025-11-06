@@ -1,3 +1,5 @@
+"use client"
+
 import { EstoqueForm } from "../estoque-form"
 
 export default function NovoEstoquePage() {

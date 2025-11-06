@@ -183,8 +183,8 @@ function SidebarContent({ onItemClick }: SidebarContentProps) {
     <div className="flex h-full flex-col">
       <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
         <Link href="/" className="flex items-center gap-2 font-semibold">
-          <Package className="h-6 w-6" />
-          <span>Fast Com</span>
+          
+          <span>{"Sistema - OS"}</span>
         </Link>
       </div>
       <ScrollArea className="flex-1">
@@ -213,7 +213,7 @@ export function Sidebar() {
       </Sheet>
 
       {/* Desktop Sidebar */}
-      <div className="hidden border-r bg-muted/40 md:block">
+      <div className="hidden border-r bg-muted/40 md:block md:w-[220px] md:fixed md:left-0 md:top-16 md:bottom-0">
         <div className="flex h-full max-h-screen flex-col gap-2">
           <SidebarContent />
         </div>

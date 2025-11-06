@@ -1,23 +1,23 @@
 "use client"
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import type { FiltroConfig } from "@/components/filtro-avancado"
 
 interface CampoSelectProps {
-  config: FiltroConfig
+  campo: string
+  opcoes: { value: string; label: string }[]
   valor: string
   onChange: (campo: string, valor: string) => void
+  placeholder?: string
 }
 
-export function CampoSelect({ config, valor, onChange }: CampoSelectProps) {
+export function CampoSelect({ campo, opcoes, valor, onChange, placeholder }: CampoSelectProps) {
   return (
-    <Select value={valor || ""} onValueChange={(value) => onChange(config.campo, value)}>
-      <SelectTrigger className="w-full">
-        <SelectValue placeholder={`Selecione ${config.label.toLowerCase()}`} />
+    <Select value={valor} onValueChange={(value) => onChange(campo, value)}>
+      <SelectTrigger>
+        <SelectValue placeholder={placeholder || "Selecione..."} />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="todos">Todos</SelectItem>
-        {config.opcoes?.map((opcao) => (
+        {opcoes.map((opcao) => (
           <SelectItem key={opcao.value} value={opcao.value}>
             {opcao.label}
           </SelectItem>

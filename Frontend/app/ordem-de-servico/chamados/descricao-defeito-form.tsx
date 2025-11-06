@@ -72,7 +72,6 @@ interface ConfirmacaoAtendimento {
   data: string
   nomeLegivel: string
   telefone: string
-  carimbo: string
 }
 
 interface DescricaoDefeitoData {
@@ -101,7 +100,6 @@ export function DescricaoDefeitoForm({ onSalvar, dadosIniciais }: DescricaoDefei
         data: new Date().toISOString().split("T")[0],
         nomeLegivel: "",
         telefone: "",
-        carimbo: "",
       },
       equipamentos: [
         {
@@ -575,7 +573,7 @@ export function DescricaoDefeitoForm({ onSalvar, dadosIniciais }: DescricaoDefei
           <CardTitle>Confirmação do atendimento (Cliente)</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="data">Data:</Label>
               <Input
@@ -601,14 +599,6 @@ export function DescricaoDefeitoForm({ onSalvar, dadosIniciais }: DescricaoDefei
                 onChange={(e) => handleConfirmacaoChange("telefone", e.target.value)}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="carimbo">Carimbo:</Label>
-              <Input
-                id="carimbo"
-                value={formData.confirmacaoAtendimento.carimbo}
-                onChange={(e) => handleConfirmacaoChange("carimbo", e.target.value)}
-              />
-            </div>
           </div>
         </CardContent>
       </Card>
@@ -618,7 +608,7 @@ export function DescricaoDefeitoForm({ onSalvar, dadosIniciais }: DescricaoDefei
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <CardTitle className="text-lg sm:text-xl">DESCRIÇÃO DO DEFEITO (Técnico)</CardTitle>
-            <Button onClick={handleAddEquipamento} size="sm" className="w-full sm:w-auto">
+            <Button onClick={handleAddEquipamento} type="button" size="sm" className="w-full sm:w-auto">
               <Plus className="mr-2 h-4 w-4" />
               Adicionar Equipamento
             </Button>
@@ -668,6 +658,7 @@ export function DescricaoDefeitoForm({ onSalvar, dadosIniciais }: DescricaoDefei
                   <Button
                     variant="ghost"
                     size="icon"
+                    type="button"
                     onClick={() => handleRemoveEquipamento(equipamento.id)}
                     disabled={formData.equipamentos.length === 1}
                     className="self-start"
@@ -758,10 +749,10 @@ export function DescricaoDefeitoForm({ onSalvar, dadosIniciais }: DescricaoDefei
 
       {/* Botões de Ação */}
       <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4">
-        <Button variant="outline" className="w-full sm:w-auto">
+        <Button variant="outline" type="button" className="w-full sm:w-auto bg-transparent">
           Cancelar
         </Button>
-        <Button onClick={handleSubmit} className="w-full sm:w-auto">
+        <Button onClick={handleSubmit} type="button" className="w-full sm:w-auto">
           Salvar Descrição do Defeito
         </Button>
       </div>

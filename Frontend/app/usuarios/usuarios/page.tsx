@@ -10,6 +10,7 @@ import type { Usuario, UsuarioFormData } from "./types"
 export default function UsuariosPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [usuarioParaEditar, setUsuarioParaEditar] = useState<Usuario | undefined>(undefined)
+  const [usuarios, setUsuarios] = useState<Usuario[]>([])
 
   const handleNovoUsuario = () => {
     setUsuarioParaEditar(undefined)
@@ -23,8 +24,7 @@ export default function UsuariosPage() {
 
   const handleExcluirUsuario = (id: string) => {
     if (confirm("Tem certeza que deseja excluir este usuário?")) {
-      // Aqui você implementaria a lógica para excluir o usuário
-      console.log("Excluir usuário:", id)
+      setUsuarios((prev) => prev.filter((u) => u.id !== id))
     }
   }
 
@@ -34,8 +34,19 @@ export default function UsuariosPage() {
   }
 
   const handleSalvarUsuario = (usuarioData: UsuarioFormData) => {
-    // Aqui você implementaria a lógica para salvar o usuário
-    console.log("Usuário salvo:", usuarioData)
+    if (usuarioParaEditar?.id) {
+      // Editing existing usuario
+      setUsuarios((prev) => prev.map((u) => (u.id === usuarioParaEditar.id ? { ...u, ...usuarioData } : u)))
+    } else {
+      // Adding new usuario
+      const novoUsuario: Usuario = {
+        ...usuarioData,
+        id: Date.now().toString(),
+        dataCriacao: new Date().toISOString().split("T")[0],
+        ativo: true,
+      }
+      setUsuarios((prev) => [...prev, novoUsuario])
+    }
     handleCloseModal()
   }
 
@@ -49,7 +60,12 @@ export default function UsuariosPage() {
         </Button>
       </div>
 
-      <UsuariosTable onEditarUsuario={handleEditarUsuario} onExcluirUsuario={handleExcluirUsuario} />
+      <UsuariosTable
+        onEditarUsuario={handleEditarUsuario}
+        onExcluirUsuario={handleExcluirUsuario}
+        usuarios={usuarios}
+        setUsuarios={setUsuarios}
+      />
 
       <UsuarioModal
         isOpen={isModalOpen}
