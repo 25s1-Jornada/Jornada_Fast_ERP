@@ -94,17 +94,31 @@ export function FiltroAvancadoModal({
     [valoresParaExibir],
   )
 
+  const sincronizarComFiltrosAplicados = useCallback(() => {
+    if (!aplicarEmTempoReal) {
+      setFiltrosTemporarios(valores)
+    }
+  }, [aplicarEmTempoReal, valores])
+
+  const handleDialogOpenChange = (open: boolean) => {
+    if (!open) {
+      sincronizarComFiltrosAplicados()
+    }
+    setIsOpen(open)
+  }
+
   const handleOpenModal = () => {
-    setFiltrosTemporarios(valores)
+    sincronizarComFiltrosAplicados()
     setIsOpen(true)
   }
 
   const handleCloseModal = () => {
+    sincronizarComFiltrosAplicados()
     setIsOpen(false)
   }
 
   const handleCancelar = () => {
-    setFiltrosTemporarios({})
+    sincronizarComFiltrosAplicados()
     setIsOpen(false)
   }
 
@@ -121,6 +135,19 @@ export function FiltroAvancadoModal({
     } else {
       setFiltrosTemporarios(novosFiltros)
     }
+  }
+
+  const handleMultiSelectChange = (campo: string, valor: string, checked: boolean) => {
+    const valoresAtuais = (valoresParaExibir[campo] as string[]) || []
+    let novosValores: string[]
+
+    if (checked) {
+      novosValores = valoresAtuais.includes(valor) ? valoresAtuais : [...valoresAtuais, valor]
+    } else {
+      novosValores = valoresAtuais.filter((v) => v !== valor)
+    }
+
+    handleFiltroChange(campo, novosValores)
   }
 
   const limparFiltros = () => {
@@ -147,8 +174,8 @@ export function FiltroAvancadoModal({
       </Button>
 
       {/* Modal */}
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+      <Dialog open={isOpen} onOpenChange={handleDialogOpenChange}>
+        <DialogContent showCloseButton={false} className="max-w-4xl h-[90vh] flex flex-col">
           <DialogHeader className="flex-shrink-0">
             <DialogTitle className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -168,8 +195,8 @@ export function FiltroAvancadoModal({
 
           <div className="flex-1 flex flex-col min-h-0">
             <Tabs defaultValue="geral" className="flex-1 flex flex-col">
-              <TabsList className="grid w-full grid-cols-4 flex-shrink-0">
-                <TabsTrigger value="geral" className="relative">
+              <TabsList className="!flex w-full flex-nowrap gap-2 flex-shrink-0 overflow-x-auto">
+                <TabsTrigger value="geral" className="flex-1 flex items-center justify-center gap-2">
                   Geral
                   {contarFiltrosPorCategoria(categorias.geral) > 0 && (
                     <Badge variant="secondary" className="ml-1 h-4 w-4 p-0 text-xs">
@@ -177,7 +204,7 @@ export function FiltroAvancadoModal({
                     </Badge>
                   )}
                 </TabsTrigger>
-                <TabsTrigger value="pessoas" className="relative">
+                <TabsTrigger value="pessoas" className="flex-1 flex items-center justify-center gap-2">
                   Pessoas
                   {contarFiltrosPorCategoria(categorias.pessoas) > 0 && (
                     <Badge variant="secondary" className="ml-1 h-4 w-4 p-0 text-xs">
@@ -185,7 +212,7 @@ export function FiltroAvancadoModal({
                     </Badge>
                   )}
                 </TabsTrigger>
-                <TabsTrigger value="datas" className="relative">
+                <TabsTrigger value="datas" className="flex-1 flex items-center justify-center gap-2">
                   Datas
                   {contarFiltrosPorCategoria(categorias.datas) > 0 && (
                     <Badge variant="secondary" className="ml-1 h-4 w-4 p-0 text-xs">
@@ -193,7 +220,9 @@ export function FiltroAvancadoModal({
                     </Badge>
                   )}
                 </TabsTrigger>
-                <TabsTrigger value="salvos">Salvos</TabsTrigger>
+                <TabsTrigger value="salvos" className="flex-1 flex items-center justify-center gap-2">
+                  Salvos
+                </TabsTrigger>
               </TabsList>
 
               <div className="flex-1 min-h-0">
@@ -204,8 +233,9 @@ export function FiltroAvancadoModal({
                         <div key={config.campo} className="space-y-3">
                           <RenderizadorCampo
                             config={config}
-                            valor={valoresParaExibir[config.campo]}
-                            onChange={(valor) => handleFiltroChange(config.campo, valor)}
+                            valores={valoresParaExibir}
+                            onChange={handleFiltroChange}
+                            onMultiSelectChange={handleMultiSelectChange}
                           />
                         </div>
                       ))}
@@ -220,8 +250,9 @@ export function FiltroAvancadoModal({
                         <div key={config.campo} className="space-y-3">
                           <RenderizadorCampo
                             config={config}
-                            valor={valoresParaExibir[config.campo]}
-                            onChange={(valor) => handleFiltroChange(config.campo, valor)}
+                            valores={valoresParaExibir}
+                            onChange={handleFiltroChange}
+                            onMultiSelectChange={handleMultiSelectChange}
                           />
                         </div>
                       ))}
@@ -236,8 +267,9 @@ export function FiltroAvancadoModal({
                         <div key={config.campo} className="space-y-3">
                           <RenderizadorCampo
                             config={config}
-                            valor={valoresParaExibir[config.campo]}
-                            onChange={(valor) => handleFiltroChange(config.campo, valor)}
+                            valores={valoresParaExibir}
+                            onChange={handleFiltroChange}
+                            onMultiSelectChange={handleMultiSelectChange}
                           />
                         </div>
                       ))}

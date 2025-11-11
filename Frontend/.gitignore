@@ -1,27 +1,69 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# -------- Next.js / Node (Frontend) --------
 
-# dependencies
-/node_modules
+# Dependências
+node_modules/
+.pnp/
+.pnpm-store/
+.npm/
+.bun/
 
-# next.js
-/.next/
-/out/
+# Locks (se preferir versionar um só, remova os outros)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lockb
 
-# production
-/build
+# Build / Output
+.next/
+out/
+build/
+dist/
 
-# debug
+# Cache
+.cache/
+.next/cache/
+.eslintcache
+stylelintcache
+turbo/
+.nyc_output/
+coverage/
+
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
+pnpm-debug.log*
+bun-debug.log*
+*.log
 
-# env files
-.env*
+# Env (mantenha apenas o exemplo)
+.env
+.env.*
+!.env.example
 
-# vercel
-.vercel
+# Vercel
+.vercel/
 
-# typescript
+# TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# Editor / SO
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# Storybook (se usar)
+.storybook-out/
+storybook-static/
+
+# Playwright / Cypress (se usar)
+playwright-report/
+test-results/
+cypress/videos/
+cypress/screenshots/

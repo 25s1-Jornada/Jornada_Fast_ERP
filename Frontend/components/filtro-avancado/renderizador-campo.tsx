@@ -11,7 +11,8 @@ import type { FiltroConfig, FiltroValores } from "../filtro-avancado"
 
 interface RenderizadorCampoProps {
   config: FiltroConfig
-  valores: FiltroValores
+  valores?: FiltroValores
+  valor?: any
   onChange: (campo: string, valor: any) => void
   onMultiSelectChange?: (campo: string, valor: string, checked: boolean) => void
   mostrarFiltrosCliente?: boolean
@@ -20,13 +21,14 @@ interface RenderizadorCampoProps {
 
 export function RenderizadorCampo({
   config,
-  valores,
+  valores = {},
+  valor,
   onChange,
   onMultiSelectChange,
   mostrarFiltrosCliente = false,
   mostrarFiltrosTecnico = false,
 }: RenderizadorCampoProps) {
-  const valor = valores[config.campo]
+  const valorAtual = valor ?? valores[config.campo]
 
   switch (config.tipo) {
     case "texto":
@@ -34,7 +36,7 @@ export function RenderizadorCampo({
         <CampoTexto
           campo={config.campo}
           placeholder={config.placeholder}
-          valor={valor || ""}
+          valor={valorAtual || ""}
           onChange={onChange}
           mostrarFiltrosCliente={mostrarFiltrosCliente}
           mostrarFiltrosTecnico={mostrarFiltrosTecnico}
@@ -43,7 +45,7 @@ export function RenderizadorCampo({
 
     case "numero":
       return (
-        <CampoNumero campo={config.campo} placeholder={config.placeholder} valor={valor || ""} onChange={onChange} />
+        <CampoNumero campo={config.campo} placeholder={config.placeholder} valor={valorAtual || ""} onChange={onChange} />
       )
 
     case "select":
@@ -51,7 +53,7 @@ export function RenderizadorCampo({
         <CampoSelect
           campo={config.campo}
           opcoes={config.opcoes || []}
-          valor={valor || ""}
+          valor={valorAtual || ""}
           onChange={onChange}
           placeholder={config.placeholder}
         />
@@ -62,19 +64,19 @@ export function RenderizadorCampo({
         <CampoMultiSelect
           campo={config.campo}
           opcoes={config.opcoes || []}
-          valores={valor || []}
+          valores={valorAtual || []}
           onChange={onMultiSelectChange || (() => {})}
         />
       )
 
     case "data":
-      return <CampoData campo={config.campo} valor={valor || ""} onChange={onChange} />
+      return <CampoData campo={config.campo} valor={valorAtual || ""} onChange={onChange} />
 
     case "intervalo_data":
-      return <CampoIntervaloData campo={config.campo} valor={valor || {}} onChange={onChange} />
+      return <CampoIntervaloData campo={config.campo} valor={valorAtual || {}} onChange={onChange} />
 
     case "checkbox":
-      return <CampoCheckbox campo={config.campo} valor={valor || false} onChange={onChange} />
+      return <CampoCheckbox campo={config.campo} valor={valorAtual || false} onChange={onChange} />
 
     default:
       return null
