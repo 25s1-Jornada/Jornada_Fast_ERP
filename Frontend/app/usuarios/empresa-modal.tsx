@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -37,28 +37,53 @@ export function EmpresaModal({ isOpen, onClose, onSave, empresa }: EmpresaModalP
   const [enderecos, setEnderecos] = useState<Endereco[]>(enderecosMock)
   const [isEnderecoModalOpen, setIsEnderecoModalOpen] = useState(false)
   const [currentEndereco, setCurrentEndereco] = useState<Endereco | undefined>(
-    empresa?.endereco_id ? enderecos.find((e) => e.id === empresa.endereco_id) : undefined,
+    empresa?.endereco || (empresa?.endereco_id ? enderecosMock.find((e) => e.id === empresa.endereco_id) : undefined),
   )
 
   // Inicializa o formulário com os valores da empresa, se existir
   const form = useForm<EmpresaFormValues>({
     resolver: zodResolver(empresaSchema),
-    defaultValues: empresa
-      ? {
-          nome: empresa.nome,
-          cnpj: empresa.cnpj,
-          endereco_id: empresa.endereco_id,
-          tipo_empresa: empresa.tipo_empresa,
-          email: empresa.email,
-        }
-      : {
-          nome: "",
-          cnpj: "",
-          endereco_id: "",
-          tipo_empresa: undefined as unknown as TipoEmpresa,
-          email: "",
-        },
+    defaultValues: {
+      nome: "",
+      cnpj: "",
+      endereco_id: "",
+      tipo_empresa: undefined as unknown as TipoEmpresa,
+      email: "",
+    },
   })
+
+  // Sempre que abrirmos o modal ou a empresa mudar, sincroniza os valores nos inputs
+  useEffect(() => {
+    if (!isOpen) return
+
+    if (empresa) {
+      form.reset({
+        nome: empresa.nome,
+        cnpj: empresa.cnpj,
+        endereco_id: empresa.endereco_id,
+        tipo_empresa: empresa.tipo_empresa,
+        email: empresa.email,
+      })
+
+      const enderecoExistente =
+        empresa.endereco || enderecos.find((e) => e.id === empresa.endereco_id) || undefined
+
+      if (empresa.endereco && !enderecos.some((e) => e.id === empresa.endereco.id)) {
+        setEnderecos((prev) => [...prev, empresa.endereco as Endereco])
+      }
+
+      setCurrentEndereco(enderecoExistente)
+    } else {
+      form.reset({
+        nome: "",
+        cnpj: "",
+        endereco_id: "",
+        tipo_empresa: undefined as unknown as TipoEmpresa,
+        email: "",
+      })
+      setCurrentEndereco(undefined)
+    }
+  }, [empresa, isOpen, form, enderecos])
 
   // Função para salvar a empresa
   const handleSave = (values: EmpresaFormValues) => {
@@ -235,7 +260,7 @@ export function EmpresaModal({ isOpen, onClose, onSave, empresa }: EmpresaModalP
       <EnderecoModal
         isOpen={isEnderecoModalOpen}
         onClose={() => setIsEnderecoModalOpen(false)}
-        onSave={handleSaveEndereco}
+        onSalvar={handleSaveEndereco}
         endereco={currentEndereco}
       />
     </>
