@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Edit, RefreshCw } from "lucide-react"
 import { FiltroAvancado, type FiltroConfig, type FiltroValores } from "@/components/filtro-avancado"
 import { Ordenacao } from "@/components/ordenacao"
+import { api } from "@/lib/api"
 
 interface Tecnico {
   id: string
@@ -25,64 +26,7 @@ interface TecnicosTableProps {
   setTecnicos: (tecnicos: Tecnico[]) => void
 }
 
-// Dados de exemplo expandidos para técnicos
-const tecnicosIniciais: Tecnico[] = [
-  {
-    id: "1",
-    nome: "Carlos Oliveira",
-    empresa: "TechSupport Ltda",
-    telefone: "(11) 98765-4321",
-    email: "carlos@techsupport.com",
-    cidade: "São Paulo",
-    uf: "SP",
-    especialidade: "refrigeracao",
-    ativo: true,
-  },
-  {
-    id: "2",
-    nome: "Ana Silva",
-    empresa: "Manutenção Express",
-    telefone: "(21) 97654-3210",
-    email: "ana@manutencaoexpress.com",
-    cidade: "Rio de Janeiro",
-    uf: "RJ",
-    especialidade: "iluminacao",
-    ativo: true,
-  },
-  {
-    id: "3",
-    nome: "Roberto Santos",
-    empresa: "Fix IT Soluções",
-    telefone: "(31) 96543-2109",
-    email: "roberto@fixit.com",
-    cidade: "Belo Horizonte",
-    uf: "MG",
-    especialidade: "estrutura",
-    ativo: true,
-  },
-  {
-    id: "4",
-    nome: "Marina Costa",
-    empresa: "Elétrica Total",
-    telefone: "(41) 95432-1098",
-    email: "marina@eletricatotal.com",
-    cidade: "Curitiba",
-    uf: "PR",
-    especialidade: "iluminacao",
-    ativo: true,
-  },
-  {
-    id: "5",
-    nome: "Pedro Almeida",
-    empresa: "Clima Perfeito",
-    telefone: "(48) 94321-0987",
-    email: "pedro@climaperfeito.com",
-    cidade: "Florianópolis",
-    uf: "SC",
-    especialidade: "refrigeracao",
-    ativo: false,
-  },
-]
+// Dados iniciados via API
 
 // Configuração dos filtros para técnicos
 const configuracaoFiltros: FiltroConfig[] = [
@@ -150,10 +94,43 @@ const camposOrdenacao = [
 
 export function TecnicosTable({ onEditarTecnico, tecnicos, setTecnicos }: TecnicosTableProps) {
   useEffect(() => {
-    if (tecnicos.length === 0) {
-      setTecnicos(tecnicosIniciais)
+    const load = async () => {
+      try {
+        const [usuarios, empresas] = await Promise.all([
+          api.get<any[]>("/api/Usuario/lista?perfil=tecnico"),
+          api.get<any[]>("/api/Empresa/lista"),
+        ])
+
+        const empresaMap = (empresas || []).reduce<Record<string, any>>((acc, empresa) => {
+          const id = String(empresa.id ?? "")
+          acc[id] = empresa
+          return acc
+        }, {})
+
+        const mapped: Tecnico[] = (usuarios || []).map((u) => {
+          const empresaId = String(u.empresaId ?? u.empresaID ?? u.empresa_id ?? "")
+          const empresa = empresaMap[empresaId]
+          return {
+            id: String(u.id ?? ""),
+            nome: u.nome ?? "",
+            empresa: empresa?.nome ?? "-",
+            telefone: u.telefone ?? "",
+            email: u.email ?? "",
+            cidade: empresa?.endereco?.cidade ?? "",
+            uf: empresa?.endereco?.uf ?? "",
+            especialidade: u.especialidade ?? "",
+            ativo: true,
+          }
+        })
+
+        setTecnicos(mapped)
+      } catch (error) {
+        console.error(error)
+      }
     }
-  }, [])
+
+    load()
+  }, [setTecnicos])
 
   const [filtros, setFiltros] = useState<FiltroValores>({})
   const [ordenacao, setOrdenacao] = useState({ campo: "nome", direcao: "asc" as "asc" | "desc" })
