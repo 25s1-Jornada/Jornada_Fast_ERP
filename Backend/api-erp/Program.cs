@@ -38,6 +38,7 @@ namespace api_erp
             builder.Services.AddScoped<IDescricaoDefeitoRepository, DescricaoDefeitoRepository>();
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+            var secondConnection = builder.Configuration.GetConnectionString("SecondConnection");
 
             builder.Services.AddDbContext<AppDbContext>(options =>
             {
@@ -52,6 +53,23 @@ namespace api_erp
                 else
                 {
                     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+                }
+            });
+
+            // Segundo DbContext apontando para outra base
+            builder.Services.AddDbContext<api_erp.EntityConfig.SecondDbContext>(options =>
+            {
+                if (string.IsNullOrWhiteSpace(secondConnection))
+                {
+                    options.UseInMemoryDatabase("ApiErpDev2");
+                }
+                else if (secondConnection.Contains("Data Source=", StringComparison.OrdinalIgnoreCase))
+                {
+                    options.UseSqlite(secondConnection);
+                }
+                else
+                {
+                    options.UseMySql(secondConnection, ServerVersion.AutoDetect(secondConnection));
                 }
             });
 
@@ -75,6 +93,24 @@ namespace api_erp
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
+            }
+
+            // Ensure databases are created and up-to-date (apply EF Core migrations)
+            using (var scope = app.Services.CreateScope())
+            {
+                try
+                {
+                    var mainDb = scope.ServiceProvider.GetRequiredService<api_erp.EntityConfig.AppDbContext>();
+                    mainDb.Database.Migrate();
+                }
+                catch { }
+
+                try
+                {
+                    var secondDb = scope.ServiceProvider.GetRequiredService<api_erp.EntityConfig.SecondDbContext>();
+                    secondDb.Database.Migrate();
+                }
+                catch { }
             }
 
             app.UseCors("cors");

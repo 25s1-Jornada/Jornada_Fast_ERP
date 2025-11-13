@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
-import { EnderecoModal } from "../endereco-modal"
+import { EnderecoModal } from "../endereco-modal-fixed"
 import { MapPin, User, Mail, FileText, Building2, Shield } from "lucide-react"
 import type { Usuario, UsuarioFormData, PerfilUsuario, Endereco } from "./types"
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -8,97 +8,15 @@ import { Badge } from "@/components/ui/badge"
 import { Edit, Trash2, Search, RefreshCw } from "lucide-react"
 import type { Usuario, PerfilUsuario } from "./types"
 
-// Dados mockados de usuários
-const usuariosMock: Usuario[] = [
-  {
-    id: "1",
-    nome: "João Silva",
-    email: "joao.silva@fastcom.com.br",
-    documento: "123.456.789-00",
-    perfil: "admin" as PerfilUsuario,
-    empresaId: "1",
-    ativo: true,
-    dataCriacao: "2024-01-15",
-    endereco: {
-      logradouro: "Rua das Flores",
-      numero: "123",
-      bairro: "Centro",
-      cidade: "São Paulo",
-      uf: "SP",
-      cep: "01234-567",
-    },
-  },
-  {
-    id: "2",
-    nome: "Maria Santos",
-    email: "maria.santos@techservice.com.br",
-    documento: "987.654.321-00",
-    perfil: "tecnico" as PerfilUsuario,
-    empresaId: "2",
-    ativo: true,
-    dataCriacao: "2024-01-20",
-    endereco: {
-      logradouro: "Av. Paulista",
-      numero: "1000",
-      bairro: "Bela Vista",
-      cidade: "São Paulo",
-      uf: "SP",
-      cep: "01310-100",
-    },
-  },
-  {
-    id: "3",
-    nome: "Carlos Oliveira",
-    email: "carlos@assistenciabc.com.br",
-    perfil: "tecnico" as PerfilUsuario,
-    empresaId: "3",
-    ativo: true,
-    dataCriacao: "2024-02-01",
-  },
-  {
-    id: "4",
-    nome: "Ana Costa",
-    email: "ana.costa@clientexyz.com.br",
-    documento: "456.789.123-00",
-    perfil: "cliente" as PerfilUsuario,
-    empresaId: "4",
-    ativo: false,
-    dataCriacao: "2024-02-10",
-  },
-  {
-    id: "5",
-    nome: "Roberto Lima",
-    email: "roberto@refrigeracaototal.com.br",
-    perfil: "tecnico" as PerfilUsuario,
-    empresaId: "5",
-    ativo: true,
-    dataCriacao: "2024-02-15",
-  },
-]
-
-// Dados das empresas para exibição
-const empresasMap = {
-  "1": { nome: "Fast Com Tecnologia", tipo: "Administradora" },
-  "2": { nome: "TechService Ltda", tipo: "Representante" },
-  "3": { nome: "Assistência Técnica ABC", tipo: "Técnico" },
-  "4": { nome: "Cliente Empresa XYZ", tipo: "Cliente" },
-  "5": { nome: "Refrigeração Total", tipo: "Técnico" },
-}
-
 interface UsuariosTableProps {
   onEditarUsuario: (usuario: Usuario) => void
   onExcluirUsuario: (id: string) => void
   usuarios: Usuario[]
   setUsuarios: (usuarios: Usuario[]) => void
+  empresaNomeMap?: Record<string, string>
 }
 
-export function UsuariosTable({ onEditarUsuario, onExcluirUsuario, usuarios, setUsuarios }: UsuariosTableProps) {
-  useEffect(() => {
-    if (usuarios.length === 0) {
-      setUsuarios(usuariosMock)
-    }
-  }, [])
-
+export function UsuariosTable({ onEditarUsuario, onExcluirUsuario, usuarios, setUsuarios, empresaNomeMap = {} }: UsuariosTableProps) {
   const [busca, setBusca] = useState("")
   const [isRefreshing, setIsRefreshing] = useState(false)
 
@@ -106,7 +24,7 @@ export function UsuariosTable({ onEditarUsuario, onExcluirUsuario, usuarios, set
     setIsRefreshing(true)
     setTimeout(() => {
       setIsRefreshing(false)
-    }, 1000)
+    }, 600)
   }
 
   // Filtrar usuários baseado na busca
@@ -115,11 +33,11 @@ export function UsuariosTable({ onEditarUsuario, onExcluirUsuario, usuarios, set
 
     const termoBusca = busca.toLowerCase()
     return usuarios.filter((usuario) => {
-      const empresa = empresasMap[usuario.empresaId as keyof typeof empresasMap]
+      const empresaNome = empresaNomeMap[usuario.empresaId]
       return (
         usuario.nome.toLowerCase().includes(termoBusca) ||
         usuario.email.toLowerCase().includes(termoBusca) ||
-        empresa?.nome.toLowerCase().includes(termoBusca) ||
+        (empresaNome && empresaNome.toLowerCase().includes(termoBusca)) ||
         usuario.documento?.toLowerCase().includes(termoBusca)
       )
     })
@@ -185,7 +103,7 @@ export function UsuariosTable({ onEditarUsuario, onExcluirUsuario, usuarios, set
           <TableBody>
             {usuariosFiltrados.length > 0 ? (
               usuariosFiltrados.map((usuario) => {
-                const empresa = empresasMap[usuario.empresaId as keyof typeof empresasMap]
+                const empresaNome = empresaNomeMap[usuario.empresaId]
                 return (
                   <TableRow key={usuario.id}>
                     <TableCell>
@@ -197,14 +115,7 @@ export function UsuariosTable({ onEditarUsuario, onExcluirUsuario, usuarios, set
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">{usuario.email}</TableCell>
                     <TableCell className="hidden md:table-cell">{getPerfilBadge(usuario.perfil)}</TableCell>
-                    <TableCell className="hidden lg:table-cell">
-                      {empresa && (
-                        <div>
-                          <div className="font-medium">{empresa.nome}</div>
-                          <div className="text-sm text-muted-foreground">{empresa.tipo}</div>
-                        </div>
-                      )}
-                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">{empresaNome || '-'}</TableCell>
                     <TableCell className="hidden lg:table-cell">
                       {usuario.endereco ? (
                         <div className="text-sm">
@@ -246,3 +157,4 @@ export function UsuariosTable({ onEditarUsuario, onExcluirUsuario, usuarios, set
     </div>
   )
 }
+

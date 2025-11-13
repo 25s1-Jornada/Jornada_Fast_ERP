@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { PlusCircle } from "lucide-react"
 import { ChamadosTable } from "./chamados-table"
 import { ChamadoModal } from "./chamado-modal"
+import { api } from "@/lib/api"
 
 // Tipos para os dados do chamado
 interface Cliente {
@@ -75,6 +76,44 @@ export default function ChamadosPage() {
   const [chamadoParaEditar, setChamadoParaEditar] = useState<Chamado | undefined>(undefined)
   const [chamados, setChamados] = useState<Chamado[]>([])
   const [refreshKey, setRefreshKey] = useState(0)
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await api.get<any[]>("/api/OrdensServico/front-list")
+        // Mapeia o DTO do backend para o tipo Chamado da UI
+        const mapped: Chamado[] = (data || []).map((os) => ({
+          id: os.id,
+          cliente: { id: os.cliente?.id || "", nome: os.cliente?.nome || "" },
+          tecnico: { id: os.tecnico?.id || "", nome: os.tecnico?.nome || "" },
+          dataAbertura: os.dataAbertura || "",
+          dataVisita: os.dataVisita || "",
+          status: os.status || "",
+          pedido: os.pedido || "",
+          dataFaturamento: os.dataFaturamento || "",
+          garantia: os.garantia || "",
+          descricoes: (os.descricoes || []).map((d: any) => ({
+            id: d.id,
+            numeroSerie: d.numeroSerie,
+            defeito: d.defeito,
+            observacao: d.observacao,
+          })),
+          custos: {
+            deslocamento: { hrSaidaEmpresa: "", hrChegadaCliente: "", hrSaidaCliente: "", hrChegadaEmpresa: "", totalHoras: "", totalValor: "0" },
+            horaTrabalhada: { hrInicio: "", hrTermino: "", totalHoras: "", totalValor: "0" },
+            km: { km: "", valorPorKm: "", totalValor: "0" },
+            materiais: [],
+            valorTotal: (os.valorTotal || "R$ 0,00").replace(/[R$\s]/g, ""),
+          },
+        }))
+        setChamados(mapped)
+        setRefreshKey((k) => k + 1)
+      } catch (e) {
+        console.error(e)
+      }
+    }
+    load()
+  }, [])
 
   const handleNovoChamado = () => {
     setChamadoParaEditar(undefined)

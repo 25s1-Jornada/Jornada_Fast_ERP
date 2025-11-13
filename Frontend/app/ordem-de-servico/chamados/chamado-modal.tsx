@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { Plus, X, Trash2 } from "lucide-react"
 import { DescricaoDefeitoForm } from "./descricao-defeito-form"
+import { api } from "@/lib/api"
 
 // Tipos para os dados do chamado
 interface Cliente {
@@ -170,6 +171,25 @@ export function ChamadoModal({ isOpen, onClose, onSalvar, chamado }: ChamadoModa
     ],
     valorTotal: "0",
   })
+
+  // Carregar usuários para preencher cliente e técnico
+  const [usuariosOptions, setUsuariosOptions] = useState<{ id: string; nome: string }[]>([])
+  useEffect(() => {
+    const loadUsuarios = async () => {
+      try {
+        const data = await api.get<any[]>("/api/Usuario")
+        const mapped = (data || []).map((u) => ({ id: String(u.id ?? ""), nome: u.nome ?? "" }))
+        setUsuariosOptions(mapped)
+      } catch (e) {
+        console.error(e)
+      }
+    }
+    if (isOpen) loadUsuarios()
+  }, [isOpen])
+
+  // Sombreamento: usa usuários como fonte para clientes e técnicos
+  const clientesDisponiveis = usuariosOptions
+  const tecnicosDisponiveis = usuariosOptions
 
   const [activeTab, setActiveTab] = useState("descricao")
 

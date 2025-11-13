@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
@@ -9,27 +8,21 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
-import { EnderecoModal } from "../endereco-modal"
+import { EnderecoModal } from "../endereco-modal-fixed"
 import { MapPin, User, Mail, FileText, Building2, Shield } from "lucide-react"
 import type { Usuario, UsuarioFormData, PerfilUsuario, Endereco } from "./types"
 
-// Dados mockados das empresas
-const empresasMock = [
-  { id: "1", nome: "Fast Com Tecnologia", tipo: "Administradora" },
-  { id: "2", nome: "TechService Ltda", tipo: "Representante" },
-  { id: "3", nome: "Assistência Técnica ABC", tipo: "Técnico" },
-  { id: "4", nome: "Cliente Empresa XYZ", tipo: "Cliente" },
-  { id: "5", nome: "Refrigeração Total", tipo: "Técnico" },
-]
+type EmpresaOption = { id: string; nome: string; tipo?: string }
 
 interface UsuarioModalProps {
   isOpen: boolean
   onClose: () => void
   onSalvar: (usuario: UsuarioFormData) => void
   usuario?: Usuario
+  empresasOptions?: EmpresaOption[]
 }
 
-export function UsuarioModal({ isOpen, onClose, onSalvar, usuario }: UsuarioModalProps) {
+export function UsuarioModal({ isOpen, onClose, onSalvar, usuario, empresasOptions = [] }: UsuarioModalProps) {
   const [isEnderecoModalOpen, setIsEnderecoModalOpen] = useState(false)
   const [formData, setFormData] = useState<UsuarioFormData>({
     nome: "",
@@ -79,23 +72,18 @@ export function UsuarioModal({ isOpen, onClose, onSalvar, usuario }: UsuarioModa
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-
-    // Validações básicas
     if (!formData.nome.trim()) {
       alert("Nome é obrigatório")
       return
     }
-
     if (!formData.email.trim()) {
       alert("Email é obrigatório")
       return
     }
-
     if (!formData.empresaId) {
       alert("Empresa é obrigatória")
       return
     }
-
     onSalvar(formData)
   }
 
@@ -127,13 +115,7 @@ export function UsuarioModal({ isOpen, onClose, onSalvar, usuario }: UsuarioModa
                   <User className="h-4 w-4" />
                   Nome *
                 </Label>
-                <Input
-                  id="nome"
-                  value={formData.nome}
-                  onChange={(e) => handleChange("nome", e.target.value)}
-                  placeholder="Nome completo do usuário"
-                  required
-                />
+                <Input id="nome" value={formData.nome} onChange={(e) => handleChange("nome", e.target.value)} />
               </div>
 
               <div className="space-y-2">
@@ -141,14 +123,7 @@ export function UsuarioModal({ isOpen, onClose, onSalvar, usuario }: UsuarioModa
                   <Mail className="h-4 w-4" />
                   Email *
                 </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleChange("email", e.target.value)}
-                  placeholder="email@exemplo.com"
-                  required
-                />
+                <Input id="email" type="email" value={formData.email} onChange={(e) => handleChange("email", e.target.value)} />
               </div>
 
               <div className="space-y-2">
@@ -156,12 +131,7 @@ export function UsuarioModal({ isOpen, onClose, onSalvar, usuario }: UsuarioModa
                   <FileText className="h-4 w-4" />
                   Documento
                 </Label>
-                <Input
-                  id="documento"
-                  value={formData.documento}
-                  onChange={(e) => handleChange("documento", e.target.value)}
-                  placeholder="CPF, RG ou CNPJ"
-                />
+                <Input id="documento" value={formData.documento} onChange={(e) => handleChange("documento", e.target.value)} placeholder="CPF, RG ou CNPJ" />
               </div>
 
               <div className="space-y-2">
@@ -169,17 +139,20 @@ export function UsuarioModal({ isOpen, onClose, onSalvar, usuario }: UsuarioModa
                   <Shield className="h-4 w-4" />
                   Perfil *
                 </Label>
-                <Select
-                  value={formData.perfil}
-                  onValueChange={(value) => handleChange("perfil", value as PerfilUsuario)}
-                >
+                <Select value={formData.perfil} onValueChange={(value) => handleChange("perfil", value as PerfilUsuario)}>
                   <SelectTrigger id="perfil">
                     <SelectValue placeholder="Selecione o perfil" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="admin">Administrador</SelectItem>
-                    <SelectItem value="tecnico">Técnico</SelectItem>
-                    <SelectItem value="cliente">Cliente</SelectItem>
+                    <SelectItem value="admin">
+                      <span className="text-red-600 font-medium">Administrador</span>
+                    </SelectItem>
+                    <SelectItem value="tecnico">
+                      <span className="text-blue-600 font-medium">Técnico</span>
+                    </SelectItem>
+                    <SelectItem value="cliente">
+                      <span className="text-gray-600 font-medium">Cliente</span>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -194,9 +167,12 @@ export function UsuarioModal({ isOpen, onClose, onSalvar, usuario }: UsuarioModa
                     <SelectValue placeholder="Selecione a empresa" />
                   </SelectTrigger>
                   <SelectContent>
-                    {empresasMock.map((empresa) => (
+                    {empresasOptions.map((empresa) => (
                       <SelectItem key={empresa.id} value={empresa.id}>
-                        {empresa.nome} - {empresa.tipo}
+                        <div>
+                          <div className="font-medium">{empresa.nome}</div>
+                          {empresa.tipo && <div className="text-sm text-muted-foreground">{empresa.tipo}</div>}
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -204,12 +180,10 @@ export function UsuarioModal({ isOpen, onClose, onSalvar, usuario }: UsuarioModa
               </div>
 
               <div className="space-y-2">
-                <Label>Status</Label>
+                <Label className="flex items-center gap-2">Status</Label>
                 <div className="flex items-center space-x-2">
                   <Switch checked={formData.ativo} onCheckedChange={(checked) => handleChange("ativo", checked)} />
-                  <span className={formData.ativo ? "text-green-600" : "text-red-600"}>
-                    {formData.ativo ? "Ativo" : "Inativo"}
-                  </span>
+                  <span className={formData.ativo ? "text-green-600" : "text-red-600"}>{formData.ativo ? "Ativo" : "Inativo"}</span>
                 </div>
               </div>
             </div>
@@ -232,9 +206,7 @@ export function UsuarioModal({ isOpen, onClose, onSalvar, usuario }: UsuarioModa
                     <div className="font-medium">
                       {formData.endereco.logradouro}, {formData.endereco.numero}
                     </div>
-                    {formData.endereco.complemento && (
-                      <div className="text-muted-foreground">{formData.endereco.complemento}</div>
-                    )}
+                    {formData.endereco.complemento && <div className="text-muted-foreground">{formData.endereco.complemento}</div>}
                     <div className="text-muted-foreground">
                       {formData.endereco.bairro} - {formData.endereco.cidade}/{formData.endereco.uf}
                     </div>
@@ -264,22 +236,17 @@ export function UsuarioModal({ isOpen, onClose, onSalvar, usuario }: UsuarioModa
             )}
 
             {/* Botões de Ação */}
-            <div className="flex justify-end gap-4">
+            <div className="flex justify-end gap-4 pt-4">
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancelar
               </Button>
               <Button type="submit">{usuario ? "Atualizar" : "Criar"} Usuário</Button>
             </div>
           </form>
+
+          <EnderecoModal isOpen={isEnderecoModalOpen} onClose={() => setIsEnderecoModalOpen(false)} onSalvar={handleEnderecoSave} endereco={formData.endereco} />
         </DialogContent>
       </Dialog>
-
-      <EnderecoModal
-        isOpen={isEnderecoModalOpen}
-        onClose={() => setIsEnderecoModalOpen(false)}
-        onSalvar={handleEnderecoSave}
-        endereco={formData.endereco}
-      />
     </>
   )
 }

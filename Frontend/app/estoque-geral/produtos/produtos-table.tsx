@@ -1,79 +1,53 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { MoreHorizontal, Search } from "lucide-react"
+import { api } from "@/lib/api"
 
-// Dados de exemplo
-const produtos = [
-  {
-    id: "1",
-    nome: "Placa Mãe ASUS",
-    codigo: "PM001",
-    categoria: "Informática",
-    preco: "450,00",
-    unidade: "UN",
-    estoque: 15,
-  },
-  {
-    id: "2",
-    nome: "Memória RAM 8GB",
-    codigo: "MR002",
-    categoria: "Informática",
-    preco: "220,00",
-    unidade: "UN",
-    estoque: 32,
-  },
-  {
-    id: "3",
-    nome: "SSD 240GB",
-    codigo: "SSD003",
-    categoria: "Informática",
-    preco: "180,00",
-    unidade: "UN",
-    estoque: 28,
-  },
-  {
-    id: "4",
-    nome: "Fonte ATX 500W",
-    codigo: "FT004",
-    categoria: "Informática",
-    preco: "280,00",
-    unidade: "UN",
-    estoque: 12,
-  },
-  {
-    id: "5",
-    nome: "Cabo HDMI 2m",
-    codigo: "CB005",
-    categoria: "Eletrônicos",
-    preco: "35,00",
-    unidade: "UN",
-    estoque: 50,
-  },
-]
+type Produto = {
+  id?: number
+  idIntegracao?: number
+  sku?: string
+  nome: string
+  descricao?: string
+  preco?: number
+  categoriaId?: number
+  status: boolean
+}
 
 export function ProdutosTable() {
   const [searchTerm, setSearchTerm] = useState("")
+  const [produtos, setProdutos] = useState<Produto[]>([])
+  const [loading, setLoading] = useState(false)
 
-  // Filtra os produtos com base no termo de busca
-  const filteredProdutos = produtos.filter(
-    (produto) =>
-      produto.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      produto.codigo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      produto.categoria.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true)
+        const data = await api.get<Produto[]>("/api/Produto")
+        setProdutos(data || [])
+      } catch (e) {
+        console.error(e)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [])
+
+  const filteredProdutos = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase()
+    if (!term) return produtos
+    return produtos.filter((p) =>
+      (p.nome || "").toLowerCase().includes(term) ||
+      (p.sku || "").toLowerCase().includes(term) ||
+      String(p.categoriaId ?? "").toLowerCase().includes(term)
+    )
+  }, [produtos, searchTerm])
 
   return (
     <div className="space-y-4">
@@ -98,43 +72,35 @@ export function ProdutosTable() {
               <TableHead>Nome</TableHead>
               <TableHead>Categoria</TableHead>
               <TableHead>Preço</TableHead>
-              <TableHead>Estoque</TableHead>
               <TableHead className="w-[80px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredProdutos.length === 0 ? (
+            {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
+                <TableCell colSpan={5} className="h-24 text-center">
+                  Carregando...
+                </TableCell>
+              </TableRow>
+            ) : filteredProdutos.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="h-24 text-center">
                   Nenhum produto encontrado.
                 </TableCell>
               </TableRow>
             ) : (
               filteredProdutos.map((produto) => (
-                <TableRow key={produto.id}>
-                  <TableCell>{produto.codigo}</TableCell>
+                <TableRow key={produto.id}
+                >
+                  <TableCell>{produto.sku || '-'}</TableCell>
                   <TableCell>{produto.nome}</TableCell>
-                  <TableCell>{produto.categoria}</TableCell>
-                  <TableCell>R$ {produto.preco}</TableCell>
-                  <TableCell>{produto.estoque}</TableCell>
+                  <TableCell>{produto.categoriaId ?? '-'}</TableCell>
+                  <TableCell>{typeof produto.preco === 'number' ? `R$ ${produto.preco.toFixed(2)}` : '-'}</TableCell>
                   <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <span className="sr-only">Abrir menu</span>
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>
-                          <Link href={`/estoque-geral/produtos/${produto.id}`}>Ver detalhes</Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>Editar</DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-600">Excluir</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                      <span className="sr-only">Abrir menu</span>
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))
@@ -145,3 +111,4 @@ export function ProdutosTable() {
     </div>
   )
 }
+

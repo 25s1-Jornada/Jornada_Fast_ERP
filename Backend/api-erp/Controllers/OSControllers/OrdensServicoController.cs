@@ -39,6 +39,17 @@ namespace api_erp.Controllers.OSControllers
             return Ok(dtos);
         }
 
+        // Lista no formato "front" esperado pelo Next.js (ChamadosTable)
+        [HttpGet("front-list")]
+        public async Task<IActionResult> GetFrontList([FromQuery] bool includeRelacionamentos = true, CancellationToken ct = default)
+        {
+            var ordens = await _repo.GetAllAsync(includeRelacionamentos, ct);
+            var custos = await _custoRepo.GetAllAsync(includeRelacionamentos: true, ct: ct);
+            var custosLookup = custos.Where(c => c.OrdemServicoId.HasValue).ToLookup(c => c.OrdemServicoId!.Value);
+            var dtos = ordens.Select(os => os.ToFrontListDto(custosLookup[os.Id].FirstOrDefault()));
+            return Ok(dtos);
+        }
+
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id, [FromQuery] bool includeRelacionamentos = true, CancellationToken ct = default)
         {

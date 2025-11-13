@@ -143,5 +143,70 @@ namespace api_erp.Mappers
                 ValorTotal = (custo?.ValorTotal ?? 0).ToString("C", br)
             };
         }
+
+        // DTO aninhado no formato esperado pelo Front (ChamadosTable)
+        public static OsFrontChamadoDto ToFrontListDto(this OrdemServico e, Custo? custo = null)
+        {
+            string? StatusToString(int? id)
+            {
+                if (id.HasValue && Enum.IsDefined(typeof(Status), id.Value))
+                    return ToSnake(Enum.GetName(typeof(Status), id.Value));
+                return id?.ToString();
+            }
+
+            string? GarantiaToString(int? id)
+            {
+                if (id.HasValue && Enum.IsDefined(typeof(Garantia), id.Value))
+                    return ToSnake(Enum.GetName(typeof(Garantia), id.Value));
+                return id?.ToString();
+            }
+
+            string? CategoriaToString(int? id)
+            {
+                if (id.HasValue && Enum.IsDefined(typeof(Categoria), id.Value))
+                    return ToSnake(Enum.GetName(typeof(Categoria), id.Value));
+                return id?.ToString();
+            }
+
+            var br = new CultureInfo("pt-BR");
+
+            var dto = new OsFrontChamadoDto
+            {
+                Id = e.Id.ToString(),
+                Cliente = new OsFrontPessoaDto
+                {
+                    Id = e.ClientId.ToString(),
+                    Nome = e.Empresa?.Nome ?? string.Empty
+                },
+                Tecnico = new OsFrontPessoaDto
+                {
+                    Id = e.TecnicoId?.ToString() ?? string.Empty,
+                    Nome = e.Tecnico?.Nome ?? string.Empty
+                },
+                DataAbertura = e.DataAbertura.ToString("yyyy-MM-dd", br),
+                DataVisita = custo?.dataVisita?.ToString("yyyy-MM-dd", br),
+                Status = StatusToString(e.StatusId) ?? string.Empty,
+                Pedido = e.Pedido,
+                DataFaturamento = e.DataFaturamento?.ToString("yyyy-MM-dd", br),
+                Garantia = GarantiaToString(e.GarantiaId),
+                ValorTotal = (custo?.ValorTotal ?? 0).ToString("C", br)
+            };
+
+            if (e.DescricaoDoChamadoList != null)
+            {
+                foreach (var d in e.DescricaoDoChamadoList)
+                {
+                    dto.Descricoes.Add(new OsFrontDescricaoDto
+                    {
+                        Id = (d.Id ?? 0).ToString(),
+                        NumeroSerie = d.NumeroSerie ?? string.Empty,
+                        Defeito = CategoriaToString(d.CategoriaId) ?? string.Empty,
+                        Observacao = d.Observacao
+                    });
+                }
+            }
+
+            return dto;
+        }
     }
 }

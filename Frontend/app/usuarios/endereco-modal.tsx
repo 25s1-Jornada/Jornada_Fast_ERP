@@ -103,22 +103,22 @@ export function EnderecoModal({ isOpen, onClose, onSalvar, endereco }: EnderecoM
     }
   }, [isOpen, endereco, form])
 
-  // Função para salvar o endereço
-  const handleSave = (values: EnderecoFormValues) => {
+  // Fun��o para salvar o endere�o
+  const handleSave = async (values: EnderecoFormValues) => {
     setIsSubmitting(true)
-
-    // Simula uma operação assíncrona
-    setTimeout(() => {
+    try {
       const savedEndereco: Endereco = {
         id: endereco?.id || Math.random().toString(36).substring(2, 9),
         ...values,
       }
-
-      onSalvar(savedEndereco)
-      setIsSubmitting(false)
+      await Promise.resolve(onSalvar(savedEndereco))
       form.reset()
-    }, 500)
+      onClose()
+    } finally {
+      setIsSubmitting(false)
+    }
   }
+
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -256,3 +256,5 @@ export function EnderecoModal({ isOpen, onClose, onSalvar, endereco }: EnderecoM
     </Dialog>
   )
 }
+
+
