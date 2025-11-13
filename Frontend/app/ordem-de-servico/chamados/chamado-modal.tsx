@@ -172,24 +172,24 @@ export function ChamadoModal({ isOpen, onClose, onSalvar, chamado }: ChamadoModa
     valorTotal: "0",
   })
 
-  // Carregar usuários para preencher cliente e técnico
-  const [usuariosOptions, setUsuariosOptions] = useState<{ id: string; nome: string }[]>([])
+  // Carregar usuários separados por perfil
+  const [clientesDisponiveis, setClientesDisponiveis] = useState<{ id: string; nome: string; empresaId?: string }[]>([])
+  const [tecnicosDisponiveis, setTecnicosDisponiveis] = useState<{ id: string; nome: string }[]>([])
   useEffect(() => {
-    const loadUsuarios = async () => {
+    const load = async () => {
       try {
-        const data = await api.get<any[]>("/api/Usuario")
-        const mapped = (data || []).map((u) => ({ id: String(u.id ?? ""), nome: u.nome ?? "" }))
-        setUsuariosOptions(mapped)
+        const [clientes, tecnicos] = await Promise.all([
+          api.get<any[]>("/api/Usuario/lista?perfil=cliente"),
+          api.get<any[]>("/api/Usuario/lista?perfil=tecnico"),
+        ])
+        setClientesDisponiveis((clientes || []).map((c) => ({ id: String(c.id ?? ""), nome: c.nome ?? "", empresaId: c.empresaId ? String(c.empresaId) : undefined })))
+        setTecnicosDisponiveis((tecnicos || []).map((t) => ({ id: String(t.id ?? ""), nome: t.nome ?? "" })))
       } catch (e) {
         console.error(e)
       }
     }
-    if (isOpen) loadUsuarios()
+    if (isOpen) load()
   }, [isOpen])
-
-  // Sombreamento: usa usuários como fonte para clientes e técnicos
-  const clientesDisponiveis = usuariosOptions
-  const tecnicosDisponiveis = usuariosOptions
 
   const [activeTab, setActiveTab] = useState("descricao")
 

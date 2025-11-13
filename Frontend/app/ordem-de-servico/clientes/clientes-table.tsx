@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Edit, RefreshCw } from "lucide-react"
 import { FiltroAvancado, type FiltroConfig, type FiltroValores } from "@/components/filtro-avancado"
 import { Ordenacao } from "@/components/ordenacao"
+import { api } from "@/lib/api"
 
 interface Cliente {
   id: string
@@ -27,7 +28,7 @@ interface ClientesTableProps {
 }
 
 // Dados de exemplo expandidos para clientes
-const clientesIniciais: Cliente[] = [
+const clientesIniciais: Cliente[] = []
   {
     id: "1",
     nome: "João Silva",
@@ -204,6 +205,30 @@ const camposOrdenacao = [
 ]
 
 export function ClientesTable({ onEditarCliente, clientes, setClientes }: ClientesTableProps) {
+  // Carrega clientes da API (Empresas do tipo cliente)
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await api.get<any[]>("/api/Empresa/lista?tipo=cliente")
+        const mapped: Cliente[] = (data || []).map((e) => ({
+          id: String(e.id ?? ""),
+          nome: e.nome ?? "",
+          contato: e.email ?? "",
+          telefone: "",
+          endereco: e.endereco?.logradouro ?? "",
+          numero: e.endereco?.numero ?? "",
+          bairro: e.endereco?.bairro ?? "",
+          cidade: e.endereco?.cidade ?? "",
+          uf: e.endereco?.uf ?? "",
+          codigo: e.cnpj ?? "",
+        }))
+        if (mapped.length) setClientes(mapped)
+      } catch (e) {
+        console.error(e)
+      }
+    }
+    load()
+  }, [setClientes])
   useEffect(() => {
     if (clientes.length === 0) {
       setClientes(clientesIniciais)
@@ -405,3 +430,5 @@ export function ClientesTable({ onEditarCliente, clientes, setClientes }: Client
     </div>
   )
 }
+
+

@@ -130,16 +130,48 @@ export default function ChamadosPage() {
     setChamadoParaEditar(undefined)
   }
 
-  const handleSalvarChamado = (chamado: Chamado) => {
-    if (chamado.id) {
-      // Editando chamado existente
-      setChamados((prev) => prev.map((c) => (c.id === chamado.id ? chamado : c)))
-    } else {
-      // Criando novo chamado
-      const novoChamado = { ...chamado, id: Date.now().toString() }
-      setChamados((prev) => [...prev, novoChamado])
-    }
+    const handleSalvarChamado = async (chamado: Chamado) => {
+    try {
+      const usuarios = await api.get<any[]>("/api/Usuario/lista")
+      const clienteUsuario = (usuarios || []).find((u) => String(u.id) === String(chamado.cliente.id))
+      const empresaIdStr = clienteUsuario?.empresaId || clienteUsuario?.empresaID || clienteUsuario?.empresa_id
+      const clientId = empresaIdStr ? parseInt(String(empresaIdStr), 10) : undefined
 
+      const payload = {
+        ClientId: clientId,
+        TecnicoId: chamado.tecnico?.id ? parseInt(chamado.tecnico.id, 10) : undefined,
+        DataAbertura: chamado.dataAbertura ? new Date(chamado.dataAbertura) : new Date(),
+        StatusId: undefined,
+        GarantiaId: undefined,
+        DataFaturamento: undefined,
+        Pedido: chamado.pedido || undefined,
+        NumeroOS: undefined,
+      }
+
+      await api.post("/api/OrdensServico", payload)
+
+      const data = await api.get<any[]>("/api/OrdensServico/front-list")
+      const mapped: Chamado[] = (data || []).map((os) => ({
+        id: os.id,
+        cliente: { id: os.cliente?.id || "", nome: os.cliente?.nome || "" },
+        tecnico: { id: os.tecnico?.id || "", nome: os.tecnico?.nome || "" },
+        dataAbertura: os.dataAbertura || "",
+        dataVisita: os.dataVisita || "",
+        status: os.status || "",
+        pedido: os.pedido || "",
+        dataFaturamento: os.dataFaturamento || "",
+        garantia: os.garantia || "",
+        descricoes: (os.descricoes || []).map((d: any) => ({ id: d.id, numeroSerie: d.numeroSerie, defeito: d.defeito, observacao: d.observacao })),
+        custos: { deslocamento: { hrSaidaEmpresa: "", hrChegadaCliente: "", hrSaidaCliente: "", hrChegadaEmpresa: "", totalHoras: "", totalValor: "0" }, horaTrabalhada: { hrInicio: "", hrTermino: "", totalHoras: "", totalValor: "0" }, km: { km: "", valorPorKm: "", totalValor: "0" }, materiais: [], valorTotal: (os.valorTotal || "R$ 0,00").replace(/[R$\s]/g, "") },
+      }))
+      setChamados(mapped)
+      setRefreshKey((prev) => prev + 1)
+      handleCloseModal()
+    } catch (e) {
+      console.error(e)
+      alert("Falha ao salvar chamado")
+    }
+  }
     // Força atualização da tabela
     setRefreshKey((prev) => prev + 1)
     handleCloseModal()
@@ -166,3 +198,4 @@ export default function ChamadosPage() {
     </div>
   )
 }
+

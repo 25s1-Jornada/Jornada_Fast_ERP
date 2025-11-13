@@ -56,22 +56,6 @@ namespace api_erp
                 }
             });
 
-            // Segundo DbContext apontando para outra base
-            builder.Services.AddDbContext<api_erp.EntityConfig.SecondDbContext>(options =>
-            {
-                if (string.IsNullOrWhiteSpace(secondConnection))
-                {
-                    options.UseInMemoryDatabase("ApiErpDev2");
-                }
-                else if (secondConnection.Contains("Data Source=", StringComparison.OrdinalIgnoreCase))
-                {
-                    options.UseSqlite(secondConnection);
-                }
-                else
-                {
-                    options.UseMySql(secondConnection, ServerVersion.AutoDetect(secondConnection));
-                }
-            });
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -105,12 +89,7 @@ namespace api_erp
                 }
                 catch { }
 
-                try
-                {
-                    var secondDb = scope.ServiceProvider.GetRequiredService<api_erp.EntityConfig.SecondDbContext>();
-                    secondDb.Database.Migrate();
-                }
-                catch { }
+             
             }
 
             app.UseCors("cors");
