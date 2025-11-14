@@ -2,9 +2,6 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { Navbar } from "@/components/navbar"
-import { Sidebar } from "@/components/sidebar"
-import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -31,14 +28,7 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" type="image/x-icon" />
         <link rel="shortcut icon" href="/favicon.ico" />
       </head>
-      <body className={inter.className}>
-        <Navbar />
-        <div className="flex min-h-screen pt-16">
-          <Sidebar />
-          <main className="flex-1 md:ml-[220px] bg-gray-50 p-3 sm:p-4 lg:p-6 w-full min-w-0">{children}</main>
-        </div>
-        <Toaster />
-      </body>
+      <body className={inter.className}>{children}</body>
     </html>
   )
 }
