@@ -11,30 +11,10 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/ordem-de-servico/clientes/page": [
+    "/usuarios/usuarios/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/ordem-de-servico/clientes/page.js"
-    ],
-    "/ordem-de-servico/tecnicos/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/ordem-de-servico/tecnicos/page.js"
-    ],
-    "/estoque-geral/estoque/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/estoque-geral/estoque/page.js"
-    ],
-    "/estoque-geral/movimentacoes/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/estoque-geral/movimentacoes/page.js"
-    ],
-    "/estoque-geral/armarios/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/estoque-geral/armarios/page.js"
+      "static/chunks/app/usuarios/usuarios/page.js"
     ]
   }
 }
