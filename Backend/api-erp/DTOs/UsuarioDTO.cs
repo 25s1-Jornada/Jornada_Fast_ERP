@@ -1,4 +1,4 @@
-﻿namespace api_erp.DTOs
+namespace api_erp.DTOs
 {
     public class UsuarioDTO
     {

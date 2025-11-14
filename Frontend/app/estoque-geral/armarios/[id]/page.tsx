@@ -11,7 +11,7 @@ async function getArmario(id: string) {
       empresa: {
         id: "1",
         nome: "FAST Refrigeração Ltda",
-        documento: "12.345.678/0001-90",
+        cnpj: "12.345.678/0001-90",
       },
     },
     {
@@ -20,7 +20,7 @@ async function getArmario(id: string) {
       empresa: {
         id: "1",
         nome: "FAST Refrigeração Ltda",
-        documento: "12.345.678/0001-90",
+        cnpj: "12.345.678/0001-90",
       },
     },
     {
@@ -29,7 +29,7 @@ async function getArmario(id: string) {
       empresa: {
         id: "2",
         nome: "FAST SP Ltda",
-        documento: "98.765.432/0001-10",
+        cnpj: "98.765.432/0001-10",
       },
     },
     {
@@ -38,7 +38,7 @@ async function getArmario(id: string) {
       empresa: {
         id: "1",
         nome: "FAST Refrigeração Ltda",
-        documento: "12.345.678/0001-90",
+        cnpj: "12.345.678/0001-90",
       },
     },
     {
@@ -47,7 +47,7 @@ async function getArmario(id: string) {
       empresa: {
         id: "3",
         nome: "FAST Manutenção Ltda",
-        documento: "45.678.901/0001-23",
+        cnpj: "45.678.901/0001-23",
       },
     },
   ]

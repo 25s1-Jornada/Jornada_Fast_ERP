@@ -28,7 +28,7 @@ const armariosIniciais = [
     empresa: {
       id: "1",
       nome: "FAST Refrigeração Ltda",
-      documento: "12.345.678/0001-90",
+      cnpj: "12.345.678/0001-90",
     },
   },
   {
@@ -37,7 +37,7 @@ const armariosIniciais = [
     empresa: {
       id: "1",
       nome: "FAST Refrigeração Ltda",
-      documento: "12.345.678/0001-90",
+      cnpj: "12.345.678/0001-90",
     },
   },
   {
@@ -46,7 +46,7 @@ const armariosIniciais = [
     empresa: {
       id: "2",
       nome: "FAST SP Ltda",
-      documento: "98.765.432/0001-10",
+      cnpj: "98.765.432/0001-10",
     },
   },
   {
@@ -55,7 +55,7 @@ const armariosIniciais = [
     empresa: {
       id: "1",
       nome: "FAST Refrigeração Ltda",
-      documento: "12.345.678/0001-90",
+      cnpj: "12.345.678/0001-90",
     },
   },
   {
@@ -64,7 +64,7 @@ const armariosIniciais = [
     empresa: {
       id: "3",
       nome: "FAST Manutenção Ltda",
-      documento: "45.678.901/0001-23",
+      cnpj: "45.678.901/0001-23",
     },
   },
 ]
@@ -162,7 +162,7 @@ export function ArmariosTable() {
               <TableHead>ID</TableHead>
               <TableHead>Nome</TableHead>
               <TableHead>Empresa</TableHead>
-              <TableHead>Documento</TableHead>
+              <TableHead>CNPJ</TableHead>
               <TableHead>Ações</TableHead>
             </TableRow>
           </TableHeader>
@@ -173,7 +173,7 @@ export function ArmariosTable() {
                   <TableCell>{armario.id}</TableCell>
                   <TableCell>{armario.nome}</TableCell>
                   <TableCell>{armario.empresa.nome}</TableCell>
-                  <TableCell>{armario.empresa.documento}</TableCell>
+                  <TableCell>{armario.empresa.cnpj ?? armario.empresa.documento ?? ""}</TableCell>
                   <TableCell>
                     <div className="flex gap-2">
                       <Link href={`/estoque-geral/armarios/${armario.id}`}>

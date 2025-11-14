@@ -1,4 +1,4 @@
-﻿using api_erp.Model;
+using api_erp.Model;
 
 namespace api_erp.Repositories.Interfaces
 {

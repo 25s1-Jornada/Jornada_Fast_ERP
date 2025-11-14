@@ -1,4 +1,4 @@
-﻿using api_erp.EntityConfig;
+using api_erp.EntityConfig;
 using api_erp.Model;
 using api_erp.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;

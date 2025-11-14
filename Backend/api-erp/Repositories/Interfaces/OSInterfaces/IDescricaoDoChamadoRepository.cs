@@ -1,4 +1,4 @@
-﻿using api_erp.Models.OSModels;
+using api_erp.Models.OSModels;
 
 namespace api_erp.Repositories.Interfaces.OSInterfaces
 {

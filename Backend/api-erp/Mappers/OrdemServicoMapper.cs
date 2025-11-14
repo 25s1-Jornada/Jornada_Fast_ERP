@@ -133,7 +133,7 @@ namespace api_erp.Mappers
                 TecnicoId = e.TecnicoId?.ToString(),
                 TecnicoNome = e.Tecnico?.Nome,
                 DataAbertura = e.DataAbertura.ToString("dd/MM/yyyy", br),
-                DataVisita = custo?.dataVisita?.ToString("dd/MM/yyyy", br),
+                DataVisita = custo?.DataVisita?.ToString("dd/MM/yyyy", br),
                 Status = StatusToString(e.StatusId),
                 Garantia = GarantiaToString(e.GarantiaId),
                 DataFaturamento = e.DataFaturamento?.ToString("dd/MM/yyyy", br),
@@ -184,7 +184,7 @@ namespace api_erp.Mappers
                     Nome = e.Tecnico?.Nome ?? string.Empty
                 },
                 DataAbertura = e.DataAbertura.ToString("yyyy-MM-dd", br),
-                DataVisita = custo?.dataVisita?.ToString("yyyy-MM-dd", br),
+                DataVisita = custo?.DataVisita?.ToString("yyyy-MM-dd", br),
                 Status = StatusToString(e.StatusId) ?? string.Empty,
                 Pedido = e.Pedido,
                 DataFaturamento = e.DataFaturamento?.ToString("yyyy-MM-dd", br),

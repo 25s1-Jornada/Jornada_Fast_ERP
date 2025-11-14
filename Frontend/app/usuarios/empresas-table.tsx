@@ -52,7 +52,7 @@ export function EmpresasTable() {
         const mapped: Empresa[] = (raw || []).map((e) => ({
           id: (e.id ?? "").toString(),
           nome: e.nome,
-          cnpj: e.documento,
+          cnpj: e.cnpj ?? e.documento ?? "",
           endereco_id: (e.enderecoId ?? "").toString(),
           tipo_empresa: e.tipoEmpresa,
           email: e.email,

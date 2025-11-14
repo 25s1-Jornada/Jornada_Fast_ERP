@@ -1,4 +1,4 @@
-﻿namespace api_erp.Enums
+namespace api_erp.Enums
 {
     public enum Garantia
     {

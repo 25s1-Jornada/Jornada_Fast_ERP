@@ -5,6 +5,7 @@ using api_erp.Repositories.Implementations.OSImplementations;
 using api_erp.Repositories.Interfaces;
 using api_erp.Repositories.Interfaces.OSInterfaces;
 using Microsoft.EntityFrameworkCore;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 namespace api_erp
 {
@@ -36,24 +37,27 @@ namespace api_erp
             builder.Services.AddScoped<IHoraTrabalhadaRepository, HoraTrabalhadaRepository>();
             builder.Services.AddScoped<IKMRepository, KMRepository>();
             builder.Services.AddScoped<IDescricaoDefeitoRepository, DescricaoDefeitoRepository>();
+            builder.Services.AddScoped<IValidacaoRepository, ValidacaoRepository>();
+            builder.Services.AddScoped<IAnalyticsRepository, AnalyticsRepository>();
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-            var secondConnection = builder.Configuration.GetConnectionString("SecondConnection");
+            var serverVersionString = builder.Configuration.GetValue<string>("Database:ServerVersion");
 
             builder.Services.AddDbContext<AppDbContext>(options =>
             {
                 if (string.IsNullOrWhiteSpace(connectionString))
                 {
                     options.UseInMemoryDatabase("ApiErpDev");
+                    return;
                 }
                 else if (connectionString.Contains("Data Source=", StringComparison.OrdinalIgnoreCase))
                 {
                     options.UseSqlite(connectionString);
+                    return;
                 }
-                else
-                {
-                    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
-                }
+
+                var version = ServerVersion.Parse(serverVersionString ?? "8.0.36-mysql");
+                options.UseMySql(connectionString, version);
             });
 
 
@@ -84,7 +88,7 @@ namespace api_erp
             {
                 try
                 {
-                    var mainDb = scope.ServiceProvider.GetRequiredService<api_erp.EntityConfig.AppDbContext>();
+                    var mainDb = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                     mainDb.Database.Migrate();
                 }
                 catch { }

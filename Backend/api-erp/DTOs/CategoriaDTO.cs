@@ -8,7 +8,5 @@ namespace api_erp.DTOs
         [Required]
         public string Nome { get; set; }
         public string? Descricao { get; set; }
-        [Required]
-        public string TipoCategoria { get; set; }
     }
 }

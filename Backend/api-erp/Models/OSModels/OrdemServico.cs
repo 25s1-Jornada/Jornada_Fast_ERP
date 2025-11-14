@@ -1,33 +1,40 @@
-﻿using api_erp.Model;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using System;
+using System.ComponentModel.DataAnnotations.Schema;
+using api_erp.Model;
 
 namespace api_erp.Models.OSModels
 {
+    [Table("ordem_servico")]
     public class OrdemServico
     {
-        public int Id { get; set; } 
+        [Column("id")]
+        public int Id { get; set; }
 
+        [Column("client_id")]
         public int ClientId { get; set; }
-        public Empresa Empresa { get; set; }
+        public Empresa Empresa { get; set; } = default!;
 
-        public int? TecnicoId { get; set; } 
-        public Usuario Tecnico { get; set; }
+        [Column("tecnico_id")]
+        public int? TecnicoId { get; set; }
+        public Usuario Tecnico { get; set; } = default!;
 
+        [Column("data_abertura")]
         public DateTime DataAbertura { get; set; }
 
-        public int? StatusId { get; set; } //enum Status
-        
-        public int? GarantiaId { get; set; } //enum Garantia
+        [Column("status_id")]
+        public int? StatusId { get; set; }
 
+        [Column("garantia_id")]
+        public int? GarantiaId { get; set; }
+
+        [Column("data_faturamento")]
         public DateTime? DataFaturamento { get; set; }
 
+        [Column("pedido")]
         public string? Pedido { get; set; }
+
+        [Column("numero_os")]
         public string? NumeroOS { get; set; }
-  
-        public virtual List<DescricaoDoChamado> DescricaoDoChamadoList { get; set; } //Descrição do Chamado
 
-
-        //*obs: devolver como string todos os enuns
+        public List<DescricaoDoChamado> DescricaoDoChamadoList { get; set; } = new();
     }
 }

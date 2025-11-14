@@ -1,8 +1,8 @@
-ï»¿namespace api_erp.Enums
+namespace api_erp.Enums
 {
     public enum Categoria
     {
-        RefrigeraÃ§Ã£o = 1, // enum subCategoria
+        Refrigeração = 1, // enum subCategoria
         Iluminacao = 2, // n tem
         Estrutura = 3, // n tem
         Outros = 4 // n tem
@@ -10,26 +10,26 @@
 
     public enum Defeito
     {
-        Queimado = 1,//RefrigeraÃ§Ã£o
-        Em_Massa = 2,//RefrigeraÃ§Ã£o
-        Em_Curto = 3,//RefrigeraÃ§Ã£o //IluminaÃ§Ã£o
-        Corrente_Alta = 4,//RefrigeraÃ§Ã£o
-        Nao_Parte = 5,//RefrigeraÃ§Ã£o
-        Sem_Compressao = 6,//RefrigeraÃ§Ã£o
-        Travado = 7,//RefrigeraÃ§Ã£o
-        Com_Barulho = 8,//RefrigeraÃ§Ã£o
-        Nao_Succiona = 9,//RefrigeraÃ§Ã£o
-        Desarmando = 10, //RefrigeraÃ§Ã£o
-        Pontos = 11, //RefrigeraÃ§Ã£o
-        Nao_Localizado = 12, //RefrigeraÃ§Ã£o
-        Filtro_Entupido = 13,//RefrigeraÃ§Ã£o
-        Capilar_Obstruido = 14,//RefrigeraÃ§Ã£o
-        Micromotor_Queimado = 15,//RefrigeraÃ§Ã£o
-        Micromotor_Travado = 16,//RefrigeraÃ§Ã£o
-        Controlador_Queimado = 17,//RefrigeraÃ§Ã£o
-        Regularem_Parametros = 18,//RefrigeraÃ§Ã£o
-        Lampada_Queimada = 19,//IluminaÃ§Ã£o
-        Sem_Alimentacao = 20,//IluminaÃ§Ã£o
+        Queimado = 1,//Refrigeração
+        Em_Massa = 2,//Refrigeração
+        Em_Curto = 3,//Refrigeração //Iluminação
+        Corrente_Alta = 4,//Refrigeração
+        Nao_Parte = 5,//Refrigeração
+        Sem_Compressao = 6,//Refrigeração
+        Travado = 7,//Refrigeração
+        Com_Barulho = 8,//Refrigeração
+        Nao_Succiona = 9,//Refrigeração
+        Desarmando = 10, //Refrigeração
+        Pontos = 11, //Refrigeração
+        Nao_Localizado = 12, //Refrigeração
+        Filtro_Entupido = 13,//Refrigeração
+        Capilar_Obstruido = 14,//Refrigeração
+        Micromotor_Queimado = 15,//Refrigeração
+        Micromotor_Travado = 16,//Refrigeração
+        Controlador_Queimado = 17,//Refrigeração
+        Regularem_Parametros = 18,//Refrigeração
+        Lampada_Queimada = 19,//Iluminação
+        Sem_Alimentacao = 20,//Iluminação
         Perfil_Curto_Vidro = 21, //Estrutura
         Perfil_Suporte_Ilum = 22,//Estrutura
         Lente_Calha_Ilum = 23,//Estrutura

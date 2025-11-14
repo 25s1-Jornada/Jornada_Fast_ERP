@@ -1,4 +1,4 @@
-ï»¿using api_erp.EntityConfig;
+using api_erp.EntityConfig;
 using api_erp.Models.OSModels;
 using api_erp.Repositories.Interfaces.OSInterfaces;
 using Microsoft.EntityFrameworkCore;
@@ -44,7 +44,7 @@ namespace api_erp.Repositories.Implementations.OSImplementations
 
         public async Task<DescricaoDoChamado> AddAsync(DescricaoDoChamado entity, CancellationToken ct = default)
         {
-            // Evita inserÃ§Ã£o acidental de navegaÃ§Ãµes
+            // Evita inserção acidental de navegações
             if (entity.Categoria != null)
                 _context.Entry(entity.Categoria).State = EntityState.Unchanged;
             if (entity.OrdemServico != null)

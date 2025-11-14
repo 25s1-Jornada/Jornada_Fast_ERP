@@ -1,4 +1,4 @@
-﻿using api_erp.DTOs;
+using api_erp.DTOs;
 using api_erp.EntityConfig;
 using api_erp.Model;
 using api_erp.Repositories.Interfaces;
@@ -33,6 +33,7 @@ namespace api_erp.Repositories.Implementations
                 Telefone = usuarioDto.Telefone,
                 Email = usuarioDto.Email,
                 Senha = usuarioDto.Senha,
+                EnderecoId = usuarioDto.EnderecoId,
                 PerfilId = usuarioDto.PerfilId,
                 EmpresaId = usuarioDto.EmpresaId
             };
@@ -49,6 +50,7 @@ namespace api_erp.Repositories.Implementations
                 Telefone = usuarioDto.Telefone,
                 Email = usuarioDto.Email,
                 Senha = usuarioDto.Senha,
+                EnderecoId = usuarioDto.EnderecoId,
                 PerfilId = usuarioDto.PerfilId,
                 EmpresaId = usuarioDto.EmpresaId
             };

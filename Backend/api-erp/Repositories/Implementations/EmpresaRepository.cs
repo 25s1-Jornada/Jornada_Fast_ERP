@@ -1,4 +1,4 @@
-﻿using api_erp.DTOs;
+using api_erp.DTOs;
 using api_erp.EntityConfig;
 using api_erp.Model;
 using api_erp.Repositories.Interfaces;
@@ -30,7 +30,7 @@ namespace api_erp.Repositories.Implementations
             var empresa = new Empresa
             {
                 Nome = empresaDto.Nome,
-                Documento = empresaDto.Cnpj,
+                Cnpj = empresaDto.Cnpj,
                 EnderecoId = empresaDto.EnderecoId,
                 TipoEmpresa = empresaDto.TipoEmpresa,
                 Email = empresaDto.Email
@@ -45,7 +45,7 @@ namespace api_erp.Repositories.Implementations
             {
                 Id = empresaDto.Id ?? 0, 
                 Nome = empresaDto.Nome,
-                Documento = empresaDto.Cnpj,
+                Cnpj = empresaDto.Cnpj,
                 EnderecoId = empresaDto.EnderecoId,
                 TipoEmpresa = empresaDto.TipoEmpresa,
                 Email = empresaDto.Email

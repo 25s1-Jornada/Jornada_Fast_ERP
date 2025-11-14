@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 interface Empresa {
   id: string
   nome: string
-  documento: string
+  cnpj: string
 }
 
 interface Armario {
@@ -29,9 +29,9 @@ interface ArmarioFormProps {
 
 // Dados de exemplo para empresas disponíveis
 const empresasDisponiveis: Empresa[] = [
-  { id: "1", nome: "FAST Refrigeração Ltda", documento: "12.345.678/0001-90" },
-  { id: "2", nome: "FAST SP Ltda", documento: "98.765.432/0001-10" },
-  { id: "3", nome: "FAST Manutenção Ltda", documento: "45.678.901/0001-23" },
+  { id: "1", nome: "FAST Refrigeração Ltda", cnpj: "12.345.678/0001-90" },
+  { id: "2", nome: "FAST SP Ltda", cnpj: "98.765.432/0001-10" },
+  { id: "3", nome: "FAST Manutenção Ltda", cnpj: "45.678.901/0001-23" },
 ]
 
 export function ArmarioForm({ armario }: ArmarioFormProps) {
@@ -39,7 +39,7 @@ export function ArmarioForm({ armario }: ArmarioFormProps) {
   const [formData, setFormData] = useState<Armario>(
     armario || {
       nome: "",
-      empresa: { id: "", nome: "", documento: "" },
+      empresa: { id: "", nome: "", cnpj: "" },
     },
   )
 
@@ -79,7 +79,7 @@ export function ArmarioForm({ armario }: ArmarioFormProps) {
     // Limpar o formulário para um novo cadastro
     setFormData({
       nome: "",
-      empresa: { id: "", nome: "", documento: "" },
+      empresa: { id: "", nome: "", cnpj: "" },
     })
 
     // Manter o usuário na página para cadastrar outro armário
@@ -113,8 +113,8 @@ export function ArmarioForm({ armario }: ArmarioFormProps) {
 
             {formData.empresa.id && (
               <div className="space-y-2">
-                <Label>Documento da Empresa</Label>
-                <Input value={formData.empresa.documento} disabled />
+                <Label>CNPJ da Empresa</Label>
+                <Input value={formData.empresa.cnpj} disabled />
               </div>
             )}
           </div>

@@ -1,4 +1,4 @@
-﻿using api_erp.DTOs;
+using api_erp.DTOs;
 using api_erp.Model;
 using api_erp.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -74,7 +74,7 @@ namespace api_erp.Controllers
             {
                 Id = e.Id?.ToString(),
                 Nome = e.Nome,
-                Cnpj = e.Documento,
+                Cnpj = e.Cnpj,
                 EnderecoId = e.EnderecoId?.ToString(),
                 Endereco = e.Endereco == null ? null : new EnderecoDto
                 {
