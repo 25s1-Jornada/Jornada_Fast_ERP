@@ -51,7 +51,7 @@ interface Cliente {
   bairro: string
   cidade: string
   uf: string
-  codigo: string
+  cnpj: string
   pedido: string
   dataFaturamento: string
   garantia: string
@@ -73,7 +73,7 @@ export function ClienteForm({ cliente }: ClienteFormProps) {
       bairro: "",
       cidade: "",
       uf: "",
-      codigo: "",
+      cnpj: "",
       pedido: "",
       dataFaturamento: "",
       garantia: "",
@@ -155,8 +155,8 @@ export function ClienteForm({ cliente }: ClienteFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="codigo">Cód. Cliente</Label>
-              <Input id="codigo" name="codigo" value={formData.codigo} onChange={handleChange} />
+              <Label htmlFor="cnpj">CNPJ</Label>
+              <Input id="cnpj" name="cnpj" value={formData.cnpj} onChange={handleChange} />
             </div>
 
             <div className="space-y-2">

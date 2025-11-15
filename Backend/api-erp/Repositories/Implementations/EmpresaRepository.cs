@@ -30,10 +30,12 @@ namespace api_erp.Repositories.Implementations
             var empresa = new Empresa
             {
                 Nome = empresaDto.Nome,
-                Documento = empresaDto.Cnpj,
+                Cnpj = empresaDto.Cnpj,
                 EnderecoId = empresaDto.EnderecoId,
                 TipoEmpresa = empresaDto.TipoEmpresa,
-                Email = empresaDto.Email
+                Email = empresaDto.Email,
+                Telefone = empresaDto.Telefone,
+                Contato = empresaDto.Contato
             };
 
             await _context.Empresas.AddAsync(empresa);
@@ -45,10 +47,12 @@ namespace api_erp.Repositories.Implementations
             {
                 Id = empresaDto.Id ?? 0, 
                 Nome = empresaDto.Nome,
-                Documento = empresaDto.Cnpj,
+                Cnpj = empresaDto.Cnpj,
                 EnderecoId = empresaDto.EnderecoId,
                 TipoEmpresa = empresaDto.TipoEmpresa,
-                Email = empresaDto.Email
+                Email = empresaDto.Email,
+                Telefone = empresaDto.Telefone,
+                Contato = empresaDto.Contato
             };
 
             _context.Empresas.Update(empresa);

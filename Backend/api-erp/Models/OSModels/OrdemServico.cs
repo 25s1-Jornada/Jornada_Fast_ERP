@@ -1,5 +1,5 @@
 ﻿using api_erp.Model;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.ComponentModel.DataAnnotations.Schema;
 using System;
 
 namespace api_erp.Models.OSModels
@@ -8,11 +8,19 @@ namespace api_erp.Models.OSModels
     {
         public int Id { get; set; } 
 
-        public int ClientId { get; set; }
+        public int EmpresaId { get; set; }
+
+        [NotMapped]
+        public int ClientId
+        {
+            get => EmpresaId;
+            set => EmpresaId = value;
+        }
+
         public Empresa Empresa { get; set; }
 
         public int? TecnicoId { get; set; } 
-        public Usuario Tecnico { get; set; }
+        public Empresa? Tecnico { get; set; }
 
         public DateTime DataAbertura { get; set; }
 

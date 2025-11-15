@@ -48,12 +48,13 @@ interface Tecnico {
   email: string
   cidade: string
   uf: string
+  cnpj?: string
 }
 
 interface TecnicoModalProps {
   isOpen: boolean
   onClose: () => void
-  onSalvar: (tecnico: Tecnico) => void
+  onSalvar: (tecnico: Tecnico) => Promise<void> | void
   tecnico?: Tecnico
 }
 
@@ -65,20 +66,22 @@ export function TecnicoModal({ isOpen, onClose, onSalvar, tecnico }: TecnicoModa
     email: "",
     cidade: "",
     uf: "",
+    cnpj: "",
   })
 
   useEffect(() => {
     if (tecnico) {
       setFormData(tecnico)
     } else {
-      setFormData({
-        nome: "",
-        empresa: "",
-        telefone: "",
-        email: "",
-        cidade: "",
-        uf: "",
-      })
+        setFormData({
+          nome: "",
+          empresa: "",
+          telefone: "",
+          email: "",
+          cidade: "",
+          uf: "",
+          cnpj: "",
+        })
     }
   }, [tecnico, isOpen])
 
@@ -86,9 +89,9 @@ export function TecnicoModal({ isOpen, onClose, onSalvar, tecnico }: TecnicoModa
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    onSalvar(formData)
+    await onSalvar(formData)
   }
 
   return (
@@ -108,6 +111,10 @@ export function TecnicoModal({ isOpen, onClose, onSalvar, tecnico }: TecnicoModa
             <div className="space-y-2">
               <Label htmlFor="empresa">Empresa</Label>
               <Input id="empresa" value={formData.empresa} onChange={(e) => handleChange("empresa", e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="cnpj">CNPJ</Label>
+              <Input id="cnpj" value={formData.cnpj ?? ""} onChange={(e) => handleChange("cnpj", e.target.value)} />
             </div>
 
             <div className="space-y-2">

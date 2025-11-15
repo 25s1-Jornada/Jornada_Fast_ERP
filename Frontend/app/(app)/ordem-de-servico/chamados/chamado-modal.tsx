@@ -173,17 +173,27 @@ export function ChamadoModal({ isOpen, onClose, onSalvar, chamado }: ChamadoModa
   })
 
   // Carregar usuários separados por perfil
-  const [clientesDisponiveis, setClientesDisponiveis] = useState<{ id: string; nome: string; empresaId?: string }[]>([])
-  const [tecnicosDisponiveis, setTecnicosDisponiveis] = useState<{ id: string; nome: string }[]>([])
+const [clientesDisponiveis, setClientesDisponiveis] = useState<{ id: string; nome: string }[]>([])
+const [tecnicosDisponiveis, setTecnicosDisponiveis] = useState<{ id: string; nome: string }[]>([])
   useEffect(() => {
     const load = async () => {
       try {
         const [clientes, tecnicos] = await Promise.all([
-          api.get<any[]>("/api/Usuario/lista?perfil=cliente"),
-          api.get<any[]>("/api/Usuario/lista?perfil=tecnico"),
+          api.get<any[]>("/api/os/empresas?tipo=cliente"),
+          api.get<any[]>("/api/os/empresas?tipo=tecnico"),
         ])
-        setClientesDisponiveis((clientes || []).map((c) => ({ id: String(c.id ?? ""), nome: c.nome ?? "", empresaId: c.empresaId ? String(c.empresaId) : undefined })))
-        setTecnicosDisponiveis((tecnicos || []).map((t) => ({ id: String(t.id ?? ""), nome: t.nome ?? "" })))
+        setClientesDisponiveis(
+          (clientes || []).map((c) => ({
+            id: String(c.id ?? ""),
+            nome: c.nome ?? c.contato ?? "",
+          })),
+        )
+        setTecnicosDisponiveis(
+          (tecnicos || []).map((t) => ({
+            id: String(t.id ?? ""),
+            nome: t.contato ?? t.nome ?? "",
+          })),
+        )
       } catch (e) {
         console.error(e)
       }

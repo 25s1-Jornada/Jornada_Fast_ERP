@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using api_erp.EntityConfig;
 
@@ -10,9 +11,11 @@ using api_erp.EntityConfig;
 namespace api_erp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251114222044_FreshSchema")]
+    partial class FreshSchema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.13");
@@ -67,13 +70,8 @@ namespace api_erp.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Cnpj")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("Documento");
-
-                    b.Property<string>("Contato")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("Responsavel");
+                    b.Property<string>("Documento")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
                         .HasColumnType("TEXT");
@@ -83,6 +81,9 @@ namespace api_erp.Migrations
 
                     b.Property<string>("Nome")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Responsavel")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Telefone")
@@ -581,6 +582,9 @@ namespace api_erp.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("ClientId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("DataAbertura")
                         .HasColumnType("TEXT");
 
@@ -818,7 +822,7 @@ namespace api_erp.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("api_erp.Model.Empresa", "Tecnico")
+                    b.HasOne("api_erp.Model.Usuario", "Tecnico")
                         .WithMany()
                         .HasForeignKey("TecnicoId");
 

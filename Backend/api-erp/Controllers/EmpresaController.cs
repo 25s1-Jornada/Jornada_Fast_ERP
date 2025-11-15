@@ -37,7 +37,7 @@ namespace api_erp.Controllers
         {
             await _repository.AddAsync(model);
             await _repository.SaveChangesAsync();
-            return CreatedAtAction(nameof(Get), new { id = model.Id }, model);
+            return Ok(model);
         }
 
         [HttpPut("{id}")]
@@ -74,7 +74,7 @@ namespace api_erp.Controllers
             {
                 Id = e.Id?.ToString(),
                 Nome = e.Nome,
-                Cnpj = e.Documento,
+                Cnpj = e.Cnpj,
                 EnderecoId = e.EnderecoId?.ToString(),
                 Endereco = e.Endereco == null ? null : new EnderecoDto
                 {

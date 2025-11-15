@@ -1,55 +1,30 @@
 "use client"
 
-import { useEffect, useMemo } from "react"
+import { useMemo } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Edit } from "lucide-react"
-import { api } from "@/lib/api"
 
 interface Cliente {
   id: string
   nome: string
   contato: string
   telefone: string
+  email: string
   endereco: string
   numero: string
   bairro: string
   cidade: string
   uf: string
-  codigo: string
+  cnpj: string
 }
 
 interface ClientesTableProps {
   onEditarCliente: (cliente: Cliente) => void
   clientes: Cliente[]
-  setClientes: (clientes: Cliente[]) => void
 }
 
-export function ClientesTable({ onEditarCliente, clientes, setClientes }: ClientesTableProps) {
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await api.get<any[]>("/api/Empresa/lista?tipo=cliente")
-        const mapped: Cliente[] = (data || []).map((e) => ({
-          id: String(e.id ?? ""),
-          nome: e.nome ?? "",
-          contato: e.email ?? "",
-          telefone: "",
-          endereco: e.endereco?.logradouro ?? "",
-          numero: e.endereco?.numero ?? "",
-          bairro: e.endereco?.bairro ?? "",
-          cidade: e.endereco?.cidade ?? "",
-          uf: e.endereco?.uf ?? "",
-          codigo: e.cnpj ?? "",
-        }))
-        setClientes(mapped)
-      } catch (e) {
-        console.error(e)
-      }
-    }
-    load()
-  }, [setClientes])
-
+export function ClientesTable({ onEditarCliente, clientes }: ClientesTableProps) {
   const clientesFiltrados = useMemo(() => clientes, [clientes])
 
   return (
@@ -58,7 +33,7 @@ export function ClientesTable({ onEditarCliente, clientes, setClientes }: Client
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Cód. Cliente</TableHead>
+              <TableHead>CNPJ</TableHead>
               <TableHead>Cliente</TableHead>
               <TableHead className="hidden sm:table-cell">Contato</TableHead>
               <TableHead className="hidden md:table-cell">Telefone</TableHead>
@@ -71,7 +46,7 @@ export function ClientesTable({ onEditarCliente, clientes, setClientes }: Client
             {clientesFiltrados.length > 0 ? (
               clientesFiltrados.map((cliente) => (
                 <TableRow key={cliente.id}>
-                  <TableCell>{cliente.codigo}</TableCell>
+                  <TableCell>{cliente.cnpj}</TableCell>
                   <TableCell>
                     <div>
                       <div className="font-medium">{cliente.nome}</div>

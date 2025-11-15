@@ -1,28 +1,56 @@
 "use client"
 
-import { useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { PlusCircle } from "lucide-react"
 import { ClientesTable } from "./clientes-table"
 import { ClienteModal } from "./cliente-modal"
+import { api } from "@/lib/api"
 
 interface Cliente {
   id?: string
   nome: string
   contato: string
   telefone: string
+  email: string
   endereco: string
   numero: string
   bairro: string
   cidade: string
   uf: string
-  codigo: string
+  cnpj: string
 }
 
 export default function ClientesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [clienteParaEditar, setClienteParaEditar] = useState<Cliente | undefined>(undefined)
   const [clientes, setClientes] = useState<Cliente[]>([])
+
+  const loadClientes = useCallback(async () => {
+    try {
+      const data = await api.get<any[]>("/api/os/empresas?tipo=cliente")
+      const mapped: Cliente[] = (data || []).map((cliente) => ({
+        id: cliente.id?.toString(),
+        nome: cliente.nome ?? "",
+        contato: cliente.contato ?? "",
+        telefone: cliente.telefone ?? "",
+        email: cliente.email ?? "",
+        endereco: cliente.endereco ?? "",
+        numero: cliente.numero ?? "",
+        bairro: cliente.bairro ?? "",
+        cidade: cliente.cidade ?? "",
+        uf: cliente.uf ?? "",
+        cnpj: cliente.cnpj ?? "",
+      }))
+      setClientes(mapped)
+    } catch (e) {
+      console.error(e)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadClientes()
+  }, [loadClientes])
 
   const handleNovoCliente = () => {
     setClienteParaEditar(undefined)
@@ -39,16 +67,35 @@ export default function ClientesPage() {
     setClienteParaEditar(undefined)
   }
 
-  const handleSalvarCliente = (cliente: Cliente) => {
-    if (clienteParaEditar?.id) {
-      // Editing existing cliente
-      setClientes((prev) => prev.map((c) => (c.id === cliente.id ? cliente : c)))
-    } else {
-      // Adding new cliente
-      const novoCliente = { ...cliente, id: Date.now().toString() }
-      setClientes((prev) => [...prev, novoCliente])
+  const handleSalvarCliente = async (cliente: Cliente) => {
+    try {
+      const payload = {
+        nome: cliente.nome,
+        contato: cliente.contato,
+        telefone: cliente.telefone,
+        email: cliente.email,
+        cnpj: cliente.cnpj,
+        endereco: cliente.endereco,
+        numero: cliente.numero,
+        bairro: cliente.bairro,
+        cidade: cliente.cidade,
+        uf: cliente.uf,
+        cnpj: cliente.cnpj,
+        tipoEmpresa: "cliente",
+      }
+
+      if (clienteParaEditar?.id) {
+        await api.put(`/api/os/empresas/${clienteParaEditar.id}?tipo=cliente`, payload)
+      } else {
+        await api.post("/api/os/empresas?tipo=cliente", payload)
+      }
+
+      await loadClientes()
+      handleCloseModal()
+    } catch (e) {
+      console.error(e)
+      alert("Não foi possível salvar o cliente.")
     }
-    handleCloseModal()
   }
 
   return (
@@ -61,7 +108,7 @@ export default function ClientesPage() {
         </Button>
       </div>
 
-      <ClientesTable onEditarCliente={handleEditarCliente} clientes={clientes} setClientes={setClientes} />
+      <ClientesTable onEditarCliente={handleEditarCliente} clientes={clientes} />
 
       <ClienteModal
         isOpen={isModalOpen}

@@ -11,30 +11,35 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/ordem-de-servico/clientes/page": [
+    "/(app)/dashboard/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/ordem-de-servico/clientes/page.js"
+      "static/chunks/app/(app)/dashboard/page.js"
     ],
-    "/ordem-de-servico/tecnicos/page": [
+    "/(app)/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/ordem-de-servico/tecnicos/page.js"
+      "static/chunks/app/(app)/layout.js"
     ],
-    "/estoque-geral/estoque/page": [
+    "/(app)/ordem-de-servico/chamados/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/estoque-geral/estoque/page.js"
+      "static/chunks/app/(app)/ordem-de-servico/chamados/page.js"
     ],
-    "/estoque-geral/movimentacoes/page": [
+    "/(app)/ordem-de-servico/clientes/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/estoque-geral/movimentacoes/page.js"
+      "static/chunks/app/(app)/ordem-de-servico/clientes/page.js"
     ],
-    "/estoque-geral/armarios/page": [
+    "/(app)/ordem-de-servico/tecnicos/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/estoque-geral/armarios/page.js"
+      "static/chunks/app/(app)/ordem-de-servico/tecnicos/page.js"
+    ],
+    "/_not-found/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/_not-found/page.js"
     ]
   }
 }

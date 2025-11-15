@@ -45,18 +45,19 @@ interface Cliente {
   nome: string
   contato: string
   telefone: string
+  email: string
   endereco: string
   numero: string
   bairro: string
   cidade: string
   uf: string
-  codigo: string
+  cnpj: string
 }
 
 interface ClienteModalProps {
   isOpen: boolean
   onClose: () => void
-  onSalvar: (cliente: Cliente) => void
+  onSalvar: (cliente: Cliente) => Promise<void> | void
   cliente?: Cliente
 }
 
@@ -64,12 +65,13 @@ const clienteVazio: Cliente = {
   nome: "",
   contato: "",
   telefone: "",
+  email: "",
   endereco: "",
   numero: "",
   bairro: "",
   cidade: "",
   uf: "",
-  codigo: "",
+  cnpj: "",
 }
 
 export function ClienteModal({ isOpen, onClose, onSalvar, cliente }: ClienteModalProps) {
@@ -86,9 +88,9 @@ export function ClienteModal({ isOpen, onClose, onSalvar, cliente }: ClienteModa
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    onSalvar(formData)
+    await onSalvar(formData)
     setFormData(clienteVazio)
   }
 
@@ -122,6 +124,16 @@ export function ClienteModal({ isOpen, onClose, onSalvar, cliente }: ClienteModa
                 id="telefone"
                 value={formData.telefone}
                 onChange={(e) => handleChange("telefone", e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">E-mail</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleChange("email", e.target.value)}
               />
             </div>
 
@@ -166,8 +178,8 @@ export function ClienteModal({ isOpen, onClose, onSalvar, cliente }: ClienteModa
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="codigo">Cód. Cliente</Label>
-              <Input id="codigo" value={formData.codigo} onChange={(e) => handleChange("codigo", e.target.value)} />
+              <Label htmlFor="cnpj">CNPJ</Label>
+              <Input id="cnpj" value={formData.cnpj} onChange={(e) => handleChange("cnpj", e.target.value)} />
             </div>
           </div>
 

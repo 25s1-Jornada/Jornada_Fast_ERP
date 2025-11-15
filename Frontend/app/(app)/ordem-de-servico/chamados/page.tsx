@@ -130,16 +130,19 @@ export default function ChamadosPage() {
     setChamadoParaEditar(undefined)
   }
 
-    const handleSalvarChamado = async (chamado: Chamado) => {
+  const handleSalvarChamado = async (chamado: Chamado) => {
     try {
-      const usuarios = await api.get<any[]>("/api/Usuario/lista")
-      const clienteUsuario = (usuarios || []).find((u) => String(u.id) === String(chamado.cliente.id))
-      const empresaIdStr = clienteUsuario?.empresaId || clienteUsuario?.empresaID || clienteUsuario?.empresa_id
-      const clientId = empresaIdStr ? parseInt(String(empresaIdStr), 10) : undefined
+      const clientId = Number(chamado.cliente?.id)
+      const tecnicoId = chamado.tecnico?.id ? Number(chamado.tecnico.id) : undefined
+
+      if (!clientId || Number.isNaN(clientId)) {
+        alert("Selecione um cliente válido antes de salvar o chamado.")
+        return
+      }
 
       const payload = {
         ClientId: clientId,
-        TecnicoId: chamado.tecnico?.id ? parseInt(chamado.tecnico.id, 10) : undefined,
+        TecnicoId: tecnicoId && !Number.isNaN(tecnicoId) ? tecnicoId : undefined,
         DataAbertura: chamado.dataAbertura ? new Date(chamado.dataAbertura) : new Date(),
         StatusId: undefined,
         GarantiaId: undefined,
@@ -171,10 +174,6 @@ export default function ChamadosPage() {
       console.error(e)
       alert("Falha ao salvar chamado")
     }
-  }
-    // Força atualização da tabela
-    setRefreshKey((prev) => prev + 1)
-    handleCloseModal()
   }
 
   return (

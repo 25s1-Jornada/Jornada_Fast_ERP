@@ -11,8 +11,8 @@ using api_erp.EntityConfig;
 namespace api_erp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251030000205_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251115163029_RemoveClientIdFromOrdensServico")]
+    partial class RemoveClientIdFromOrdensServico
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -70,8 +70,13 @@ namespace api_erp.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Documento")
-                        .HasColumnType("TEXT");
+                    b.Property<string>("Cnpj")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("Documento");
+
+                    b.Property<string>("Contato")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("Responsavel");
 
                     b.Property<string>("Email")
                         .HasColumnType("TEXT");
@@ -81,9 +86,6 @@ namespace api_erp.Migrations
 
                     b.Property<string>("Nome")
                         .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Responsavel")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Telefone")
@@ -580,9 +582,6 @@ namespace api_erp.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("ClientId")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DataAbertura")

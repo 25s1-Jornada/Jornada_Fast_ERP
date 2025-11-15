@@ -1,12 +1,11 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useMemo, useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Edit, RefreshCw } from "lucide-react"
 import { FiltroAvancado, type FiltroConfig, type FiltroValores } from "@/components/filtro-avancado"
 import { Ordenacao } from "@/components/ordenacao"
-import { api } from "@/lib/api"
 
 interface Tecnico {
   id: string
@@ -18,17 +17,15 @@ interface Tecnico {
   uf: string
   especialidade?: string
   ativo?: boolean
+  cnpj?: string
 }
 
 interface TecnicosTableProps {
   onEditarTecnico: (tecnico: Tecnico) => void
   tecnicos: Tecnico[]
-  setTecnicos: (tecnicos: Tecnico[]) => void
+  onRefresh?: () => Promise<void> | void
 }
 
-// Dados iniciados via API
-
-// Configuração dos filtros para técnicos
 const configuracaoFiltros: FiltroConfig[] = [
   {
     campo: "busca_geral",
@@ -53,28 +50,16 @@ const configuracaoFiltros: FiltroConfig[] = [
     campo: "uf",
     label: "Estado (UF)",
     tipo: "multiselect",
-    opcoes: [
-      { value: "SP", label: "São Paulo" },
-      { value: "RJ", label: "Rio de Janeiro" },
-      { value: "MG", label: "Minas Gerais" },
-      { value: "PR", label: "Paraná" },
-      { value: "SC", label: "Santa Catarina" },
-      { value: "BA", label: "Bahia" },
-      { value: "CE", label: "Ceará" },
-      { value: "RS", label: "Rio Grande do Sul" },
-    ],
+    opcoes: ["SP", "RJ", "MG", "PR", "SC", "BA", "CE", "RS"].map((uf) => ({ value: uf, label: uf })),
   },
   {
     campo: "cidade",
     label: "Cidade",
     tipo: "select",
-    opcoes: [
-      { value: "São Paulo", label: "São Paulo" },
-      { value: "Rio de Janeiro", label: "Rio de Janeiro" },
-      { value: "Belo Horizonte", label: "Belo Horizonte" },
-      { value: "Curitiba", label: "Curitiba" },
-      { value: "Florianópolis", label: "Florianópolis" },
-    ],
+    opcoes: ["São Paulo", "Rio de Janeiro", "Belo Horizonte", "Curitiba", "Florianópolis"].map((cidade) => ({
+      value: cidade,
+      label: cidade,
+    })),
   },
   {
     campo: "ativo",
@@ -83,117 +68,58 @@ const configuracaoFiltros: FiltroConfig[] = [
   },
 ]
 
-// Campos disponíveis para ordenação
 const camposOrdenacao = [
   { value: "nome", label: "Nome" },
   { value: "empresa", label: "Empresa" },
   { value: "cidade", label: "Cidade" },
   { value: "uf", label: "Estado" },
-  { value: "especialidade", label: "Especialidade" },
 ]
 
-export function TecnicosTable({ onEditarTecnico, tecnicos, setTecnicos }: TecnicosTableProps) {
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const [usuarios, empresas] = await Promise.all([
-          api.get<any[]>("/api/Usuario/lista?perfil=tecnico"),
-          api.get<any[]>("/api/Empresa/lista"),
-        ])
-
-        const empresaMap = (empresas || []).reduce<Record<string, any>>((acc, empresa) => {
-          const id = String(empresa.id ?? "")
-          acc[id] = empresa
-          return acc
-        }, {})
-
-        const mapped: Tecnico[] = (usuarios || []).map((u) => {
-          const empresaId = String(u.empresaId ?? u.empresaID ?? u.empresa_id ?? "")
-          const empresa = empresaMap[empresaId]
-          return {
-            id: String(u.id ?? ""),
-            nome: u.nome ?? "",
-            empresa: empresa?.nome ?? "-",
-            telefone: u.telefone ?? "",
-            email: u.email ?? "",
-            cidade: empresa?.endereco?.cidade ?? "",
-            uf: empresa?.endereco?.uf ?? "",
-            especialidade: u.especialidade ?? "",
-            ativo: true,
-          }
-        })
-
-        setTecnicos(mapped)
-      } catch (error) {
-        console.error(error)
-      }
-    }
-
-    load()
-  }, [setTecnicos])
-
+export function TecnicosTable({ onEditarTecnico, tecnicos, onRefresh }: TecnicosTableProps) {
   const [filtros, setFiltros] = useState<FiltroValores>({})
-  const [ordenacao, setOrdenacao] = useState({ campo: "nome", direcao: "asc" as "asc" | "desc" })
+  const [ordenacao, setOrdenacao] = useState<{ campo: string; direcao: "asc" | "desc" }>({ campo: "nome", direcao: "asc" })
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const [filtrosSalvos, setFiltrosSalvos] = useState<{ nome: string; filtro: FiltroValores }[]>([])
+  const [filtrosSalvos, setFiltrosSalvos] = useState<{ nome: string; filtro: FiltroValores }[]>(() => {
+    if (typeof window === "undefined") return []
+    try {
+      const stored = localStorage.getItem("filtros_salvos_tecnicos")
+      return stored ? JSON.parse(stored) : []
+    } catch {
+      return []
+    }
+  })
 
-  const handleRefresh = () => {
-    setIsRefreshing(true)
-    setTimeout(() => {
-      setIsRefreshing(false)
-    }, 1000)
-  }
-
-  // Aplicar filtros e ordenação
   const tecnicosFiltrados = useMemo(() => {
     let resultado = [...tecnicos]
 
-    // Aplicar filtros
-    Object.entries(filtros).forEach(([campo, valor]) => {
-      if (!valor || (Array.isArray(valor) && valor.length === 0)) return
+    const busca = (filtros.busca_geral as string | undefined)?.toLowerCase()
+    if (busca) {
+      resultado = resultado.filter(
+        (t) =>
+          t.nome.toLowerCase().includes(busca) ||
+          t.empresa.toLowerCase().includes(busca) ||
+          t.email.toLowerCase().includes(busca),
+      )
+    }
 
-      switch (campo) {
-        case "busca_geral":
-          if (typeof valor === "string" && valor.trim()) {
-            resultado = resultado.filter(
-              (tecnico) =>
-                tecnico.nome.toLowerCase().includes(valor.toLowerCase()) ||
-                tecnico.empresa.toLowerCase().includes(valor.toLowerCase()) ||
-                tecnico.email.toLowerCase().includes(valor.toLowerCase()),
-            )
-          }
-          break
+    const estadosSelecionados = filtros.uf as string[] | undefined
+    if (estadosSelecionados?.length) {
+      resultado = resultado.filter((t) => estadosSelecionados.includes(t.uf))
+    }
 
-        case "especialidade":
-          if (Array.isArray(valor) && valor.length > 0) {
-            resultado = resultado.filter((tecnico) => tecnico.especialidade && valor.includes(tecnico.especialidade))
-          }
-          break
+    const cidadeSelecionada = filtros.cidade as string | undefined
+    if (cidadeSelecionada) {
+      resultado = resultado.filter((t) => t.cidade === cidadeSelecionada)
+    }
 
-        case "uf":
-          if (Array.isArray(valor) && valor.length > 0) {
-            resultado = resultado.filter((tecnico) => valor.includes(tecnico.uf))
-          }
-          break
+    if (filtros.ativo) {
+      resultado = resultado.filter((t) => t.ativo !== false)
+    }
 
-        case "cidade":
-          if (typeof valor === "string" && valor.trim()) {
-            resultado = resultado.filter((tecnico) => tecnico.cidade === valor)
-          }
-          break
-
-        case "ativo":
-          if (valor === true) {
-            resultado = resultado.filter((tecnico) => tecnico.ativo === true)
-          }
-          break
-      }
-    })
-
-    // Aplicar ordenação
     resultado.sort((a, b) => {
-      let valorA: any = a[ordenacao.campo as keyof Tecnico]
-      let valorB: any = b[ordenacao.campo as keyof Tecnico]
+      const campo = ordenacao.campo as keyof Tecnico
+      let valorA = a[campo] ?? ""
+      let valorB = b[campo] ?? ""
 
       if (typeof valorA === "string") valorA = valorA.toLowerCase()
       if (typeof valorB === "string") valorB = valorB.toLowerCase()
@@ -212,9 +138,7 @@ export function TecnicosTable({ onEditarTecnico, tecnicos, setTecnicos }: Tecnic
     localStorage.setItem("filtros_salvos_tecnicos", JSON.stringify(novosFiltros))
   }
 
-  const handleCarregarFiltro = (filtro: FiltroValores) => {
-    setFiltros(filtro)
-  }
+  const handleCarregarFiltro = (filtro: FiltroValores) => setFiltros(filtro)
 
   const handleExcluirFiltro = (nome: string) => {
     const novosFiltros = filtrosSalvos.filter((f) => f.nome !== nome)
@@ -222,16 +146,14 @@ export function TecnicosTable({ onEditarTecnico, tecnicos, setTecnicos }: Tecnic
     localStorage.setItem("filtros_salvos_tecnicos", JSON.stringify(novosFiltros))
   }
 
-  const getEspecialidadeLabel = (especialidade?: string) => {
-    const especialidades = {
-      refrigeracao: "Refrigeração",
-      iluminacao: "Iluminação",
-      estrutura: "Estrutura",
-      eletrica: "Elétrica",
-      hidraulica: "Hidráulica",
-      mecanica: "Mecânica",
+  const handleRefresh = async () => {
+    if (!onRefresh) return
+    try {
+      setIsRefreshing(true)
+      await onRefresh()
+    } finally {
+      setIsRefreshing(false)
     }
-    return especialidades[especialidade as keyof typeof especialidades] || especialidade
   }
 
   return (
@@ -252,10 +174,12 @@ export function TecnicosTable({ onEditarTecnico, tecnicos, setTecnicos }: Tecnic
               ordenacaoAtual={ordenacao}
               onOrdenacaoChange={(campo, direcao) => setOrdenacao({ campo, direcao })}
             />
-            <Button variant="outline" size="icon" onClick={handleRefresh} disabled={isRefreshing}>
-              <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
-              <span className="sr-only">Atualizar</span>
-            </Button>
+            {onRefresh && (
+              <Button variant="outline" size="icon" onClick={handleRefresh} disabled={isRefreshing}>
+                <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+                <span className="sr-only">Atualizar</span>
+              </Button>
+            )}
           </div>
         }
       />
@@ -266,7 +190,6 @@ export function TecnicosTable({ onEditarTecnico, tecnicos, setTecnicos }: Tecnic
             <TableRow>
               <TableHead>Técnico</TableHead>
               <TableHead className="hidden sm:table-cell">Empresa</TableHead>
-              <TableHead className="hidden md:table-cell">Especialidade</TableHead>
               <TableHead className="hidden md:table-cell">Telefone</TableHead>
               <TableHead className="hidden lg:table-cell">E-mail</TableHead>
               <TableHead className="hidden lg:table-cell">Cidade</TableHead>
@@ -286,7 +209,6 @@ export function TecnicosTable({ onEditarTecnico, tecnicos, setTecnicos }: Tecnic
                     </div>
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">{tecnico.empresa}</TableCell>
-                  <TableCell className="hidden md:table-cell">{getEspecialidadeLabel(tecnico.especialidade)}</TableCell>
                   <TableCell className="hidden md:table-cell">{tecnico.telefone}</TableCell>
                   <TableCell className="hidden lg:table-cell">{tecnico.email}</TableCell>
                   <TableCell className="hidden lg:table-cell">{tecnico.cidade}</TableCell>
@@ -309,7 +231,7 @@ export function TecnicosTable({ onEditarTecnico, tecnicos, setTecnicos }: Tecnic
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-4">
+                <TableCell colSpan={8} className="text-center py-4">
                   Nenhum técnico encontrado
                 </TableCell>
               </TableRow>
