@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import jsPDF from "jspdf"
 import { FileText, Download } from "lucide-react"
 
@@ -10,12 +10,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { FiltroAvancadoModal, type FiltroValores } from "@/components/filtro-avancado-modal"
 import {
-  chamadosMock,
   filtrarChamados,
   filtrosChamadosConfig,
   type Chamado,
   type OrdenacaoChamado,
-} from "@/app/ordem-de-servico/chamados/chamados-table"
+} from "@/app/(app)/ordem-de-servico/chamados/chamados-table"
+import { api } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 
 const formatCurrency = (value: string | number) => {
@@ -43,14 +43,74 @@ type NivelDetalhe = "resumido" | "detalhado"
 
 const ordenacaoRelatorioPadrao: OrdenacaoChamado = { campo: "dataAbertura", direcao: "asc" }
 
+const mapOsDtoToChamado = (os: any): Chamado => ({
+  id: String(os.id ?? ""),
+  cliente: { id: os.cliente?.id ?? "", nome: os.cliente?.nome ?? "" },
+  tecnico: { id: os.tecnico?.id ?? "", nome: os.tecnico?.nome ?? "" },
+  dataAbertura: os.dataAbertura ?? "",
+  dataVisita: os.dataVisita ?? "",
+  status: os.status ?? "",
+  pedido: os.pedido ?? "",
+  dataFaturamento: os.dataFaturamento ?? "",
+  garantia: os.garantia ?? "",
+  descricoes: (os.descricoes ?? []).map((d: any) => ({
+    id: String(d.id ?? ""),
+    numeroSerie: d.numeroSerie ?? "",
+    defeito: d.defeito ?? "",
+    observacao: d.observacao,
+  })),
+  custosServico: [
+    {
+      id: String(os.id ?? "custo"),
+      nome: "Custos",
+      deslocamento: {
+        hrSaidaEmpresa: "",
+        hrChegadaCliente: "",
+        hrSaidaCliente: "",
+        hrChegadaEmpresa: "",
+        totalHoras: "",
+        totalValor: "0",
+      },
+      horaTrabalhada: {
+        hrInicio: "",
+        hrTermino: "",
+        totalHoras: "",
+        totalValor: "0",
+      },
+      km: { km: "", valorPorKm: "", totalValor: "0" },
+      materiais: [],
+      subtotal: (os.valorTotal || "R$ 0,00").replace(/[R$\s]/g, ""),
+    },
+  ],
+  valorTotal: (os.valorTotal || "R$ 0,00").replace(/[R$\s]/g, ""),
+})
+
 export default function RelatoriosPage() {
   const [filtros, setFiltros] = useState<FiltroValores>({})
   const [nivelDetalhe, setNivelDetalhe] = useState<NivelDetalhe>("resumido")
+  const [chamados, setChamados] = useState<Chamado[]>([])
   const { toast } = useToast()
 
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await api.get<any[]>("/api/OrdensServico/front-list")
+        setChamados((data || []).map(mapOsDtoToChamado))
+      } catch (error) {
+        console.error(error)
+        toast({
+          title: "Não foi possível carregar as ordens de serviço",
+          description: "Tente novamente em instantes.",
+          variant: "destructive",
+        })
+      }
+    }
+    load()
+  }, [toast])
+
   const chamadosFiltrados = useMemo(
-    () => filtrarChamados(chamadosMock, filtros, ordenacaoRelatorioPadrao),
-    [filtros],
+    () => filtrarChamados(chamados, filtros, ordenacaoRelatorioPadrao),
+    [chamados, filtros],
   )
 
   const valorTotal = useMemo(

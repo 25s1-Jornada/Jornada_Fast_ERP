@@ -16,13 +16,32 @@ namespace api_erp.Repositories.Implementations.OSImplementations
 
         public async Task<List<DescricaoDefeito>> GetAllAsync(bool includeRelacionamentos = true, CancellationToken ct = default)
         {
-            // Não há navegações declaradas atualmente
-            return await _context.DescricoesDefeito.AsNoTracking().ToListAsync(ct);
+            IQueryable<DescricaoDefeito> q = _context.DescricoesDefeito.AsNoTracking();
+            if (includeRelacionamentos)
+            {
+                q = q.Include(d => d.OrdemServico);
+            }
+            return await q.ToListAsync(ct);
         }
 
         public async Task<DescricaoDefeito?> GetByIdAsync(int id, bool includeRelacionamentos = true, CancellationToken ct = default)
         {
-            return await _context.DescricoesDefeito.AsNoTracking().FirstOrDefaultAsync(d => d.Id == id, ct);
+            IQueryable<DescricaoDefeito> q = _context.DescricoesDefeito.AsNoTracking();
+            if (includeRelacionamentos)
+            {
+                q = q.Include(d => d.OrdemServico);
+            }
+            return await q.FirstOrDefaultAsync(d => d.Id == id, ct);
+        }
+
+        public async Task<DescricaoDefeito?> GetByOrdemServicoIdAsync(int ordemServicoId, bool includeRelacionamentos = true, CancellationToken ct = default)
+        {
+            IQueryable<DescricaoDefeito> q = _context.DescricoesDefeito.AsNoTracking();
+            if (includeRelacionamentos)
+            {
+                q = q.Include(d => d.OrdemServico);
+            }
+            return await q.FirstOrDefaultAsync(d => d.OrdemServicoId == ordemServicoId, ct);
         }
 
         public async Task<DescricaoDefeito> AddAsync(DescricaoDefeito entity, CancellationToken ct = default)

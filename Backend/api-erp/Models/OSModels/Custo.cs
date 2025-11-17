@@ -7,8 +7,8 @@ namespace api_erp.Models.OSModels
         public int? Id { get; set; }
         public DateTime? dataVisita {  get; set; }
         public int? TecnicoId { get; set; }
-        public Usuario Tecnico { get; set; }
-        public string AjudanteName { get; set; }
+        public Usuario? Tecnico { get; set; }
+        public string AjudanteName { get; set; } = string.Empty;
 
         public int? OrdemServicoId { get; set; }
         public OrdemServico? OrdemServico { get; set; }

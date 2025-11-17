@@ -60,7 +60,7 @@ namespace api_erp.Controllers.OSControllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] OrdemServicoCreateDto dto, CancellationToken ct = default)
         {
-            var entity = dto.FromCreateDto();
+            var entity = dto.FromCreateDto();   
             // Vincular empresa apenas por ID (sem objeto aninhado)
             entity.Empresa = new Empresa { Id = dto.ClientId };
             if (entity.DataAbertura == default)

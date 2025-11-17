@@ -113,13 +113,6 @@ namespace api_erp.Mappers
                 return id?.ToString();
             }
 
-            string? CategoriaToString(int? id)
-            {
-                if (id.HasValue && Enum.IsDefined(typeof(Categoria), id.Value))
-                    return ToSnake(Enum.GetName(typeof(Categoria), id.Value));
-                return id?.ToString();
-            }
-
             var categoriaPrincipalId = e.DescricaoDoChamadoList?.FirstOrDefault()?.CategoriaId;
 
             var br = new CultureInfo("pt-BR");
@@ -138,8 +131,8 @@ namespace api_erp.Mappers
                 Garantia = GarantiaToString(e.GarantiaId),
                 DataFaturamento = e.DataFaturamento?.ToString("dd/MM/yyyy", br),
                 Pedido = e.Pedido,
-                CategoriaPrincipal = CategoriaToString(categoriaPrincipalId),
-                Defeito = CategoriaToString(categoriaPrincipalId),
+                CategoriaPrincipal = categoriaPrincipalId?.ToString(),
+                Defeito = categoriaPrincipalId?.ToString(),
                 ValorTotal = (custo?.ValorTotal ?? 0).ToString("C", br)
             };
         }
@@ -158,13 +151,6 @@ namespace api_erp.Mappers
             {
                 if (id.HasValue && Enum.IsDefined(typeof(Garantia), id.Value))
                     return ToSnake(Enum.GetName(typeof(Garantia), id.Value));
-                return id?.ToString();
-            }
-
-            string? CategoriaToString(int? id)
-            {
-                if (id.HasValue && Enum.IsDefined(typeof(Categoria), id.Value))
-                    return ToSnake(Enum.GetName(typeof(Categoria), id.Value));
                 return id?.ToString();
             }
 
@@ -192,7 +178,7 @@ namespace api_erp.Mappers
                 ValorTotal = (custo?.ValorTotal ?? 0).ToString("C", br)
             };
 
-            if (e.DescricaoDoChamadoList != null)
+                if (e.DescricaoDoChamadoList != null)
             {
                 foreach (var d in e.DescricaoDoChamadoList)
                 {
@@ -200,7 +186,7 @@ namespace api_erp.Mappers
                     {
                         Id = (d.Id ?? 0).ToString(),
                         NumeroSerie = d.NumeroSerie ?? string.Empty,
-                        Defeito = CategoriaToString(d.CategoriaId) ?? string.Empty,
+                        CategoriaId = (d.CategoriaId ?? 0).ToString(),
                         Observacao = d.Observacao
                     });
                 }

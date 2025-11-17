@@ -1,40 +1,20 @@
 {
   "pages": {
-    "/page": [
+    "/(app)/ordem-de-servico/chamados/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
-    ],
-    "/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/css/app/layout.css",
-      "static/chunks/app/layout.js"
-    ],
-    "/(app)/dashboard/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(app)/dashboard/page.js"
+      "static/chunks/app/(app)/ordem-de-servico/chamados/page.js"
     ],
     "/(app)/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(app)/layout.js"
     ],
-    "/(app)/ordem-de-servico/chamados/page": [
+    "/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(app)/ordem-de-servico/chamados/page.js"
-    ],
-    "/(app)/ordem-de-servico/clientes/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(app)/ordem-de-servico/clientes/page.js"
-    ],
-    "/(app)/ordem-de-servico/tecnicos/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(app)/ordem-de-servico/tecnicos/page.js"
+      "static/css/app/layout.css",
+      "static/chunks/app/layout.js"
     ],
     "/_not-found/page": [
       "static/chunks/webpack.js",

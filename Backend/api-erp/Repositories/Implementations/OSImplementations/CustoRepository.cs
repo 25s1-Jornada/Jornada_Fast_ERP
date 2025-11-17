@@ -44,8 +44,42 @@ namespace api_erp.Repositories.Implementations.OSImplementations
             return await q.FirstOrDefaultAsync(x => x.Id == id, ct);
         }
 
+        public async Task<Custo?> GetByOrdemServicoIdAsync(int ordemServicoId, bool includeRelacionamentos = true, CancellationToken ct = default)
+        {
+            IQueryable<Custo> q = _context.Custos.AsNoTracking();
+            if (includeRelacionamentos)
+            {
+                q = q
+                    .Include(c => c.OrdemServico)
+                    .Include(c => c.Deslocamento_List)
+                    .Include(c => c.HoraTrabalhada_List)
+                    .Include(c => c.KM_List)
+                    .Include(c => c.Material_List);
+            }
+            return await q.FirstOrDefaultAsync(x => x.OrdemServicoId == ordemServicoId, ct);
+        }
+
         public async Task<Custo> AddAsync(Custo entity, CancellationToken ct = default)
         {
+            // Sanitiza FKs para evitar erro de chave estrangeira
+            if (entity.OrdemServicoId.HasValue)
+            {
+                var osExists = await _context.OrdensServico
+                    .AsNoTracking()
+                    .AnyAsync(o => o.Id == entity.OrdemServicoId, ct);
+                if (!osExists)
+                    entity.OrdemServicoId = null;
+            }
+
+            if (entity.TecnicoId.HasValue)
+            {
+                var techExists = await _context.Usuarios
+                    .AsNoTracking()
+                    .AnyAsync(u => u.Id == entity.TecnicoId, ct);
+                if (!techExists)
+                    entity.TecnicoId = null;
+            }
+
             await _context.Custos.AddAsync(entity, ct);
             await _context.SaveChangesAsync(ct);
             return entity;

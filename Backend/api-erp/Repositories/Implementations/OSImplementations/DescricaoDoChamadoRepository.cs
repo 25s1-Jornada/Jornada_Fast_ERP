@@ -42,8 +42,32 @@ namespace api_erp.Repositories.Implementations.OSImplementations
             return await query.FirstOrDefaultAsync(d => d.Id == id, ct);
         }
 
+        public async Task<List<DescricaoDoChamado>> GetByOrdemServicoIdAsync(int ordemServicoId, bool includeRelacionamentos = true, CancellationToken ct = default)
+        {
+            IQueryable<DescricaoDoChamado> query = _context.DescricoesDoChamado.AsNoTracking();
+
+            if (includeRelacionamentos)
+            {
+                query = query
+                    .Include(d => d.Categoria)
+                    .Include(d => d.OrdemServico);
+            }
+
+            return await query.Where(d => d.OrdemServicoId == ordemServicoId).ToListAsync(ct);
+        }
+
         public async Task<DescricaoDoChamado> AddAsync(DescricaoDoChamado entity, CancellationToken ct = default)
         {
+            // Garante FK de categoria válida; se não existir, zera para evitar erro de FK
+            if (entity.CategoriaId.HasValue)
+            {
+                var existsCategoria = await _context.Categorias
+                    .AsNoTracking()
+                    .AnyAsync(c => c.Id == entity.CategoriaId, ct);
+                if (!existsCategoria)
+                    entity.CategoriaId = null;
+            }
+
             // Evita inserção acidental de navegações
             if (entity.Categoria != null)
                 _context.Entry(entity.Categoria).State = EntityState.Unchanged;
@@ -62,6 +86,15 @@ namespace api_erp.Repositories.Implementations.OSImplementations
 
             var exists = await _context.DescricoesDoChamado.AnyAsync(x => x.Id == entity.Id, ct);
             if (!exists) return false;
+
+            if (entity.CategoriaId.HasValue)
+            {
+                var existsCategoria = await _context.Categorias
+                    .AsNoTracking()
+                    .AnyAsync(c => c.Id == entity.CategoriaId, ct);
+                if (!existsCategoria)
+                    entity.CategoriaId = null;
+            }
 
             _context.Entry(entity).State = EntityState.Modified;
 

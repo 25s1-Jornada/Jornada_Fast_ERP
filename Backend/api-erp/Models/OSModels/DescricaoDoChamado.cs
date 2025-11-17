@@ -12,9 +12,10 @@ namespace api_erp.Models.OSModels
         public int? CategoriaId { get; set; } //enum Categoria
         public Categoria? Categoria { get; set; }
         public string? Observacao { get; set; }
-        public int? OrdemId { get; set; }
+        public int? OrdemServicoId { get; set; }
         public OrdemServico OrdemServico { get; set; }
 
 
     }
 }
+

@@ -22,6 +22,13 @@ namespace api_erp.Controllers.OSControllers
             return Ok(items);
         }
 
+        [HttpGet("by-ordem/{ordemId:int}")]
+        public async Task<IActionResult> GetByOrdem(int ordemId, [FromQuery] bool includeRelacionamentos = true, CancellationToken ct = default)
+        {
+            var custo = await _repo.GetByOrdemServicoIdAsync(ordemId, includeRelacionamentos, ct);
+            return custo is null ? NotFound() : Ok(custo);
+        }
+
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id, [FromQuery] bool includeRelacionamentos = true, CancellationToken ct = default)
         {

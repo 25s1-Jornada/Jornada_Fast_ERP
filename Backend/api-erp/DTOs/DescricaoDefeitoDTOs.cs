@@ -9,6 +9,7 @@ namespace api_erp.DTOs
         public bool? Pendencia { get; set; }
         public int? CategoriaId { get; set; }
         public List<int>? DefeitosList { get; set; }
+        public int? OrdemServicoId { get; set; }
     }
 
     public class DescricaoDefeitoUpdateDto
@@ -18,6 +19,7 @@ namespace api_erp.DTOs
         public bool? Pendencia { get; set; }
         public int? CategoriaId { get; set; }
         public List<int>? DefeitosList { get; set; }
+        public int? OrdemServicoId { get; set; }
     }
 
     public class DescricaoDefeitoReadDto
@@ -29,6 +31,7 @@ namespace api_erp.DTOs
         public bool? Pendencia { get; set; }
         public int? CategoriaId { get; set; }
         public List<int>? DefeitosList { get; set; }
+        public int? OrdemServicoId { get; set; }
     }
 }
 

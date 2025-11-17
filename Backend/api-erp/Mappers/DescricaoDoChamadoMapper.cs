@@ -12,7 +12,7 @@ namespace api_erp.Mappers
                 NumeroSerie = e.NumeroSerie,
                 CategoriaId = e.CategoriaId,
                 Observacao = e.Observacao,
-                OrdemId = e.OrdemId
+                OrdemServicoId = e.OrdemServicoId
             };
 
         public static DescricaoDoChamado FromCreateDto(this DescricaoDoChamadoCreateDto dto) =>
@@ -22,7 +22,7 @@ namespace api_erp.Mappers
                 NumeroSerie = dto.NumeroSerie,
                 CategoriaId = dto.CategoriaId,
                 Observacao = dto.Observacao,
-                OrdemId = dto.OrdemId
+                OrdemServicoId = dto.OrdemServicoId
             };
 
         public static DescricaoDoChamado FromUpdateDto(this DescricaoDoChamadoUpdateDto dto, int id) =>
@@ -32,7 +32,7 @@ namespace api_erp.Mappers
                 NumeroSerie = dto.NumeroSerie,
                 CategoriaId = dto.CategoriaId,
                 Observacao = dto.Observacao,
-                OrdemId = dto.OrdemId
+                OrdemServicoId = dto.OrdemServicoId
             };
     }
 }

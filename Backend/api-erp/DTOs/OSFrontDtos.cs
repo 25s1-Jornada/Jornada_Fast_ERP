@@ -12,7 +12,7 @@ namespace api_erp.DTOs
     {
         public string Id { get; set; } = string.Empty;
         public string NumeroSerie { get; set; } = string.Empty;
-        public string Defeito { get; set; } = string.Empty;
+        public string CategoriaId { get; set; } = string.Empty;
         public string? Observacao { get; set; }
     }
 

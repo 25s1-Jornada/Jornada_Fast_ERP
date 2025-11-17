@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
@@ -21,7 +21,7 @@ interface Tecnico {
 interface Descricao {
   id: string
   numeroSerie: string
-  defeito: string
+  categoriaId: string
   observacao: string
 }
 
@@ -31,30 +31,6 @@ interface Material {
   quantidade: string
   valorUnitario: string
   totalValor: string
-}
-
-interface Custos {
-  deslocamento: {
-    hrSaidaEmpresa: string
-    hrChegadaCliente: string
-    hrSaidaCliente: string
-    hrChegadaEmpresa: string
-    totalHoras: string
-    totalValor: string
-  }
-  horaTrabalhada: {
-    hrInicio: string
-    hrTermino: string
-    totalHoras: string
-    totalValor: string
-  }
-  km: {
-    km: string
-    valorPorKm: string
-    totalValor: string
-  }
-  materiais: Material[]
-  valorTotal: string
 }
 
 interface Chamado {
@@ -68,7 +44,125 @@ interface Chamado {
   dataFaturamento: string
   garantia: string
   descricoes: Descricao[]
-  custos: Custos
+  custosServico: {
+    id: string
+    nome: string
+    deslocamento: {
+      hrSaidaEmpresa: string
+      hrChegadaCliente: string
+      hrSaidaCliente: string
+      hrChegadaEmpresa: string
+      totalHoras: string
+      totalValor: string
+    }
+    horaTrabalhada: {
+      hrInicio: string
+      hrTermino: string
+      totalHoras: string
+      totalValor: string
+    }
+    km: {
+      km: string
+      valorPorKm: string
+      totalValor: string
+    }
+    materiais: Material[]
+    subtotal: string
+  }[]
+  valorTotal: string
+  descricaoDefeito?: any
+  descricaoDefeitoId?: number
+}
+
+const createDefaultCustoServico = (valorTotal = "0") => ({
+  id: `custo-${Date.now()}`,
+  nome: "Custo Principal",
+  deslocamento: {
+    hrSaidaEmpresa: "",
+    hrChegadaCliente: "",
+    hrSaidaCliente: "",
+    hrChegadaEmpresa: "",
+    totalHoras: "0",
+    totalValor: "0",
+  },
+  horaTrabalhada: {
+    hrInicio: "",
+    hrTermino: "",
+    totalHoras: "0",
+    totalValor: "0",
+  },
+  km: {
+    km: "0",
+    valorPorKm: "1.50",
+    totalValor: "0",
+  },
+  materiais: [],
+  subtotal: valorTotal,
+})
+
+// Converte DTO de DescricaoDefeito em shape esperado pelo formulário
+const mapDefeitoDtoToForm = (dto: any) => {
+  if (!dto) return undefined
+  const numeroSerie = dto.numeroSerie ?? dto.NumeroSerie ?? ""
+  const observacao = dto.observacao ?? dto.Observacao ?? ""
+  const pendencia = dto.pendencia ?? dto.Pendencia
+  const servicoFinalizado = pendencia === true ? false : pendencia === false ? true : null
+  return {
+    confirmacaoAtendimento: {
+      data: new Date().toISOString().split("T")[0],
+      nomeLegivel: "",
+      telefone: "",
+    },
+    equipamentos: [
+      {
+        id: dto.id ? `eq-${dto.id}` : `eq-${Date.now()}`,
+        numeroSerie,
+        categoriaProblema: "", // não temos categoria detalhada aqui
+        defeitos: {
+          refrigeracao: {},
+          iluminacao: {},
+          estrutura: {},
+          outros: {},
+        },
+        observacoes: observacao,
+      },
+    ],
+    servicoFinalizado,
+    pendencia: observacao,
+  }
+}
+
+// Normaliza propriedades (camelCase/PascalCase) vindas do backend
+const normalizeOs = (os: any, defeitosLookup: Record<number, any> = {}): Chamado => {
+  const rawValor = (os.valorTotal ?? os.ValorTotal) as string | number | undefined
+  const valorNumber =
+    typeof rawValor === "number"
+      ? rawValor
+      : parseFloat(String(rawValor ?? "0").replace(/[^\d,.-]/g, "").replace(",", ".") || "0") || 0
+
+  const descricoes = (os.descricoes ?? os.Descricoes ?? []).map((d: any) => ({
+    id: (d.id ?? d.Id ?? "").toString(),
+    numeroSerie: d.numeroSerie ?? d.NumeroSerie ?? "",
+    categoriaId: (d.categoriaId ?? d.CategoriaId ?? "").toString(),
+    observacao: d.observacao ?? d.Observacao ?? "",
+  }))
+
+  return {
+    id: (os.id ?? os.Id ?? "").toString(),
+    cliente: { id: (os.cliente?.id ?? os.Cliente?.Id ?? "").toString(), nome: os.cliente?.nome ?? os.Cliente?.Nome ?? "" },
+    tecnico: { id: (os.tecnico?.id ?? os.Tecnico?.Id ?? "").toString(), nome: os.tecnico?.nome ?? os.Tecnico?.Nome ?? "" },
+    dataAbertura: os.dataAbertura ?? os.DataAbertura ?? "",
+    dataVisita: os.dataVisita ?? os.DataVisita ?? "",
+    status: os.status ?? os.Status ?? "aberto",
+    pedido: os.pedido ?? os.Pedido ?? "",
+    dataFaturamento: os.dataFaturamento ?? os.DataFaturamento ?? "",
+    garantia: os.garantia ?? os.Garantia ?? "",
+    descricoes,
+    custosServico: [createDefaultCustoServico(valorNumber.toString())],
+    valorTotal: valorNumber.toString(),
+    descricaoDefeito: defeitosLookup[Number(os.Id ?? os.id)]?.form,
+    descricaoDefeitoId: defeitosLookup[Number(os.Id ?? os.id)]?.id,
+  }
 }
 
 export default function ChamadosPage() {
@@ -81,31 +175,7 @@ export default function ChamadosPage() {
     const load = async () => {
       try {
         const data = await api.get<any[]>("/api/OrdensServico/front-list")
-        // Mapeia o DTO do backend para o tipo Chamado da UI
-        const mapped: Chamado[] = (data || []).map((os) => ({
-          id: os.id,
-          cliente: { id: os.cliente?.id || "", nome: os.cliente?.nome || "" },
-          tecnico: { id: os.tecnico?.id || "", nome: os.tecnico?.nome || "" },
-          dataAbertura: os.dataAbertura || "",
-          dataVisita: os.dataVisita || "",
-          status: os.status || "",
-          pedido: os.pedido || "",
-          dataFaturamento: os.dataFaturamento || "",
-          garantia: os.garantia || "",
-          descricoes: (os.descricoes || []).map((d: any) => ({
-            id: d.id,
-            numeroSerie: d.numeroSerie,
-            defeito: d.defeito,
-            observacao: d.observacao,
-          })),
-          custos: {
-            deslocamento: { hrSaidaEmpresa: "", hrChegadaCliente: "", hrSaidaCliente: "", hrChegadaEmpresa: "", totalHoras: "", totalValor: "0" },
-            horaTrabalhada: { hrInicio: "", hrTermino: "", totalHoras: "", totalValor: "0" },
-            km: { km: "", valorPorKm: "", totalValor: "0" },
-            materiais: [],
-            valorTotal: (os.valorTotal || "R$ 0,00").replace(/[R$\s]/g, ""),
-          },
-        }))
+        const mapped: Chamado[] = (data || []).map((os) => normalizeOs(os))
         setChamados(mapped)
         setRefreshKey((k) => k + 1)
       } catch (e) {
@@ -146,27 +216,79 @@ export default function ChamadosPage() {
         DataAbertura: chamado.dataAbertura ? new Date(chamado.dataAbertura) : new Date(),
         StatusId: undefined,
         GarantiaId: undefined,
-        DataFaturamento: undefined,
+        DataFaturamento: chamado.dataFaturamento ? new Date(chamado.dataFaturamento) : undefined,
         Pedido: chamado.pedido || undefined,
-        NumeroOS: undefined,
+        NumeroOS: chamado.id,
       }
 
-      await api.post("/api/OrdensServico", payload)
+      let OrdemServicoId: number | undefined
+
+      if (chamado.id) {
+        await api.put(`/api/OrdensServico/${chamado.id}`, payload)
+        OrdemServicoId = Number(chamado.id)
+      } else {
+        const created = await api.post("/api/OrdensServico", payload)
+        OrdemServicoId = Number(created?.id ?? created?.Id ?? created?.data?.id ?? created?.data?.Id)
+      }
+
+      // Se não obtivermos id, aborta fluxo dependente
+      if (!OrdemServicoId || Number.isNaN(OrdemServicoId) || OrdemServicoId <= 0) {
+        throw new Error("Não foi possível obter o ID da OS criada.")
+      }
+
+      // Se estamos editando, apaga descrições existentes para não duplicar
+      if (chamado.id) {
+        try {
+          const existing = await api.get<any[]>("/api/DescricoesDoChamado?includeRelacionamentos=false")
+          const toDelete = (existing || []).filter(
+            (d) => Number(d.ordemServicoId ?? d.OrdemServicoId ?? d.ordemId ?? d.OrdemId) === OrdemServicoId,
+          )
+          if (toDelete.length > 0) {
+            await Promise.all(
+              toDelete.map((d) => api.delete(`/api/DescricoesDoChamado/${d.id ?? d.Id ?? ""}`)),
+            )
+          }
+        } catch (err) {
+          console.error("Falha ao limpar descrições antigas", err)
+        }
+      }
+
+      // Salvar descrições do chamado (apenas IDs de categoria)
+      const descricoesPayload = (chamado.descricoes || []).map((d) => ({
+        NumeroSerie: d.numeroSerie || undefined,
+        CategoriaId: d.categoriaId ? Number(d.categoriaId) : undefined,
+        Observacao: d.observacao || undefined,
+        OrdemServicoId: OrdemServicoId,
+      }))
+      if (descricoesPayload.length > 0) {
+        await Promise.all(descricoesPayload.map((body) => api.post("/api/DescricoesDoChamado", body)))
+      }
+
+      // Salvar descrição de defeito (pega o primeiro equipamento do formulário de defeito)
+      const defeitoForm = (chamado as any).descricaoDefeito
+      const eq0 = defeitoForm?.equipamentos?.[0]
+      if (defeitoForm && OrdemServicoId) {
+        await api.post("/api/DescricoesDefeito", {
+          NumeroSerie: eq0?.numeroSerie || undefined,
+          Observacao: eq0?.observacoes || defeitoForm?.pendencia || undefined,
+          Pendencia: defeitoForm?.servicoFinalizado === false ? true : defeitoForm?.servicoFinalizado ?? null,
+          CategoriaId: undefined,
+          OrdemServicoId,
+        })
+      }
+
+      // Salvar custo principal (valorTotal)
+      const valorTotalNumber = parseFloat(chamado.valorTotal || "0") || 0
+      await api.post("/api/Custos", {
+        OrdemServicoId: OrdemServicoId,
+        ValorTotal: valorTotalNumber,
+        AjudanteName: "",
+        TecnicoId: tecnicoId && !Number.isNaN(tecnicoId) ? tecnicoId : undefined,
+        dataVisita: chamado.dataVisita ? new Date(chamado.dataVisita) : undefined,
+      })
 
       const data = await api.get<any[]>("/api/OrdensServico/front-list")
-      const mapped: Chamado[] = (data || []).map((os) => ({
-        id: os.id,
-        cliente: { id: os.cliente?.id || "", nome: os.cliente?.nome || "" },
-        tecnico: { id: os.tecnico?.id || "", nome: os.tecnico?.nome || "" },
-        dataAbertura: os.dataAbertura || "",
-        dataVisita: os.dataVisita || "",
-        status: os.status || "",
-        pedido: os.pedido || "",
-        dataFaturamento: os.dataFaturamento || "",
-        garantia: os.garantia || "",
-        descricoes: (os.descricoes || []).map((d: any) => ({ id: d.id, numeroSerie: d.numeroSerie, defeito: d.defeito, observacao: d.observacao })),
-        custos: { deslocamento: { hrSaidaEmpresa: "", hrChegadaCliente: "", hrSaidaCliente: "", hrChegadaEmpresa: "", totalHoras: "", totalValor: "0" }, horaTrabalhada: { hrInicio: "", hrTermino: "", totalHoras: "", totalValor: "0" }, km: { km: "", valorPorKm: "", totalValor: "0" }, materiais: [], valorTotal: (os.valorTotal || "R$ 0,00").replace(/[R$\s]/g, "") },
-      }))
+      const mapped: Chamado[] = (data || []).map((os) => normalizeOs(os))
       setChamados(mapped)
       setRefreshKey((prev) => prev + 1)
       handleCloseModal()
@@ -197,4 +319,5 @@ export default function ChamadosPage() {
     </div>
   )
 }
+
 

@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import type React from "react"
 
@@ -29,7 +29,7 @@ interface Tecnico {
 interface Descricao {
   id: string
   numeroSerie: string
-  defeito: string
+  categoriaId: string
   observacao: string
 }
 
@@ -83,6 +83,52 @@ interface Chamado {
   descricaoDefeito?: any // Para armazenar os dados do formulário de descrição do defeito
 }
 
+const createDefaultDescricao = () => ({
+  id: `temp-${Date.now()}`,
+  numeroSerie: "",
+  categoriaId: "",
+  observacao: "",
+})
+
+const createDefaultCustoServico = (nome = "Custo Principal") => ({
+  id: `custo-${Date.now()}`,
+  nome,
+  deslocamento: {
+    hrSaidaEmpresa: "",
+    hrChegadaCliente: "",
+    hrSaidaCliente: "",
+    hrChegadaEmpresa: "",
+    totalHoras: "0",
+    totalValor: "0",
+  },
+  horaTrabalhada: {
+    hrInicio: "",
+    hrTermino: "",
+    totalHoras: "0",
+    totalValor: "0",
+  },
+  km: {
+    km: "0",
+    valorPorKm: "1.50",
+    totalValor: "0",
+  },
+  materiais: [],
+  subtotal: "0",
+})
+
+const createDefaultChamado = (dataAbertura: string): Chamado => ({
+  cliente: { id: "", nome: "" },
+  tecnico: { id: "", nome: "" },
+  dataAbertura,
+  dataVisita: "",
+  status: "aberto",
+  pedido: "",
+  dataFaturamento: "",
+  garantia: "",
+  descricoes: [createDefaultDescricao()],
+  custosServico: [createDefaultCustoServico()],
+  valorTotal: "0",
+})
 interface ChamadoModalProps {
   isOpen: boolean
   onClose: () => void
@@ -117,7 +163,14 @@ const tecnicosDisponiveis = [
   { id: "8", nome: "Fernanda Lima" },
 ]
 
-const tiposDefeito = ["Refrigeração", "Iluminação", "Estrutura", "Elétrico", "Hidráulico", "Outros"]
+const categoriasOptions = [
+  { id: "1", label: "Refrigeração" },
+  { id: "2", label: "Iluminação" },
+  { id: "3", label: "Estrutura" },
+  { id: "4", label: "Elétrico" },
+  { id: "5", label: "Hidráulico" },
+  { id: "6", label: "Outros" },
+]
 
 export function ChamadoModal({ isOpen, onClose, onSalvar, chamado }: ChamadoModalProps) {
   const hoje = new Date().toISOString().split("T")[0]
@@ -125,52 +178,7 @@ export function ChamadoModal({ isOpen, onClose, onSalvar, chamado }: ChamadoModa
   const prevIsOpenRef = useRef(false)
   const chamadoIdRef = useRef<string | undefined>(undefined)
 
-  const [formData, setFormData] = useState<Chamado>({
-    cliente: { id: "", nome: "" },
-    tecnico: { id: "", nome: "" },
-    dataAbertura: hoje,
-    dataVisita: "",
-    status: "aberto",
-    pedido: "",
-    dataFaturamento: "",
-    garantia: "",
-    descricoes: [
-      {
-        id: "temp-1",
-        numeroSerie: "",
-        defeito: "Refrigeração",
-        observacao: "",
-      },
-    ],
-    custosServico: [
-      {
-        id: "custo-1",
-        nome: "Custo Principal",
-        deslocamento: {
-          hrSaidaEmpresa: "",
-          hrChegadaCliente: "",
-          hrSaidaCliente: "",
-          hrChegadaEmpresa: "",
-          totalHoras: "0",
-          totalValor: "0",
-        },
-        horaTrabalhada: {
-          hrInicio: "",
-          hrTermino: "",
-          totalHoras: "0",
-          totalValor: "0",
-        },
-        km: {
-          km: "0",
-          valorPorKm: "1.50",
-          totalValor: "0",
-        },
-        materiais: [],
-        subtotal: "0",
-      },
-    ],
-    valorTotal: "0",
-  })
+  const [formData, setFormData] = useState<Chamado>(() => createDefaultChamado(hoje))
 
   // Carregar usuários separados por perfil
 const [clientesDisponiveis, setClientesDisponiveis] = useState<{ id: string; nome: string }[]>([])
@@ -210,55 +218,21 @@ const [tecnicosDisponiveis, setTecnicosDisponiveis] = useState<{ id: string; nom
 
     if (modalJustOpened || (isOpen && chamadoChanged)) {
       if (chamado) {
-        setFormData(chamado)
+        setFormData({
+          ...createDefaultChamado(hoje),
+          ...chamado,
+          descricoes:
+            chamado.descricoes && chamado.descricoes.length > 0
+              ? chamado.descricoes
+              : [createDefaultDescricao()],
+          custosServico:
+            chamado.custosServico && chamado.custosServico.length > 0
+              ? chamado.custosServico
+              : [createDefaultCustoServico()],
+        })
         chamadoIdRef.current = chamado.id
       } else {
-        setFormData({
-          cliente: { id: "", nome: "" },
-          tecnico: { id: "", nome: "" },
-          dataAbertura: hoje,
-          dataVisita: "",
-          status: "aberto",
-          pedido: "",
-          dataFaturamento: "",
-          garantia: "",
-          descricoes: [
-            {
-              id: "temp-1",
-              numeroSerie: "",
-              defeito: "Refrigeração",
-              observacao: "",
-            },
-          ],
-          custosServico: [
-            {
-              id: "custo-1",
-              nome: "Custo Principal",
-              deslocamento: {
-                hrSaidaEmpresa: "",
-                hrChegadaCliente: "",
-                hrSaidaCliente: "",
-                hrChegadaEmpresa: "",
-                totalHoras: "0",
-                totalValor: "0",
-              },
-              horaTrabalhada: {
-                hrInicio: "",
-                hrTermino: "",
-                totalHoras: "0",
-                totalValor: "0",
-              },
-              km: {
-                km: "0",
-                valorPorKm: "1.50",
-                totalValor: "0",
-              },
-              materiais: [],
-              subtotal: "0",
-            },
-          ],
-          valorTotal: "0",
-        })
+        setFormData(createDefaultChamado(hoje))
         chamadoIdRef.current = undefined
       }
       setActiveTab("descricao")
@@ -272,7 +246,7 @@ const [tecnicosDisponiveis, setTecnicosDisponiveis] = useState<{ id: string; nom
     const novaDescricao = {
       id: `temp-${Date.now()}`,
       numeroSerie: "",
-      defeito: "Refrigeração",
+      categoriaId: "",
       observacao: "",
     }
     setFormData({
@@ -700,20 +674,20 @@ const [tecnicosDisponiveis, setTecnicosDisponiveis] = useState<{ id: string; nom
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor={`defeito-${index}`} className="text-sm font-medium">
-                              Defeito:
+                            <Label htmlFor={`categoriaId-${index}`} className="text-sm font-medium">
+                              Categoria (ID):
                             </Label>
                             <Select
-                              value={descricao.defeito}
-                              onValueChange={(value) => handleDescricaoChange(descricao.id, "defeito", value)}
+                              value={descricao.categoriaId}
+                              onValueChange={(value) => handleDescricaoChange(descricao.id, "categoriaId", value)}
                             >
-                              <SelectTrigger id={`defeito-${index}`}>
-                                <SelectValue placeholder="Selecione o tipo de defeito" />
+                              <SelectTrigger id={`categoriaId-${index}`}>
+                                <SelectValue placeholder="Selecione a categoria" />
                               </SelectTrigger>
                               <SelectContent>
-                                {tiposDefeito.map((tipo) => (
-                                  <SelectItem key={tipo} value={tipo}>
-                                    {tipo}
+                                {categoriasOptions.map((tipo) => (
+                                  <SelectItem key={tipo.id} value={tipo.id}>
+                                    {tipo.label}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
@@ -736,7 +710,7 @@ const [tecnicosDisponiveis, setTecnicosDisponiveis] = useState<{ id: string; nom
                   ))}
                 </TabsContent>
 
-                {/* Conteúdo da aba DESCRIÇÃO DO DEFEITO */}
+                {/* Conteúdo da aba DESCRIÇÃO DO defeito/categoria */}
                 <TabsContent value="descricao-defeito" className="space-y-4 mt-0">
                   <DescricaoDefeitoForm
                     onSalvar={handleDescricaoDefeitoSalvar}
@@ -1202,3 +1176,5 @@ const [tecnicosDisponiveis, setTecnicosDisponiveis] = useState<{ id: string; nom
     </Dialog>
   )
 }
+
+

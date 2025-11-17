@@ -22,7 +22,7 @@ interface Tecnico {
 interface Descricao {
   id: string
   numeroSerie: string
-  defeito: string
+  categoriaId: string
   observacao: string
 }
 
@@ -455,7 +455,7 @@ export function ChamadosTable({ onEditarChamado, chamadosExternos }: ChamadosTab
                   <TableCell className="hidden sm:table-cell">{chamado.tecnico.nome}</TableCell>
                   <TableCell className="hidden md:table-cell">{formatDate(chamado.dataAbertura)}</TableCell>
                   <TableCell className="hidden md:table-cell">{formatDate(chamado.dataVisita)}</TableCell>
-                  <TableCell className="hidden lg:table-cell">{chamado.descricoes[0]?.defeito || "-"}</TableCell>
+                  <TableCell className="hidden lg:table-cell">{chamado.descricoes[0]?.categoriaId || "-"}</TableCell>
                   <TableCell>{renderStatus(chamado.status)}</TableCell>
                   <TableCell className="hidden lg:table-cell">{formatCurrency(chamado.valorTotal)}</TableCell>
                   <TableCell>

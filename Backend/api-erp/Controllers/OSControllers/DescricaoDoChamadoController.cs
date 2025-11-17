@@ -28,6 +28,18 @@ namespace api_erp.Controllers.OSControllers
             return Ok(dtos);
         }
 
+        [HttpGet("by-ordem/{ordemId:int}")]
+        [ProducesResponseType(typeof(IEnumerable<DescricaoDoChamadoReadDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetByOrdem(
+            int ordemId,
+            [FromQuery] bool includeRelacionamentos = true,
+            CancellationToken ct = default)
+        {
+            var entities = await _repo.GetByOrdemServicoIdAsync(ordemId, includeRelacionamentos, ct);
+            var dtos = entities.Select(e => e.ToReadDto()).ToList();
+            return Ok(dtos);
+        }
+
         // GET: api/DescricoesDoChamado/5?includeRelacionamentos=true
         [HttpGet("{id:int}")]
         [ProducesResponseType(typeof(DescricaoDoChamadoReadDto), StatusCodes.Status200OK)]

@@ -9,7 +9,7 @@ namespace api_erp.DTOs
         public string? NumeroSerie { get; set; }
         public int? CategoriaId { get; set; }
         public string? Observacao { get; set; }
-        public int? OrdemId { get; set; }
+        public int? OrdemServicoId { get; set; }
     }
 
     public class DescricaoDoChamadoUpdateDto
@@ -17,7 +17,7 @@ namespace api_erp.DTOs
         public string? NumeroSerie { get; set; }
         public int? CategoriaId { get; set; }
         public string? Observacao { get; set; }
-        public int? OrdemId { get; set; }
+        public int? OrdemServicoId { get; set; }
     }
 
     public class DescricaoDoChamadoReadDto
@@ -27,6 +27,6 @@ namespace api_erp.DTOs
         public string? NumeroSerie { get; set; }
         public int? CategoriaId { get; set; }
         public string? Observacao { get; set; }
-        public int? OrdemId { get; set; }
+        public int? OrdemServicoId { get; set; }
     }
 }
