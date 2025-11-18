@@ -1,14 +1,9 @@
 {
   "pages": {
-    "/(app)/ordem-de-servico/chamados/page": [
+    "/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(app)/ordem-de-servico/chamados/page.js"
-    ],
-    "/(app)/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(app)/layout.js"
+      "static/chunks/app/page.js"
     ],
     "/layout": [
       "static/chunks/webpack.js",
@@ -16,10 +11,30 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/_not-found/page": [
+    "/(app)/dashboard/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/_not-found/page.js"
+      "static/chunks/app/(app)/dashboard/page.js"
+    ],
+    "/(app)/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(app)/layout.js"
+    ],
+    "/(app)/usuarios/usuarios/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(app)/usuarios/usuarios/page.js"
+    ],
+    "/(app)/configuracoes/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(app)/configuracoes/page.js"
+    ],
+    "/definir-senha/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/definir-senha/page.js"
     ]
   }
 }
