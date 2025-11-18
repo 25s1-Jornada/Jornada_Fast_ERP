@@ -36,3 +36,23 @@ Como nada fica armazenado no banco, qualquer alteração manual nos dados exige 
 Grupo ERP da Jornada FAST — 25S1
 .
 ---
+
+## 🚀 Executando com Docker
+
+Agora é possível subir o frontend (Next.js), o backend (ASP.NET 8) e o banco de dados MySQL com um único comando usando Docker Compose.
+
+1. Tenha o Docker e o Docker Compose instalados na máquina.
+2. Na raiz do repositório execute:
+
+```bash
+docker compose up --build
+```
+
+3. Os serviços serão expostos em:
+   - Frontend: http://localhost:3000
+   - Backend: http://localhost:8080 (expondo o Swagger quando em `Development`)
+   - MySQL: localhost:3306 (credenciais configuradas no `docker-compose.yml`)
+
+Se precisar alterar credenciais ou portas, edite o arquivo `docker-compose.yml`. O backend lê a string de conexão do MySQL via variável `ConnectionStrings__DefaultConnection` já configurada no Compose.
+
+> ℹ️ **Frontend em modo Dev:** enquanto a página `/estoque-geral/movimentacoes` não for ajustada para build de produção (requer envolver `useSearchParams` em um boundary de Suspense), o contêiner do frontend roda `npm run dev`. Isso permite continuar desenvolvendo normalmente mesmo sem um build estável.
