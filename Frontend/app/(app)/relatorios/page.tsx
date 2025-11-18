@@ -1,8 +1,10 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import jsPDF from "jspdf"
 import { FileText, Download } from "lucide-react"
+
+import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,8 +17,10 @@ import {
   filtrosChamadosConfig,
   type Chamado,
   type OrdenacaoChamado,
-} from "@/app/ordem-de-servico/chamados/chamados-table"
+} from "@/app/(app)/ordem-de-servico/chamados/chamados-table"
 import { useToast } from "@/hooks/use-toast"
+
+const HASH_VERIFY_HINT = "Para validar automaticamente, acesse:"
 
 const formatCurrency = (value: string | number) => {
   const num = typeof value === "number" ? value : Number.parseFloat(value || "0")
@@ -39,13 +43,58 @@ const formatStatus = (status: string) => {
   return map[status] ?? status
 }
 
+const downloadBlob = (blob: Blob, fileName: string) => {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement("a")
+  link.href = url
+  link.download = fileName
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
+const toUint8Array = (value: ArrayBuffer | Uint8Array) => (value instanceof Uint8Array ? value : new Uint8Array(value))
+
+const encodeBase64 = (value: string) => btoa(unescape(encodeURIComponent(value)))
+
 type NivelDetalhe = "resumido" | "detalhado"
 
 const ordenacaoRelatorioPadrao: OrdenacaoChamado = { campo: "dataAbertura", direcao: "asc" }
 
+type ReportIntegrityEntryPayload = {
+  ordemServicoId: string
+  cliente: string
+  descricao: string
+  tecnico: string
+  status: string
+  dataAbertura: string
+  dataUltimaAtualizacao: string
+  valor?: string
+}
+
+const construirDescricaoRelatorio = (chamado: Chamado) => {
+  if (!chamado.descricoes || chamado.descricoes.length === 0) return "-"
+
+  return chamado.descricoes
+    .map((descricao) =>
+      [descricao.numeroSerie, descricao.defeito, descricao.observacao]
+        .filter(Boolean)
+        .join(" - "),
+    )
+    .join(" || ")
+}
+
+const obterDataUltimaAtualizacao = (chamado: Chamado) =>
+  chamado.dataVisita || chamado.dataFaturamento || chamado.dataAbertura
+
 export default function RelatoriosPage() {
   const [filtros, setFiltros] = useState<FiltroValores>({})
   const [nivelDetalhe, setNivelDetalhe] = useState<NivelDetalhe>("resumido")
+  const [hashIntegridade, setHashIntegridade] = useState("")
+  const [hashStatus, setHashStatus] = useState<"idle" | "loading" | "ready" | "error">("idle")
+  const [verifyPageUrl, setVerifyPageUrl] = useState("/verificar-relatorio")
+  const [verifyEndpointUrl, setVerifyEndpointUrl] = useState("/api/report-integrity/verify")
   const { toast } = useToast()
 
   const chamadosFiltrados = useMemo(
@@ -59,6 +108,67 @@ export default function RelatoriosPage() {
   )
 
   const totalClientes = useMemo(() => new Set(chamadosFiltrados.map((chamado) => chamado.cliente.nome)).size, [chamadosFiltrados])
+
+  const entradasIntegridade = useMemo<ReportIntegrityEntryPayload[]>(
+    () =>
+      chamadosFiltrados.map((chamado) => ({
+        ordemServicoId: chamado.id,
+        cliente: chamado.cliente.nome,
+        descricao: construirDescricaoRelatorio(chamado),
+        tecnico: chamado.tecnico.nome,
+        status: chamado.status,
+        dataAbertura: chamado.dataAbertura,
+        dataUltimaAtualizacao: obterDataUltimaAtualizacao(chamado),
+        valor: chamado.valorTotal,
+      })),
+    [chamadosFiltrados],
+  )
+
+  const calcularHashRelatorio = useCallback(async () => {
+    if (entradasIntegridade.length === 0) {
+      setHashIntegridade("")
+      setHashStatus("idle")
+      return ""
+    }
+
+    setHashStatus("loading")
+    try {
+      const resposta = await fetch("/api/report-integrity", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ entries: entradasIntegridade }),
+      })
+
+      if (!resposta.ok) throw new Error("Falha ao gerar hash")
+
+      const data = (await resposta.json()) as { hash?: string }
+      if (!data.hash) throw new Error("Hash ausente")
+
+      setHashIntegridade(data.hash)
+      setHashStatus("ready")
+      return data.hash
+    } catch (error) {
+      setHashIntegridade("")
+      setHashStatus("error")
+      toast({
+        title: "Erro ao gerar hash",
+        description: "Não foi possível gerar o hash de integridade do relatório.",
+        variant: "destructive",
+      })
+      return ""
+    }
+  }, [entradasIntegridade, toast])
+
+  useEffect(() => {
+    void calcularHashRelatorio()
+  }, [calcularHashRelatorio])
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const origin = window.location.origin
+    setVerifyPageUrl(`${origin}/verificar-relatorio`)
+    setVerifyEndpointUrl(`${origin}/api/report-integrity/verify`)
+  }, [])
 
   const validarSelecao = () => {
     if (chamadosFiltrados.length === 0) {
@@ -105,15 +215,17 @@ export default function RelatoriosPage() {
     }
   }
 
-  const gerarCsv = () => {
+  const gerarCsv = async () => {
     if (!validarSelecao()) return
+
+    const hash = (await calcularHashRelatorio()) || hashIntegridade || "N/D"
 
     const linhas = chamadosFiltrados.map((chamado) =>
       nivelDetalhe === "resumido" ? construirResumo(chamado) : construirDetalhado(chamado),
     )
 
     const colunas = Object.keys(linhas[0])
-    const conteudo = [
+    const conteudoBase = [
       colunas.join(";"),
       ...linhas.map((linha) =>
         colunas
@@ -125,6 +237,17 @@ export default function RelatoriosPage() {
       ),
     ].join("\n")
 
+    const payload = {
+      hash,
+      geradoEm: new Date().toISOString(),
+      nivelDetalhe,
+      filtrosAtivos: filtros,
+      entries: entradasIntegridade,
+    }
+    const payloadBase64 = encodeBase64(JSON.stringify(payload))
+
+    const conteudo = `${conteudoBase}\n\nHash de Integridade: ${hash}\n${HASH_VERIFY_HINT} ${verifyPageUrl}\n#INTEGRITY_DATA:${payloadBase64}`
+
     const blob = new Blob([conteudo], { type: "text/csv;charset=utf-8;" })
     const url = URL.createObjectURL(blob)
     const link = document.createElement("a")
@@ -134,10 +257,13 @@ export default function RelatoriosPage() {
     link.click()
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
+
   }
 
-  const gerarPdf = () => {
+  const gerarPdf = async () => {
     if (!validarSelecao()) return
+
+    const hash = (await calcularHashRelatorio()) || hashIntegridade || "N/D"
 
     const doc = new jsPDF({ orientation: "landscape" })
     const margem = 14
@@ -205,7 +331,29 @@ export default function RelatoriosPage() {
       escreverLinhas(linhas)
     })
 
-    doc.save(`relatorio-os-${nivelDetalhe}.pdf`)
+    escreverLinhas([`Hash de Integridade: ${hash}`, `${HASH_VERIFY_HINT} ${verifyPageUrl}`])
+
+  
+
+    const payload = {
+      hash,
+      geradoEm: new Date().toISOString(),
+      nivelDetalhe,
+      filtrosAtivos: filtros,
+      entries: entradasIntegridade,
+    }
+    const payloadBase64 = encodeBase64(JSON.stringify(payload))
+    const marker = `\n%%INTEGRITY_DATA:${payloadBase64}\n`
+
+    const pdfArrayBuffer = doc.output("arraybuffer") as ArrayBuffer
+    const pdfBytes = toUint8Array(pdfArrayBuffer)
+    const markerBytes = new TextEncoder().encode(marker)
+    const merged = new Uint8Array(pdfBytes.length + markerBytes.length)
+    merged.set(pdfBytes)
+    merged.set(markerBytes, pdfBytes.length)
+
+    const blob = new Blob([merged], { type: "application/pdf" })
+    downloadBlob(blob, `relatorio-os-${nivelDetalhe}.pdf`)
   }
 
   const tabelaPreview = chamadosFiltrados.slice(0, 8)
@@ -317,6 +465,37 @@ export default function RelatoriosPage() {
               )}
             </TableBody>
           </Table>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Integridade do relatório</CardTitle>
+          <CardDescription>Hash SHA-256 gerado a partir dos dados exportados.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <p className="font-mono text-sm break-all">
+            Hash de Integridade:{" "}
+            {hashStatus === "ready"
+              ? hashIntegridade
+              : hashStatus === "loading"
+                ? "Gerando hash de integridade..."
+                : chamadosFiltrados.length === 0
+                  ? "Nenhuma OS selecionada."
+                  : "Não foi possível gerar o hash no momento."}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {HASH_VERIFY_HINT}{" "}
+            <a href={verifyPageUrl} target="_blank" rel="noreferrer" className="underline text-primary">
+              {verifyPageUrl}
+            </a>
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Os arquivos PDF/CSV já carregam os dados invisíveis necessários para validação, mantendo o fluxo simples para o usuário final.
+          </p>
+          <Button variant="outline" asChild>
+            <Link href="/verificar-relatorio">Abrir verificador</Link>
+          </Button>
         </CardContent>
       </Card>
     </div>
