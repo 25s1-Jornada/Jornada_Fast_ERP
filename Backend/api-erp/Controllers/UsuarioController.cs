@@ -39,7 +39,7 @@ namespace api_erp.Controllers
         public async Task<IActionResult> Put(int id, [FromBody] UsuarioDTO model)
         {
             if (id != model.Id) return BadRequest();
-            _repository.Update(model);
+            await _repository.UpdateAsync(model);
             await _repository.SaveChangesAsync();
             return NoContent();
         }

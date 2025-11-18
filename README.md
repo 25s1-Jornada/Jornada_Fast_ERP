@@ -21,6 +21,15 @@ Além disso, o sistema foi pensado para futuras integrações com outros projeto
 - `frontend/` - Interface web do sistema
 - `docs/` - Documentação e arquivos complementares
 
+## 🔑 Acesso padrão
+
+As credenciais abaixo são criadas automaticamente na primeira execução do backend (ou ao aplicar as migrations). Elas podem ser alteradas posteriormente via API de usuários.
+
+- Usuário: **admin@fast.com**
+- Senha: **fast123**
+
+A autenticação utiliza JWT. Ajuste os dados em `Backend/api-erp/appsettings*.json` caso precise personalizar emissor, audiência ou a chave secreta (`Jwt:Secret`).
+
 ## 🔐 Integridade dos relatórios
 
 Os relatórios de O.S. contam com um hash SHA-256 calculado a partir dos campos críticos (ID, cliente, técnico, status, datas e valor). Durante a exportação:

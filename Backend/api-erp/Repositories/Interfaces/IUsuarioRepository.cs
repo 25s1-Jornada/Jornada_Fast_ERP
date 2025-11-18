@@ -7,8 +7,9 @@ namespace api_erp.Repositories.Interfaces
     {
         Task<IEnumerable<Usuario>> GetAllAsync();
         Task<Usuario?> GetByIdAsync(int id);
+        Task<Usuario?> GetByEmailAsync(string email);
         Task AddAsync(UsuarioDTO usuario);
-        void Update(UsuarioDTO usuario);
+        Task UpdateAsync(UsuarioDTO usuario);
         void Delete(Usuario usuario);
         Task SaveChangesAsync();
     }

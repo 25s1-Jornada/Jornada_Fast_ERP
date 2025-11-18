@@ -1,9 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 import { User, Menu } from "lucide-react"
+
+import { useAuth } from "@/hooks/use-auth"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
@@ -19,6 +22,23 @@ import { Sidebar } from "./sidebar"
 
 export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const { user, logout } = useAuth()
+  const router = useRouter()
+
+  const userInitials = useMemo(() => {
+    if (!user?.nome) return "U"
+    return user.nome
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((name) => name[0]?.toUpperCase())
+      .join("")
+  }, [user?.nome])
+
+  const handleLogout = () => {
+    logout()
+    router.replace("/")
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b">
@@ -51,7 +71,7 @@ export function Navbar() {
           </Sheet>
 
           {/* Logo */}
-          <Link href="/" className="flex items-center">
+          <Link href="/dashboard" className="flex items-center">
             <Image
               src="/images/fast.png"
               alt="FAST - Gôndolas e Check-outs"
@@ -68,19 +88,20 @@ export function Navbar() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full">
                 <Avatar className="h-8 w-8">
-                  <AvatarFallback>
-                    <User className="h-4 w-4" />
-                  </AvatarFallback>
+                  <AvatarFallback>{user ? userInitials : <User className="h-4 w-4" />}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+              <DropdownMenuLabel className="flex flex-col space-y-0.5">
+                <span className="text-sm font-semibold">{user?.nome ?? "Usuário"}</span>
+                <span className="text-xs font-normal text-gray-500">{user?.email}</span>
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Perfil</DropdownMenuItem>
               <DropdownMenuItem>Configurações</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Sair</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>Sair</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

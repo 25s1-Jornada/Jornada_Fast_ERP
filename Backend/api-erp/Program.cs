@@ -1,16 +1,22 @@
 
+using System.Text;
+using api_erp.Configurations;
 using api_erp.EntityConfig;
 using api_erp.Repositories.Implementations;
 using api_erp.Repositories.Implementations.OSImplementations;
 using api_erp.Repositories.Interfaces;
 using api_erp.Repositories.Interfaces.OSInterfaces;
+using api_erp.Services.Implementations;
+using api_erp.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace api_erp
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -36,8 +42,11 @@ namespace api_erp
             builder.Services.AddScoped<IHoraTrabalhadaRepository, HoraTrabalhadaRepository>();
             builder.Services.AddScoped<IKMRepository, KMRepository>();
             builder.Services.AddScoped<IDescricaoDefeitoRepository, DescricaoDefeitoRepository>();
+            builder.Services.AddScoped<ITokenService, JwtTokenService>();
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+            var jwtSection = builder.Configuration.GetSection("Jwt");
+            var jwtSettings = jwtSection.Get<JwtSettings>() ?? throw new InvalidOperationException("Configuração JWT não encontrada.");
 
             builder.Services.AddDbContext<AppDbContext>(options =>
             {
@@ -57,6 +66,29 @@ namespace api_erp
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.Configure<JwtSettings>(jwtSection);
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidateLifetime = true,
+                    ValidIssuer = jwtSettings.Issuer,
+                    ValidAudience = jwtSettings.Audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret)),
+                    ClockSkew = TimeSpan.FromMinutes(1)
+                };
+            });
+
+            builder.Services.AddAuthorization();
 
             builder.Services.AddCors(options =>
             {
@@ -70,6 +102,7 @@ namespace api_erp
 
             var app = builder.Build();
 
+            await DataSeeder.SeedAsync(app.Services);
 
             if (app.Environment.IsDevelopment())
             {
@@ -81,12 +114,13 @@ namespace api_erp
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
 
             app.MapControllers();
 
-            app.Run();
+            await app.RunAsync();
             
         }
     }

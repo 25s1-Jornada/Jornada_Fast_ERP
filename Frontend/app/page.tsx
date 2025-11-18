@@ -1,9 +1,10 @@
 'use client'
 
-import type { FormEvent } from "react"
+import { useState, type FormEvent } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 
+import { useAuth } from "@/hooks/use-auth"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
@@ -11,10 +12,30 @@ import { Label } from "@/components/ui/label"
 
 export default function Home() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const { login } = useAuth()
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const [remember, setRemember] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    router.push("/dashboard")
+    const formData = new FormData(event.currentTarget)
+    const email = (formData.get("email") as string)?.trim()
+    const password = (formData.get("password") as string) ?? ""
+
+    try {
+      setIsSubmitting(true)
+      setError(null)
+      await login(email, password, remember)
+      const redirect = searchParams.get("redirect") ?? "/dashboard"
+      router.replace(redirect)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível realizar o login.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -31,7 +52,14 @@ export default function Home() {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <Label htmlFor="email">E-mail corporativo</Label>
-            <Input id="email" type="email" placeholder="voce@empresa.com" autoComplete="email" required />
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="voce@empresa.com"
+              autoComplete="email"
+              required
+            />
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -40,12 +68,23 @@ export default function Home() {
                 Esqueci minha senha
               </Link>
             </div>
-            <Input id="password" type="password" placeholder="••••••••" autoComplete="current-password" required />
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="••••••••"
+              autoComplete="current-password"
+              required
+            />
           </div>
 
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <Checkbox id="remember" />
+              <Checkbox
+                id="remember"
+                checked={remember}
+                onCheckedChange={(checked) => setRemember(Boolean(checked))}
+              />
               <Label htmlFor="remember" className="text-sm font-normal text-gray-600">
                 Manter credenciais salvas
               </Label>
@@ -53,8 +92,10 @@ export default function Home() {
             <p className="text-xs text-gray-500">Seu acesso continua seguro.</p>
           </div>
 
-          <Button type="submit" className="w-full py-6 text-base font-semibold">
-            Acessar
+          {error ? <p className="text-sm text-red-600">{error}</p> : null}
+
+          <Button type="submit" className="w-full py-6 text-base font-semibold" disabled={isSubmitting}>
+            {isSubmitting ? "Autenticando..." : "Acessar"}
           </Button>
         </form>
 
