@@ -21,9 +21,18 @@ Além disso, o sistema foi pensado para futuras integrações com outros projeto
 - `frontend/` - Interface web do sistema
 - `docs/` - Documentação e arquivos complementares
 
+## 🔐 Integridade dos relatórios
+
+Os relatórios de O.S. contam com um hash SHA-256 calculado a partir dos campos críticos (ID, cliente, técnico, status, datas e valor). Durante a exportação:
+
+1. O frontend envia os dados para `POST /api/report-integrity`, que devolve o hash.
+2. Esse hash aparece no rodapé do PDF/CSV e também em um card da própria página de relatórios.
+3. Ao exportar, o PDF/CSV já recebe (de forma invisível) todas as entradas usadas no cálculo. Basta levar o arquivo para `/verificar-relatorio` e a própria página extrai os dados embutidos antes de chamar `POST /api/report-integrity/verify`.
+
+Como nada fica armazenado no banco, qualquer alteração manual nos dados exige recalcular o hash — se o resultado não for o mesmo, há evidência de manipulação.
+
 ## 👨‍💻 Desenvolvido por
 
 Grupo ERP da Jornada FAST — 25S1
 .
 ---
-
