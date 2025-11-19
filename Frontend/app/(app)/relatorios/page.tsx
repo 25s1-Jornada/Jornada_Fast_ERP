@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import jsPDF from "jspdf"
 import { FileText, Download } from "lucide-react"
 
@@ -16,7 +16,7 @@ import {
   filtrosChamadosConfig,
   type Chamado,
   type OrdenacaoChamado,
-} from "@/app/(app)/(app)/ordem-de-servico/chamados/chamados-table"
+} from "@/app/(app)/ordem-de-servico/chamados/chamados-table"
 import { api } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 
@@ -104,48 +104,6 @@ const mapOsDtoToChamado = (os: any): Chamado => ({
   valorTotal: (os.valorTotal || "R$ 0,00").replace(/[R$\s]/g, ""),
 })
 
-const mapOsDtoToChamado = (os: any): Chamado => ({
-  id: String(os.id ?? ""),
-  cliente: { id: os.cliente?.id ?? "", nome: os.cliente?.nome ?? "" },
-  tecnico: { id: os.tecnico?.id ?? "", nome: os.tecnico?.nome ?? "" },
-  dataAbertura: os.dataAbertura ?? "",
-  dataVisita: os.dataVisita ?? "",
-  status: os.status ?? "",
-  pedido: os.pedido ?? "",
-  dataFaturamento: os.dataFaturamento ?? "",
-  garantia: os.garantia ?? "",
-  descricoes: (os.descricoes ?? []).map((d: any) => ({
-    id: String(d.id ?? ""),
-    numeroSerie: d.numeroSerie ?? "",
-    defeito: d.defeito ?? "",
-    observacao: d.observacao,
-  })),
-  custosServico: [
-    {
-      id: String(os.id ?? "custo"),
-      nome: "Custos",
-      deslocamento: {
-        hrSaidaEmpresa: "",
-        hrChegadaCliente: "",
-        hrSaidaCliente: "",
-        hrChegadaEmpresa: "",
-        totalHoras: "",
-        totalValor: "0",
-      },
-      horaTrabalhada: {
-        hrInicio: "",
-        hrTermino: "",
-        totalHoras: "",
-        totalValor: "0",
-      },
-      km: { km: "", valorPorKm: "", totalValor: "0" },
-      materiais: [],
-      subtotal: (os.valorTotal || "R$ 0,00").replace(/[R$\s]/g, ""),
-    },
-  ],
-  valorTotal: (os.valorTotal || "R$ 0,00").replace(/[R$\s]/g, ""),
-})
-
 type ReportIntegrityEntryPayload = {
   ordemServicoId: string
   cliente: string
@@ -177,6 +135,10 @@ export default function RelatoriosPage() {
   const [nivelDetalhe, setNivelDetalhe] = useState<NivelDetalhe>("resumido")
   const [chamados, setChamados] = useState<Chamado[]>([])
   const { toast } = useToast()
+  const [hashStatus, setHashStatus] = useState<"idle" | "loading" | "ready" | "error">("idle")
+  const [hashIntegridade, setHashIntegridade] = useState<string>("")
+  const [verifyPageUrl, setVerifyPageUrl] = useState<string>("")
+  const [verifyEndpointUrl, setVerifyEndpointUrl] = useState<string>("")
 
   useEffect(() => {
     const load = async () => {

@@ -12,7 +12,6 @@ namespace api_erp.Mappers
                 NumeroSerie = e.NumeroSerie,
                 Observacao = e.Observacao,
                 Pendencia = e.Pendencia,
-                CategoriaId = e.CategoriaId,
                 DefeitosList = e.DefeitosList
             };
 
@@ -23,7 +22,6 @@ namespace api_erp.Mappers
                 NumeroSerie = dto.NumeroSerie ?? string.Empty,
                 Observacao = dto.Observacao ?? string.Empty,
                 Pendencia = dto.Pendencia,
-                CategoriaId = dto.CategoriaId,
                 DefeitosList = dto.DefeitosList ?? new List<int>()
             };
 
@@ -34,7 +32,6 @@ namespace api_erp.Mappers
                 NumeroSerie = dto.NumeroSerie ?? string.Empty,
                 Observacao = dto.Observacao ?? string.Empty,
                 Pendencia = dto.Pendencia,
-                CategoriaId = dto.CategoriaId,
                 DefeitosList = dto.DefeitosList ?? new List<int>()
             };
     }

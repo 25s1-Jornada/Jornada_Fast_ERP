@@ -394,9 +394,6 @@ namespace api_erp.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("CategoriaId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("DefeitosList")
                         .IsRequired()
                         .HasColumnType("TEXT");

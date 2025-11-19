@@ -103,17 +103,6 @@ const configuracaoFiltros: FiltroConfig[] = [
     ],
   },
   {
-    campo: "defeito",
-    label: "Tipo de Defeito",
-    tipo: "multiselect",
-    categoria: "geral",
-    opcoes: [
-      { value: "Refrigeração", label: "Refrigeração" },
-      { value: "Iluminação", label: "Iluminação" },
-      { value: "Estrutura", label: "Estrutura" },
-    ],
-  },
-  {
     campo: "cliente",
     label: "Cliente",
     tipo: "multiselect",
@@ -371,16 +360,12 @@ export function ChamadosTable({ onEditarChamado, chamadosExternos }: ChamadosTab
   const chamadosFiltrados = useMemo(() => filtrarChamados(chamados, filtros, ordenacao), [chamados, filtros, ordenacao])
 
   const renderStatus = (status: string) => {
-    switch (status) {
-      case "concluido":
-        return <Badge className="bg-green-500">Concluído</Badge>
-      case "em_andamento":
-        return <Badge className="bg-blue-500">Em Andamento</Badge>
-      case "aberto":
-        return <Badge className="bg-yellow-500">Aberto</Badge>
-      default:
-        return <Badge>{status}</Badge>
-    }
+    const normalized = status?.toString().trim().toLowerCase()
+    if (normalized === "concluido") return <Badge className="bg-green-500">Concluído</Badge>
+    if (normalized === "em_andamento") return <Badge className="bg-blue-500">Em Andamento</Badge>
+    if (normalized === "aberto") return <Badge className="bg-yellow-500">Aberto</Badge>
+    if (normalized === "fechado") return <Badge className="bg-gray-500">Fechado</Badge>
+    return <Badge>{status || "-"}</Badge>
   }
 
   const formatDate = (dateString: string) => {
@@ -435,7 +420,6 @@ export function ChamadosTable({ onEditarChamado, chamadosExternos }: ChamadosTab
               <TableHead className="hidden sm:table-cell">Técnico</TableHead>
               <TableHead className="hidden md:table-cell">Data Abertura</TableHead>
               <TableHead className="hidden md:table-cell">Data Visita</TableHead>
-              <TableHead className="hidden lg:table-cell">Defeito</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="hidden lg:table-cell">Valor Total</TableHead>
               <TableHead>Ações</TableHead>
@@ -454,8 +438,7 @@ export function ChamadosTable({ onEditarChamado, chamadosExternos }: ChamadosTab
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">{chamado.tecnico.nome}</TableCell>
                   <TableCell className="hidden md:table-cell">{formatDate(chamado.dataAbertura)}</TableCell>
-                  <TableCell className="hidden md:table-cell">{formatDate(chamado.dataVisita)}</TableCell>
-                  <TableCell className="hidden lg:table-cell">{chamado.descricoes[0]?.categoriaId || "-"}</TableCell>
+              <TableCell className="hidden md:table-cell">{formatDate(chamado.dataVisita)}</TableCell>
                   <TableCell>{renderStatus(chamado.status)}</TableCell>
                   <TableCell className="hidden lg:table-cell">{formatCurrency(chamado.valorTotal)}</TableCell>
                   <TableCell>

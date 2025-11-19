@@ -7,8 +7,7 @@ namespace api_erp.DTOs
         public string? NumeroSerie { get; set; }
         public string? Observacao { get; set; }
         public bool? Pendencia { get; set; }
-        public int? CategoriaId { get; set; }
-        public List<int>? DefeitosList { get; set; }
+        public List<int>? DefeitosList { get; set; } // IDs do enum Defeito
         public int? OrdemServicoId { get; set; }
     }
 
@@ -17,7 +16,6 @@ namespace api_erp.DTOs
         public string? NumeroSerie { get; set; }
         public string? Observacao { get; set; }
         public bool? Pendencia { get; set; }
-        public int? CategoriaId { get; set; }
         public List<int>? DefeitosList { get; set; }
         public int? OrdemServicoId { get; set; }
     }
@@ -29,7 +27,6 @@ namespace api_erp.DTOs
         public string? NumeroSerie { get; set; }
         public string? Observacao { get; set; }
         public bool? Pendencia { get; set; }
-        public int? CategoriaId { get; set; }
         public List<int>? DefeitosList { get; set; }
         public int? OrdemServicoId { get; set; }
     }

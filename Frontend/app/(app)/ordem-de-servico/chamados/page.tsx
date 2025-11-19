@@ -134,6 +134,23 @@ const mapDefeitoDtoToForm = (dto: any) => {
 }
 
 // Normaliza propriedades (camelCase/PascalCase) vindas do backend
+const statusMap: Record<string, string> = {
+  "1": "aberto",
+  "2": "em_andamento",
+  "3": "concluido",
+  "4": "fechado",
+  aberto: "aberto",
+  em_andamento: "em_andamento",
+  concluido: "concluido",
+  fechado: "fechado",
+}
+
+const normalizeStatus = (raw: any): string => {
+  if (raw === null || raw === undefined) return "aberto"
+  const key = String(raw).trim().toLowerCase()
+  return statusMap[key] ?? key ?? "aberto"
+}
+
 const normalizeOs = (os: any, defeitosLookup: Record<number, any> = {}): Chamado => {
   const rawValor = (os.valorTotal ?? os.ValorTotal) as string | number | undefined
   const valorNumber =
@@ -148,13 +165,15 @@ const normalizeOs = (os: any, defeitosLookup: Record<number, any> = {}): Chamado
     observacao: d.observacao ?? d.Observacao ?? "",
   }))
 
+  const status = normalizeStatus(os.status ?? os.Status ?? os.statusId ?? os.StatusId)
+
   return {
     id: (os.id ?? os.Id ?? "").toString(),
     cliente: { id: (os.cliente?.id ?? os.Cliente?.Id ?? "").toString(), nome: os.cliente?.nome ?? os.Cliente?.Nome ?? "" },
     tecnico: { id: (os.tecnico?.id ?? os.Tecnico?.Id ?? "").toString(), nome: os.tecnico?.nome ?? os.Tecnico?.Nome ?? "" },
     dataAbertura: os.dataAbertura ?? os.DataAbertura ?? "",
     dataVisita: os.dataVisita ?? os.DataVisita ?? "",
-    status: os.status ?? os.Status ?? "aberto",
+    status,
     pedido: os.pedido ?? os.Pedido ?? "",
     dataFaturamento: os.dataFaturamento ?? os.DataFaturamento ?? "",
     garantia: os.garantia ?? os.Garantia ?? "",

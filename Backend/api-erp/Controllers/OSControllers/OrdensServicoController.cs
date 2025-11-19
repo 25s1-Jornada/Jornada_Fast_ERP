@@ -72,7 +72,7 @@ namespace api_erp.Controllers.OSControllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] OrdemServicoCreateDto dto, CancellationToken ct = default)
         {
-            var (_, _, proibidoCriar) = await ObterUsuarioAsync();
+            var (_, _, proibidoCriar, _) = await ObterUsuarioAsync();
             if (proibidoCriar)
             {
                 return Forbid("Apenas administradores podem criar OS.");
@@ -92,11 +92,15 @@ namespace api_erp.Controllers.OSControllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] OrdemServicoUpdateDto dto, CancellationToken ct = default)
         {
-            var (usuario, role, _) = await ObterUsuarioAsync();
+            var (usuario, role, _, isAdmin) = await ObterUsuarioAsync();
             var osDb = await _repo.GetByIdAsync(id, includeRelacionamentos: false, ct: ct);
             if (osDb == null) return NotFound();
 
-            if (string.Equals(role, "cliente", StringComparison.OrdinalIgnoreCase) && usuario?.EmpresaId is int empId)
+            if (isAdmin)
+            {
+                // admin pode editar qualquer OS
+            }
+            else if (string.Equals(role, "cliente", StringComparison.OrdinalIgnoreCase) && usuario?.EmpresaId is int empId)
             {
                 if (osDb.EmpresaId != empId)
                 {
@@ -104,7 +108,7 @@ namespace api_erp.Controllers.OSControllers
                 }
             }
 
-            if (string.Equals(role, "tecnico", StringComparison.OrdinalIgnoreCase) && usuario?.EmpresaId is int tecId)
+            else if (string.Equals(role, "tecnico", StringComparison.OrdinalIgnoreCase) && usuario?.EmpresaId is int tecId)
             {
                 if (osDb.TecnicoId != tecId)
                 {
@@ -129,24 +133,24 @@ namespace api_erp.Controllers.OSControllers
 
         private async Task<List<OrdemServico>> FiltrarPorPerfilAsync(IEnumerable<OrdemServico> ordens)
         {
-            var (usuario, perfilNome, _) = await ObterUsuarioAsync();
+            var (usuario, perfilNome, _, isAdmin) = await ObterUsuarioAsync();
 
-            var isAdmin = string.Equals(perfilNome, "Administrador", StringComparison.OrdinalIgnoreCase);
-            var isTecnico = string.Equals(perfilNome, "Tecnico", StringComparison.OrdinalIgnoreCase);
-            var isCliente = string.Equals(perfilNome, "Cliente", StringComparison.OrdinalIgnoreCase);
+            var role = perfilNome?.Trim().ToLowerInvariant();
+            var isTecnico = role == "tecnico" || role == "técnico";
+            var isCliente = role == "cliente";
 
             if (isAdmin)
             {
                 return ordens.ToList();
             }
 
-            if (isCliente && usuario.EmpresaId.HasValue)
+            if (isCliente && usuario?.EmpresaId.HasValue == true)
             {
                 var empresaId = usuario.EmpresaId.Value;
                 return ordens.Where(o => o.EmpresaId == empresaId).ToList();
             }
 
-            if (isTecnico && usuario.EmpresaId.HasValue)
+            if (isTecnico && usuario?.EmpresaId.HasValue == true)
             {
                 var tecnicoEmpresaId = usuario.EmpresaId.Value;
                 return ordens.Where(o => o.TecnicoId == tecnicoEmpresaId).ToList();
@@ -156,20 +160,31 @@ namespace api_erp.Controllers.OSControllers
             return new List<OrdemServico>();
         }
 
-        private async Task<(Usuario? usuario, string? perfilNome, bool proibidoCriar)> ObterUsuarioAsync()
+        private async Task<(Usuario? usuario, string? perfilNome, bool proibidoCriar, bool isAdmin)> ObterUsuarioAsync()
         {
             var identity = HttpContext.User;
             var email = identity.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
-            if (string.IsNullOrWhiteSpace(email))
+            var roleClaim = identity.FindFirst(ClaimTypes.Role)?.Value;
+
+            var roleNormalized = roleClaim?.Trim().ToLowerInvariant();
+            var roleIsAdmin = roleNormalized == "administrador" || roleNormalized == "admin";
+
+            Usuario? usuario = null;
+            string? perfilNome = null;
+
+            if (!string.IsNullOrWhiteSpace(email))
             {
-                return (null, null, true);
+                email = email.Trim().ToLowerInvariant();
+                usuario = await _usuarioRepository.GetByEmailWithPerfilAsync(email);
+                perfilNome = usuario?.Perfil?.Nome?.Trim();
+                if (string.Equals(perfilNome, "Administrador", StringComparison.OrdinalIgnoreCase))
+                {
+                    roleIsAdmin = true;
+                }
             }
 
-            var usuario = await _usuarioRepository.GetByEmailWithPerfilAsync(email);
-            string? perfilNome = usuario?.Perfil?.Nome?.Trim();
-            var isAdmin = string.Equals(perfilNome, "Administrador", StringComparison.OrdinalIgnoreCase);
-            var proibidoCriar = !isAdmin;
-            return (usuario, perfilNome, proibidoCriar);
+            var proibidoCriar = !roleIsAdmin;
+            return (usuario, perfilNome, proibidoCriar, roleIsAdmin);
         }
     }
 }
