@@ -16,11 +16,13 @@ namespace api_erp.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IUsuarioRepository _usuarioRepository;
+        private readonly IPerfilRepository _perfilRepository;
         private readonly IConfiguration _configuration;
 
-        public AuthController(IUsuarioRepository usuarioRepository, IConfiguration configuration)
+        public AuthController(IUsuarioRepository usuarioRepository, IPerfilRepository perfilRepository, IConfiguration configuration)
         {
             _usuarioRepository = usuarioRepository;
+            _perfilRepository = perfilRepository;
             _configuration = configuration;
         }
 
@@ -35,7 +37,7 @@ namespace api_erp.Controllers
                     return BadRequest("Email e senha são obrigatórios.");
                 }
 
-                var usuario = await _usuarioRepository.GetByEmailAsync(request.Email);
+                var usuario = await _usuarioRepository.GetByEmailWithPerfilAsync(request.Email);
                 if (usuario == null)
                 {
                     return Unauthorized("Credenciais inválidas.");
@@ -48,7 +50,8 @@ namespace api_erp.Controllers
                     return Unauthorized("Credenciais inválidas.");
                 }
 
-                var token = GenerateJwtToken(usuario);
+                var perfilNome = usuario.Perfil?.Nome;
+                var token = GenerateJwtToken(usuario, perfilNome);
 
                 var response = new LoginResponseDto
                 {
@@ -56,7 +59,9 @@ namespace api_erp.Controllers
                     Email = usuario.Email,
                     Nome = usuario.Nome,
                     UserId = usuario.Id?.ToString(),
-                    RequiresPasswordReset = requiresReset
+                    RequiresPasswordReset = requiresReset,
+                    PerfilId = usuario.PerfilId,
+                    PerfilNome = perfilNome
                 };
 
                 return Ok(response);
@@ -102,7 +107,7 @@ namespace api_erp.Controllers
             return NoContent();
         }
 
-        private string GenerateJwtToken(Usuario usuario)
+        private string GenerateJwtToken(Usuario usuario, string? perfilNome)
         {
 
             try
@@ -118,11 +123,16 @@ namespace api_erp.Controllers
                 var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
 
                 var claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, usuario.Email),
-                new Claim("uid", usuario.Id?.ToString() ?? string.Empty),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
+                {
+                    new Claim(JwtRegisteredClaimNames.Sub, usuario.Email),
+                    new Claim("uid", usuario.Id?.ToString() ?? string.Empty),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                };
+
+                if (!string.IsNullOrWhiteSpace(perfilNome))
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, perfilNome));
+                }
 
                 var expiresInMinutes = double.TryParse(jwtSection["ExpiresInMinutes"], out var minutes) ? minutes : 60d;
 

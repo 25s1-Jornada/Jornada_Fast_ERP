@@ -18,5 +18,7 @@ namespace api_erp.DTOs
         public string Nome { get; set; } = string.Empty;
         public string? UserId { get; set; }
         public bool RequiresPasswordReset { get; set; }
+        public int? PerfilId { get; set; }
+        public string? PerfilNome { get; set; }
     }
 }

@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -28,6 +28,7 @@ import {
   MapPin,
   User,
 } from "lucide-react"
+import { useAuth } from "./auth-provider"
 
 interface MenuItem {
   title: string
@@ -134,6 +135,31 @@ interface SidebarContentProps {
 function SidebarContent({ onItemClick }: SidebarContentProps) {
   const pathname = usePathname()
   const [expandedItems, setExpandedItems] = useState<string[]>([])
+  const { perfilNome } = useAuth()
+
+  const filteredMenu = useMemo(() => {
+    const role = (perfilNome ?? "").toLowerCase()
+
+    if (role === "cliente" || role === "tecnico") {
+      // Apenas chamados (ordem de serviço)
+      return [
+        {
+          title: "Ordem de Serviço",
+          icon: Wrench,
+          children: [
+            {
+              title: "Chamados",
+              href: "/ordem-de-servico/chamados",
+              icon: ClipboardList,
+            },
+          ],
+        },
+      ]
+    }
+
+    // Admin e demais: menu completo
+    return menuItems
+  }, [perfilNome])
 
   const toggleExpanded = (title: string) => {
     setExpandedItems((prev) => (prev.includes(title) ? prev.filter((item) => item !== title) : [...prev, title]))
@@ -188,7 +214,7 @@ function SidebarContent({ onItemClick }: SidebarContentProps) {
         </Link>
       </div>
       <ScrollArea className="flex-1">
-        <div className="space-y-1 p-4">{menuItems.map((item) => renderMenuItem(item))}</div>
+        <div className="space-y-1 p-4">{filteredMenu.map((item) => renderMenuItem(item))}</div>
       </ScrollArea>
     </div>
   )

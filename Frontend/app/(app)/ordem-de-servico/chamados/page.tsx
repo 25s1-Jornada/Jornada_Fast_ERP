@@ -6,6 +6,7 @@ import { PlusCircle } from "lucide-react"
 import { ChamadosTable } from "./chamados-table"
 import { ChamadoModal } from "./chamado-modal"
 import { api } from "@/lib/api"
+import { useAuth } from "@/components/auth-provider"
 
 // Tipos para os dados do chamado
 interface Cliente {
@@ -170,6 +171,8 @@ export default function ChamadosPage() {
   const [chamadoParaEditar, setChamadoParaEditar] = useState<Chamado | undefined>(undefined)
   const [chamados, setChamados] = useState<Chamado[]>([])
   const [refreshKey, setRefreshKey] = useState(0)
+  const { perfilNome } = useAuth()
+  const canCreate = !(perfilNome?.toLowerCase() === "cliente" || perfilNome?.toLowerCase() === "tecnico")
 
   useEffect(() => {
     const load = async () => {
@@ -302,10 +305,12 @@ export default function ChamadosPage() {
     <div className="container mx-auto py-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Chamados</h1>
-        <Button onClick={handleNovoChamado}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Novo Chamado
-        </Button>
+        {canCreate && (
+          <Button onClick={handleNovoChamado}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Novo Chamado
+          </Button>
+        )}
       </div>
 
       <ChamadosTable key={refreshKey} onEditarChamado={handleEditarChamado} chamadosExternos={chamados} />

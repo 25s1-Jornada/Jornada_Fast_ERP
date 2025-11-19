@@ -4,7 +4,12 @@ using api_erp.Repositories.Implementations;
 using api_erp.Repositories.Implementations.OSImplementations;
 using api_erp.Repositories.Interfaces;
 using api_erp.Repositories.Interfaces.OSInterfaces;
+using api_erp.Utils;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace api_erp
 {
@@ -15,6 +20,34 @@ namespace api_erp
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddControllers();
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                var jwtSettings = builder.Configuration.GetSection("Jwt");
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtSettings["Issuer"],
+                    ValidAudience = jwtSettings["Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"] ?? string.Empty)),
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
+
+            builder.Services.AddAuthorization(options =>
+            {
+                options.FallbackPolicy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+            });
 
             builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
             builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
@@ -86,6 +119,48 @@ namespace api_erp
                 {
                     var mainDb = scope.ServiceProvider.GetRequiredService<api_erp.EntityConfig.AppDbContext>();
                     mainDb.Database.Migrate();
+
+                    // Perfis padrão
+                    var perfisPadrao = new[] { "Administrador", "Tecnico", "Cliente" };
+                    foreach (var nomePerfil in perfisPadrao)
+                    {
+                        if (!mainDb.Perfis.Any(p => p.Nome == nomePerfil))
+                        {
+                            mainDb.Perfis.Add(new api_erp.Model.Perfil { Nome = nomePerfil });
+                        }
+                    }
+
+                    mainDb.SaveChanges();
+
+                    var defaultEmail = "usuario@teste.com";
+                    var defaultUser = mainDb.Usuarios.FirstOrDefault(u => u.Email == defaultEmail);
+                    var perfilAdminId = mainDb.Perfis.FirstOrDefault(p => p.Nome == "Administrador")?.Id;
+                    if (defaultUser == null)
+                    {
+                        mainDb.Usuarios.Add(new api_erp.Model.Usuario
+                        {
+                            Nome = "User",
+                            Email = defaultEmail,
+                            Senha = SecurityHelper.HashPassword("123"),
+                            PerfilId = perfilAdminId
+                        });
+                    }
+                    else
+                    {
+                        if (defaultUser.Senha.Length != 64) // se por acaso a senha ficou salva em texto puro, re-hash
+                        {
+                            defaultUser.Senha = SecurityHelper.HashPassword("123");
+                        }
+
+                        if (perfilAdminId.HasValue && defaultUser.PerfilId != perfilAdminId)
+                        {
+                            defaultUser.PerfilId = perfilAdminId;
+                        }
+
+                        mainDb.Usuarios.Update(defaultUser);
+                    }
+
+                    mainDb.SaveChanges();
                 }
                 catch { }
 
@@ -96,8 +171,8 @@ namespace api_erp
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
-
 
             app.MapControllers();
 

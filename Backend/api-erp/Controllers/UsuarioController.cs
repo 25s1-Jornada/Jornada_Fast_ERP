@@ -1,6 +1,7 @@
-﻿using api_erp.DTOs;
+using api_erp.DTOs;
 using api_erp.Model;
 using api_erp.Repositories.Interfaces;
+using api_erp.Utils;
 using Microsoft.AspNetCore.Mvc;
 
 namespace api_erp.Controllers
@@ -11,6 +12,7 @@ namespace api_erp.Controllers
     {
         private readonly IUsuarioRepository _repository;
         private readonly IPerfilRepository _perfilRepository;
+
         public UsuarioController(IUsuarioRepository repository, IPerfilRepository perfilRepository)
         {
             _repository = repository;
@@ -35,16 +37,21 @@ namespace api_erp.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] UsuarioDTO model)
         {
+            // Gera senha aleatória, armazena hash e retorna a senha gerada na resposta
+            var generatedPassword = SecurityHelper.GenerateRandomPassword();
+            model.Senha = SecurityHelper.HashPassword(generatedPassword);
+
             await _repository.AddAsync(model);
             await _repository.SaveChangesAsync();
-            return CreatedAtAction(nameof(Get), new { id = model.Id }, model);
+
+            return CreatedAtAction(nameof(Get), new { id = model.Id }, new { model.Id, SenhaGerada = generatedPassword });
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] UsuarioDTO model)
         {
             if (id != model.Id) return BadRequest();
-            _repository.Update(model);
+            await _repository.UpdateAsync(model);
             await _repository.SaveChangesAsync();
             return NoContent();
         }

@@ -25,6 +25,18 @@ namespace api_erp.Repositories.Implementations
             return await _context.Usuarios.FindAsync(id);
         }
 
+        public async Task<Usuario?> GetByEmailAsync(string email)
+        {
+            return await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == email);
+        }
+
+        public async Task<Usuario?> GetByEmailWithPerfilAsync(string email)
+        {
+            return await _context.Usuarios
+                .Include(u => u.Perfil)
+                .FirstOrDefaultAsync(u => u.Email == email);
+        }
+
         public async Task AddAsync(UsuarioDTO usuarioDto)
         {
             var usuario = new Usuario
@@ -40,18 +52,31 @@ namespace api_erp.Repositories.Implementations
             await _context.Usuarios.AddAsync(usuario);
         }
 
-        public void Update(UsuarioDTO usuarioDto)
+        public async Task UpdatePasswordAsync(int userId, string hashedPassword)
         {
-            var usuario = new Usuario
+            var usuario = await _context.Usuarios.FindAsync(userId);
+            if (usuario == null) return;
+
+            usuario.Senha = hashedPassword;
+            _context.Usuarios.Update(usuario);
+        }
+
+        public async Task UpdateAsync(UsuarioDTO usuarioDto)
+        {
+            var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Id == usuarioDto.Id);
+            if (usuario == null) return;
+
+            usuario.Nome = usuarioDto.Nome;
+            usuario.Telefone = usuarioDto.Telefone;
+            usuario.Email = usuarioDto.Email;
+            usuario.PerfilId = usuarioDto.PerfilId;
+            usuario.EmpresaId = usuarioDto.EmpresaId;
+
+            // Só atualiza senha se veio informada; caso contrário mantém a atual
+            if (!string.IsNullOrWhiteSpace(usuarioDto.Senha))
             {
-                Id = usuarioDto.Id ?? 0,
-                Nome = usuarioDto.Nome,
-                Telefone = usuarioDto.Telefone,
-                Email = usuarioDto.Email,
-                Senha = usuarioDto.Senha,
-                PerfilId = usuarioDto.PerfilId,
-                EmpresaId = usuarioDto.EmpresaId
-            };
+                usuario.Senha = usuarioDto.Senha;
+            }
 
             _context.Usuarios.Update(usuario);
         }
