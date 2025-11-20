@@ -39,7 +39,7 @@ export default function Home() {
   }
 
   return (
-    <section className="flex w-full items-center justify-center py-10">
+    <section className="flex w-full items-center justify-center py-10 px-4 sm:px-6">
       <div className="w-full max-w-md rounded-3xl border border-gray-200 bg-white p-8 shadow-sm">
         <div className="space-y-2 text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary/90">FAST ERP</p>

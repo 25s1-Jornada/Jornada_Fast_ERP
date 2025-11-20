@@ -359,7 +359,7 @@ export default function RelatoriosPage() {
   const tabelaPreview = chamadosFiltrados.slice(0, 8)
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="container mx-auto py-6 px-3 sm:px-4 lg:px-6 space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold">Relatórios de OS</h1>
@@ -376,7 +376,7 @@ export default function RelatoriosPage() {
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <Card>
           <CardHeader>
             <CardDescription>Total de OS selecionadas</CardDescription>
@@ -398,12 +398,12 @@ export default function RelatoriosPage() {
       </div>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="space-y-1">
           <CardTitle>Configurações do relatório</CardTitle>
           <CardDescription>Escolha o nível de detalhe e exporte no formato desejado.</CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div className="w-full md:w-1/3">
+        <CardContent className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="w-full lg:w-1/3">
             <Select value={nivelDetalhe} onValueChange={(valor) => setNivelDetalhe(valor as NivelDetalhe)}>
               <SelectTrigger>
                 <SelectValue placeholder="Tipo de relatório" />
@@ -414,12 +414,12 @@ export default function RelatoriosPage() {
               </SelectContent>
             </Select>
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <Button variant="outline" onClick={gerarPdf} className="flex items-center gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row w-full lg:w-auto">
+            <Button variant="outline" onClick={gerarPdf} className="flex items-center gap-2 w-full sm:w-auto justify-center">
               <FileText className="h-4 w-4" />
               Exportar PDF
             </Button>
-            <Button onClick={gerarCsv} className="flex items-center gap-2">
+            <Button onClick={gerarCsv} className="flex items-center gap-2 w-full sm:w-auto justify-center">
               <Download className="h-4 w-4" />
               Exportar CSV
             </Button>
@@ -428,7 +428,7 @@ export default function RelatoriosPage() {
       </Card>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="space-y-1">
           <CardTitle>Pré-visualização das OS</CardTitle>
           <CardDescription>Mostrando até 8 ordens para referência rápida.</CardDescription>
         </CardHeader>
@@ -469,12 +469,12 @@ export default function RelatoriosPage() {
       </Card>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="space-y-1">
           <CardTitle>Integridade do relatório</CardTitle>
           <CardDescription>Hash SHA-256 gerado a partir dos dados exportados.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
-          <p className="font-mono text-sm break-all">
+          <p className="font-mono text-sm break-words md:break-all">
             Hash de Integridade:{" "}
             {hashStatus === "ready"
               ? hashIntegridade

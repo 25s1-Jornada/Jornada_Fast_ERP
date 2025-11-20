@@ -130,7 +130,7 @@ export default function VerificarRelatorioPage() {
   }
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="container mx-auto py-6 px-3 sm:px-4 lg:px-6 space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Verificar integridade do relatório</h1>
         <div className="space-y-2 text-muted-foreground">
@@ -168,7 +168,7 @@ export default function VerificarRelatorioPage() {
             value={hashInformado}
             onChange={(event) => setHashInformado(event.target.value)}
           />
-          <Button onClick={verificarHash} disabled={resultado.status === "loading"}>
+          <Button onClick={verificarHash} disabled={resultado.status === "loading"} className="w-full sm:w-auto">
             {resultado.status === "loading" ? "Verificando..." : "Verificar integridade"}
           </Button>
         </CardContent>
