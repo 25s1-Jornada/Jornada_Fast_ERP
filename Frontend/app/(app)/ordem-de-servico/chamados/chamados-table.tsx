@@ -733,6 +733,14 @@ export {
   chamadosIniciais as chamadosMock,
 }
 
+const normalizarTexto = (valor: string) =>
+  valor
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .replace(/\s+/g, " ")
+
 export function filtrarChamados(
   chamados: Chamado[],
   filtros: FiltroValores,
@@ -747,23 +755,32 @@ export function filtrarChamados(
       case "cliente_rapido":
       case "cliente_texto":
         if (typeof valor === "string" && valor.trim()) {
-          resultado = resultado.filter((chamado) => chamado.cliente.nome.toLowerCase().includes(valor.toLowerCase()))
+          const alvo = normalizarTexto(valor)
+          resultado = resultado.filter((chamado) => normalizarTexto(chamado.cliente.nome).includes(alvo))
         }
         break
 
       case "tecnico_rapido":
       case "tecnico_texto":
         if (typeof valor === "string" && valor.trim()) {
-          resultado = resultado.filter((chamado) => chamado.tecnico.nome.toLowerCase().includes(valor.toLowerCase()))
+          const alvo = normalizarTexto(valor)
+          resultado = resultado.filter((chamado) => normalizarTexto(chamado.tecnico.nome).includes(alvo))
         }
         break
       case "busca_geral":
         if (typeof valor === "string" && valor.trim()) {
+          const alvo = normalizarTexto(valor)
           resultado = resultado.filter(
             (chamado) =>
-              chamado.cliente.nome.toLowerCase().includes(valor.toLowerCase()) ||
-              chamado.tecnico.nome.toLowerCase().includes(valor.toLowerCase()) ||
-              chamado.descricoes.some((desc) => desc.defeito.toLowerCase().includes(valor.toLowerCase())),
+              normalizarTexto(chamado.cliente.nome).includes(alvo) ||
+              normalizarTexto(chamado.tecnico.nome).includes(alvo) ||
+              normalizarTexto(chamado.pedido || "").includes(alvo) ||
+              chamado.descricoes.some(
+                (desc) =>
+                  normalizarTexto(desc.defeito).includes(alvo) ||
+                  normalizarTexto(desc.observacao || "").includes(alvo) ||
+                  normalizarTexto(desc.numeroSerie || "").includes(alvo),
+              ),
           )
         }
         break
@@ -787,24 +804,30 @@ export function filtrarChamados(
         break
 
       case "data_abertura":
-        if (typeof valor === "object" && valor.inicio && valor.fim) {
+        if (typeof valor === "object" && (valor.inicio || valor.fim)) {
           resultado = resultado.filter((chamado) => {
             const dataAbertura = new Date(chamado.dataAbertura)
-            const inicio = new Date(valor.inicio)
-            const fim = new Date(valor.fim)
-            return dataAbertura >= inicio && dataAbertura <= fim
+            const inicio = valor.inicio ? new Date(valor.inicio) : null
+            const fim = valor.fim ? new Date(valor.fim) : null
+            if (inicio && fim) return dataAbertura >= inicio && dataAbertura <= fim
+            if (inicio) return dataAbertura >= inicio
+            if (fim) return dataAbertura <= fim
+            return true
           })
         }
         break
 
       case "data_visita":
-        if (typeof valor === "object" && valor.inicio && valor.fim) {
+        if (typeof valor === "object" && (valor.inicio || valor.fim)) {
           resultado = resultado.filter((chamado) => {
             if (!chamado.dataVisita) return false
             const dataVisita = new Date(chamado.dataVisita)
-            const inicio = new Date(valor.inicio)
-            const fim = new Date(valor.fim)
-            return dataVisita >= inicio && dataVisita <= fim
+            const inicio = valor.inicio ? new Date(valor.inicio) : null
+            const fim = valor.fim ? new Date(valor.fim) : null
+            if (inicio && fim) return dataVisita >= inicio && dataVisita <= fim
+            if (inicio) return dataVisita >= inicio
+            if (fim) return dataVisita <= fim
+            return true
           })
         }
         break
@@ -953,7 +976,7 @@ export function ChamadosTable({ onEditarChamado, chamadosExternos }: ChamadosTab
           onExcluirFiltro={handleExcluirFiltro}
           mostrarFiltrosCliente={true}
           mostrarFiltrosTecnico={true}
-          aplicarEmTempoReal={false}
+          aplicarEmTempoReal
         />
 
         <div className="flex gap-2">
