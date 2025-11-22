@@ -66,7 +66,7 @@ const getDb = () => {
   return db
 }
 
-const generateLocalId = () => `os-${Date.now()}-${Math.random().toString(16).slice(2)}`
+const generateLocalId = () => `temp-${Date.now()}-${Math.random().toString(16).slice(2)}`
 
 const now = () => new Date().toISOString()
 
@@ -146,5 +146,27 @@ export const offlineOsStore = {
   async get(localId: string) {
     const database = getDb()
     return database.os.get(localId)
+  },
+}
+
+export const offlineOsQueue = {
+  async saveDraft(payload: OfflineOsPayload) {
+    return offlineOsStore.upsertDraft(payload, "draft")
+  },
+
+  async queueForSync(payload: OfflineOsPayload) {
+    return offlineOsStore.upsertDraft(payload, "queued")
+  },
+
+  async listQueued() {
+    return offlineOsStore.list({ status: "queued" })
+  },
+
+  async markSynced(localId: string, remoteId?: string) {
+    return offlineOsStore.markSynced(localId, remoteId)
+  },
+
+  async markFailed(localId: string, reason?: string) {
+    return offlineOsStore.markFailed(localId, reason)
   },
 }
