@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -11,7 +11,9 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { X, Plus, Trash2 } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { X, Plus, Trash2, WifiOff, Clock, RefreshCw } from "lucide-react"
+import { offlineOsQueue, type OfflineOsStatus } from "@/lib/offline-os-store"
 
 // Tipos para os dados do chamado
 interface Cliente {
@@ -96,6 +98,11 @@ const tiposDefeito = ["Refrigeração", "Iluminação", "Estrutura", "Outros"]
 export function ChamadoForm({ chamado }: ChamadoFormProps) {
   const router = useRouter()
   const hoje = new Date().toISOString().split("T")[0]
+  const [localId, setLocalId] = useState<string | undefined>(chamado?.id)
+  const [offlineStatus, setOfflineStatus] = useState<OfflineOsStatus>("draft")
+  const [lastError, setLastError] = useState<string | undefined>(undefined)
+  const [isSaving, setIsSaving] = useState(false)
+  const [isQueueing, setIsQueueing] = useState(false)
 
   const [formData, setFormData] = useState<Chamado>(
     chamado || {
@@ -139,6 +146,45 @@ export function ChamadoForm({ chamado }: ChamadoFormProps) {
   )
 
   const [activeTab, setActiveTab] = useState("descricao")
+  const payload = useMemo(
+    () => ({
+      localId,
+      clienteId: formData.cliente.id,
+      clienteNome: formData.cliente.nome,
+      tecnicoId: formData.tecnico.id,
+      tecnicoNome: formData.tecnico.nome,
+      status: formData.status,
+      dataAbertura: formData.dataAbertura,
+      dataVisita: formData.dataVisita,
+      valorTotal: formData.custos.valorTotal,
+      descricoes: formData.descricoes.map((d) => ({
+        numeroSerie: d.numeroSerie,
+        defeito: d.defeito,
+        observacao: d.observacao,
+      })),
+    }),
+    [formData, localId],
+  )
+
+  useEffect(() => {
+    const timeout = setTimeout(async () => {
+      try {
+        setIsSaving(true)
+        const saved = await offlineOsQueue.saveDraft(payload)
+        setLocalId(saved.localId)
+        setOfflineStatus(saved.status)
+        setLastError(undefined)
+      } catch (error) {
+        console.error("Erro ao salvar rascunho offline", error)
+        setLastError("Não foi possível salvar o rascunho offline.")
+        setOfflineStatus("failed")
+      } finally {
+        setIsSaving(false)
+      }
+    }, 500)
+
+    return () => clearTimeout(timeout)
+  }, [payload])
 
   // Funções para manipular as descrições
   const handleAddDescricao = () => {
@@ -340,24 +386,92 @@ export function ChamadoForm({ chamado }: ChamadoFormProps) {
     })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-
-    // Calcular os totais antes de enviar
-    calcularTotais()
-
-    // Aqui você implementaria a lógica para salvar o chamado
-    console.log("Dados do chamado:", formData)
-
-    // Redireciona para a lista de chamados
-    router.push("/ordem-de-servico/chamados")
+  const handleQueue = async () => {
+    setIsQueueing(true)
+    try {
+      const saved = await offlineOsQueue.queueForSync(payload)
+      setLocalId(saved.localId)
+      setOfflineStatus(saved.status)
+      setLastError(undefined)
+    } catch (error) {
+      console.error("Erro ao enfileirar chamado offline", error)
+      setOfflineStatus("failed")
+      setLastError("Falha ao enfileirar para sincronização.")
+    } finally {
+      setIsQueueing(false)
+    }
   }
 
+  const handleSaveOffline = async () => {
+    setIsSaving(true)
+    try {
+      const saved = await offlineOsQueue.saveDraft(payload)
+      setLocalId(saved.localId)
+      setOfflineStatus(saved.status)
+      setLastError(undefined)
+    } catch (error) {
+      console.error("Erro ao salvar rascunho offline", error)
+      setLastError("Não foi possível salvar o rascunho offline.")
+      setOfflineStatus("failed")
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const statusChip = useMemo(() => {
+    switch (offlineStatus) {
+      case "draft":
+        return (
+          <Badge variant="outline" className="gap-1">
+            <Clock className="h-3 w-3" /> Rascunho offline
+          </Badge>
+        )
+      case "queued":
+        return (
+          <Badge variant="secondary" className="gap-1">
+            <RefreshCw className="h-3 w-3" /> Na fila para enviar
+          </Badge>
+        )
+      case "failed":
+        return (
+          <Badge variant="destructive" className="gap-1">
+            <WifiOff className="h-3 w-3" /> Erro ao sincronizar
+          </Badge>
+        )
+      case "synced":
+        return (
+          <Badge className="gap-1">
+            <RefreshCw className="h-3 w-3" /> Sincronizado
+          </Badge>
+        )
+      case "syncing":
+        return (
+          <Badge variant="outline" className="gap-1">
+            <RefreshCw className="h-3 w-3 animate-spin" /> Enviando...
+          </Badge>
+        )
+      default:
+        return null
+    }
+  }, [offlineStatus])
+
   return (
-    <form onSubmit={handleSubmit}>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+      }}
+    >
       <div className="space-y-6">
         <Card>
           <CardContent className="pt-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col">
+                <p className="text-sm text-muted-foreground">Status offline</p>
+                <div className="flex items-center gap-2">{statusChip}</div>
+                {lastError ? <p className="text-xs text-destructive">{lastError}</p> : null}
+              </div>
+              {isSaving ? <span className="text-xs text-muted-foreground">Salvando rascunho...</span> : null}
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="cliente">Cliente</Label>
@@ -757,7 +871,12 @@ export function ChamadoForm({ chamado }: ChamadoFormProps) {
           <Button type="button" onClick={calcularTotais}>
             Calcular Totais
           </Button>
-          <Button type="submit">Salvar</Button>
+          <Button type="button" variant="secondary" onClick={handleSaveOffline} disabled={isSaving}>
+            {isSaving ? "Salvando..." : "Salvar offline"}
+          </Button>
+          <Button type="button" onClick={handleQueue} disabled={isQueueing}>
+            {isQueueing ? "Enfileirando..." : "Enviar quando possível"}
+          </Button>
         </div>
       </div>
     </form>
