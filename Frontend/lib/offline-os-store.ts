@@ -8,6 +8,7 @@ export type OfflineOsAttachment = {
   mimeType: string
   size: number
   data?: Blob
+  base64?: string
 }
 
 export type OfflineOsPayload = {
@@ -50,9 +51,23 @@ class OfflineOsDB extends Dexie {
 
   constructor() {
     super("offlineOsDB")
-    this.version(1).stores({
-      os: "&localId,status,updatedAt,createdAt",
-    })
+    this.version(2)
+      .stores({
+        os: "&localId,status,updatedAt,createdAt",
+      })
+      .upgrade((tx) =>
+        tx
+          .table("os")
+          .toCollection()
+          .modify((record: any) => {
+            if (record?.payload && Array.isArray(record.payload.anexos)) {
+              record.payload.anexos = record.payload.anexos.map((anexo: any) => ({
+                ...anexo,
+                base64: anexo.base64 ?? undefined,
+              }))
+            }
+          }),
+      )
   }
 }
 

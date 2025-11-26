@@ -1,6 +1,6 @@
 import { Network } from "@capacitor/network"
 
-import { offlineOsQueue, type OfflineOsRecord } from "./offline-os-store"
+import { offlineOsQueue, type OfflineOsAttachment, type OfflineOsRecord } from "./offline-os-store"
 
 type SyncResult = {
   synced: OfflineOsRecord[]
@@ -24,21 +24,39 @@ export const offlineSync = (() => {
 
   const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
+  const buildMultipart = (record: OfflineOsRecord) => {
+    const form = new FormData()
+    form.append("payload", JSON.stringify({ ...record.payload, localId: record.localId }))
+
+    (record.payload.anexos ?? []).forEach((anexo: OfflineOsAttachment, index) => {
+      if (anexo.data) {
+        form.append("anexos", anexo.data, anexo.name)
+      } else if (anexo.base64) {
+        const bytes = Uint8Array.from(atob(anexo.base64), (c) => c.charCodeAt(0))
+        form.append("anexos", new Blob([bytes], { type: anexo.mimeType }), anexo.name)
+      } else {
+        // Apenas metadata
+        form.append(`anexosMetadata[${index}]`, JSON.stringify(anexo))
+      }
+    })
+
+    return form
+  }
+
   const sendWithRetry: Sender = async (record) => {
     let lastError: unknown
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         const method = record.remoteId ? "PUT" : "POST"
         const url = record.remoteId ? `${osEndpoint}/${record.remoteId}` : osEndpoint
-        const body = {
-          ...record.payload,
-          localId: record.localId,
-        }
+        const isMultipart = (record.payload.anexos?.length ?? 0) > 0
+        const body = isMultipart ? buildMultipart(record) : JSON.stringify({ ...record.payload, localId: record.localId })
+        const headers = isMultipart ? {} : { "Content-Type": "application/json" }
 
         const response = await fetch(url, {
           method,
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
+          headers,
+          body,
         })
 
         if (!response.ok) {
@@ -76,7 +94,12 @@ export const offlineSync = (() => {
           await offlineOsQueue.markSyncing(item.localId)
           const result = await senderToUse(item)
           const updated = await offlineOsQueue.markSynced(item.localId, result.remoteId)
-          if (updated) synced.push(updated)
+          if (updated) {
+            // Limpa anexos locais após sincronizar com sucesso
+            updated.payload.anexos = []
+            await offlineOsQueue.saveDraft(updated.payload)
+            synced.push(updated)
+          }
         } catch (error) {
           console.error("Erro ao sincronizar OS", item.localId, error)
           const updated = await offlineOsQueue.markFailed(item.localId, (error as Error)?.message)
