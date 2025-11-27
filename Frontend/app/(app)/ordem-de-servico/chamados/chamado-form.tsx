@@ -103,6 +103,7 @@ export function ChamadoForm({ chamado }: ChamadoFormProps) {
   const [lastError, setLastError] = useState<string | undefined>(undefined)
   const [isSaving, setIsSaving] = useState(false)
   const [isQueueing, setIsQueueing] = useState(false)
+  const [validationErrors, setValidationErrors] = useState<string[]>([])
 
   const [formData, setFormData] = useState<Chamado>(
     chamado || {
@@ -165,6 +166,15 @@ export function ChamadoForm({ chamado }: ChamadoFormProps) {
     }),
     [formData, localId],
   )
+
+  const validateForm = () => {
+    const errors: string[] = []
+    if (!formData.cliente.id) errors.push("Selecione um cliente.")
+    if (!formData.tecnico.id) errors.push("Selecione um técnico.")
+    if (!formData.dataAbertura) errors.push("Informe a data de abertura.")
+    if (!formData.status) errors.push("Informe o status do chamado.")
+    return errors
+  }
 
   useEffect(() => {
     const timeout = setTimeout(async () => {
@@ -387,6 +397,14 @@ export function ChamadoForm({ chamado }: ChamadoFormProps) {
   }
 
   const handleQueue = async () => {
+    const errors = validateForm()
+    setValidationErrors(errors)
+    if (errors.length > 0) {
+      setOfflineStatus("failed")
+      setLastError("Corrija os campos obrigatórios antes de enfileirar.")
+      return
+    }
+
     setIsQueueing(true)
     try {
       const saved = await offlineOsQueue.queueForSync(payload)
@@ -864,13 +882,13 @@ export function ChamadoForm({ chamado }: ChamadoFormProps) {
           </TabsContent>
         </Tabs>
 
-        <div className="flex justify-end gap-4">
-          <Button type="button" variant="outline" onClick={() => router.push("/ordem-de-servico/chamados")}>
-            Cancelar
-          </Button>
-          <Button type="button" onClick={calcularTotais}>
-            Calcular Totais
-          </Button>
+          <div className="flex justify-end gap-4">
+            <Button type="button" variant="outline" onClick={() => router.push("/ordem-de-servico/chamados")}>
+              Cancelar
+            </Button>
+            <Button type="button" onClick={calcularTotais}>
+              Calcular Totais
+            </Button>
           <Button type="button" variant="secondary" onClick={handleSaveOffline} disabled={isSaving}>
             {isSaving ? "Salvando..." : "Salvar offline"}
           </Button>
@@ -878,6 +896,16 @@ export function ChamadoForm({ chamado }: ChamadoFormProps) {
             {isQueueing ? "Enfileirando..." : "Enviar quando possível"}
           </Button>
         </div>
+        {validationErrors.length > 0 ? (
+          <div className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
+            <p className="font-semibold">Campos obrigatórios pendentes:</p>
+            <ul className="list-disc pl-4">
+              {validationErrors.map((err) => (
+                <li key={err}>{err}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
       </div>
     </form>
   )

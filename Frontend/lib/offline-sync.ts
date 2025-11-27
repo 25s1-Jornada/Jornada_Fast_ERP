@@ -61,7 +61,12 @@ export const offlineSync = (() => {
 
         if (!response.ok) {
           const text = await response.text().catch(() => "")
-          throw new Error(`HTTP ${response.status} ${response.statusText} ${text}`.trim())
+          const message = `HTTP ${response.status} ${response.statusText} ${text}`.trim()
+          // Erros de validação não entram em retry
+          if (response.status >= 400 && response.status < 500 && response.status !== 429) {
+            throw new Error(`VALIDATION:${message}`)
+          }
+          throw new Error(message)
         }
 
         const data = (await response.json().catch(() => ({}))) as { id?: string; remoteId?: string }
@@ -70,6 +75,9 @@ export const offlineSync = (() => {
         lastError = error
         const delay = baseDelay * Math.pow(2, attempt - 1)
         console.warn(`Tentativa ${attempt}/${maxRetries} falhou para OS ${record.localId}`, error)
+        if (error instanceof Error && error.message.startsWith("VALIDATION:")) {
+          break
+        }
         if (attempt < maxRetries) {
           await sleep(delay)
         }
@@ -102,7 +110,11 @@ export const offlineSync = (() => {
           }
         } catch (error) {
           console.error("Erro ao sincronizar OS", item.localId, error)
-          const updated = await offlineOsQueue.markFailed(item.localId, (error as Error)?.message)
+          const message =
+            error instanceof Error && error.message.startsWith("VALIDATION:")
+              ? error.message.replace("VALIDATION:", "")
+              : (error as Error)?.message
+          const updated = await offlineOsQueue.markFailed(item.localId, message)
           if (updated) failed.push(updated)
         }
       }
