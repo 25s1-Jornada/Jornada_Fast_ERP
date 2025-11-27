@@ -95,9 +95,73 @@ const tecnicosDisponiveis = [
 
 const tiposDefeito = ["Refrigeração", "Iluminação", "Estrutura", "Outros"]
 
+const criarFormVazio = (): Chamado => {
+  const hoje = new Date().toISOString().split("T")[0]
+  return {
+    cliente: { id: "", nome: "" },
+    tecnico: { id: "", nome: "" },
+    dataAbertura: hoje,
+    dataVisita: "",
+    status: "aberto",
+    descricoes: [
+      {
+        id: "temp-1",
+        numeroSerie: "",
+        defeito: "Refrigeração",
+        observacao: "",
+      },
+    ],
+    custos: {
+      deslocamento: {
+        hrSaidaEmpresa: "",
+        hrChegadaCliente: "",
+        hrSaidaCliente: "",
+        hrChegadaEmpresa: "",
+        totalHoras: "0",
+        totalValor: "0",
+      },
+      horaTrabalhada: {
+        hrInicio: "",
+        hrTermino: "",
+        totalHoras: "0",
+        totalValor: "0",
+      },
+      km: {
+        km: "0",
+        valorPorKm: "1.50",
+        totalValor: "0",
+      },
+      materiais: [],
+      valorTotal: "0",
+    },
+  }
+}
+
+const payloadParaForm = (payload: any): Chamado => {
+  const base = criarFormVazio()
+  return {
+    ...base,
+    cliente: { id: payload?.clienteId ?? "", nome: payload?.clienteNome ?? "" },
+    tecnico: { id: payload?.tecnicoId ?? "", nome: payload?.tecnicoNome ?? "" },
+    dataAbertura: payload?.dataAbertura ?? base.dataAbertura,
+    dataVisita: payload?.dataVisita ?? "",
+    status: payload?.status ?? "aberto",
+    descricoes:
+      payload?.descricoes?.map((d: any, index: number) => ({
+        id: d?.id ?? `temp-${index}-${Date.now()}`,
+        numeroSerie: d?.numeroSerie ?? "",
+        defeito: d?.defeito ?? "Refrigeração",
+        observacao: d?.observacao ?? "",
+      })) ?? base.descricoes,
+    custos: {
+      ...base.custos,
+      valorTotal: payload?.valorTotal ?? base.custos.valorTotal,
+    },
+  }
+}
+
 export function ChamadoForm({ chamado }: ChamadoFormProps) {
   const router = useRouter()
-  const hoje = new Date().toISOString().split("T")[0]
   const [localId, setLocalId] = useState<string | undefined>(chamado?.id)
   const [offlineStatus, setOfflineStatus] = useState<OfflineOsStatus>("draft")
   const [lastError, setLastError] = useState<string | undefined>(undefined)
@@ -105,46 +169,8 @@ export function ChamadoForm({ chamado }: ChamadoFormProps) {
   const [isQueueing, setIsQueueing] = useState(false)
   const [validationErrors, setValidationErrors] = useState<string[]>([])
 
-  const [formData, setFormData] = useState<Chamado>(
-    chamado || {
-      cliente: { id: "", nome: "" },
-      tecnico: { id: "", nome: "" },
-      dataAbertura: hoje,
-      dataVisita: "",
-      status: "aberto",
-      descricoes: [
-        {
-          id: "temp-1",
-          numeroSerie: "",
-          defeito: "Refrigeração",
-          observacao: "",
-        },
-      ],
-      custos: {
-        deslocamento: {
-          hrSaidaEmpresa: "",
-          hrChegadaCliente: "",
-          hrSaidaCliente: "",
-          hrChegadaEmpresa: "",
-          totalHoras: "0",
-          totalValor: "0",
-        },
-        horaTrabalhada: {
-          hrInicio: "",
-          hrTermino: "",
-          totalHoras: "0",
-          totalValor: "0",
-        },
-        km: {
-          km: "0",
-          valorPorKm: "1.50",
-          totalValor: "0",
-        },
-        materiais: [],
-        valorTotal: "0",
-      },
-    },
-  )
+  const [formData, setFormData] = useState<Chamado>(chamado || criarFormVazio())
+  const [carregadoDeRascunho, setCarregadoDeRascunho] = useState(false)
 
   const [activeTab, setActiveTab] = useState("descricao")
   const payload = useMemo(
@@ -175,6 +201,29 @@ export function ChamadoForm({ chamado }: ChamadoFormProps) {
     if (!formData.status) errors.push("Informe o status do chamado.")
     return errors
   }
+
+  useEffect(() => {
+    if (chamado) return
+    if (carregadoDeRascunho) return
+
+    const carregarRascunho = async () => {
+      try {
+        const draft = await offlineOsQueue.getLatestDraft()
+        if (draft?.payload) {
+          setFormData(payloadParaForm(draft.payload))
+          setLocalId(draft.localId)
+          setOfflineStatus(draft.status)
+          setLastError(draft.lastError)
+        }
+      } catch (error) {
+        console.warn("Não foi possível carregar rascunho offline", error)
+      } finally {
+        setCarregadoDeRascunho(true)
+      }
+    }
+
+    void carregarRascunho()
+  }, [carregadoDeRascunho, chamado])
 
   useEffect(() => {
     const timeout = setTimeout(async () => {

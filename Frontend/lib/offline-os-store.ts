@@ -184,4 +184,9 @@ export const offlineOsQueue = {
   async markFailed(localId: string, reason?: string) {
     return offlineOsStore.markFailed(localId, reason)
   },
+
+  async getLatestDraft() {
+    const drafts = await offlineOsStore.list({ status: "draft" })
+    return drafts[0] ?? null
+  },
 }
