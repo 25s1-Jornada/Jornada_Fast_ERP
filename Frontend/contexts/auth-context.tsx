@@ -25,6 +25,20 @@ type PersistedAuth = {
 }
 
 const STORAGE_KEY = "fast-erp-auth"
+const BYPASS_AUTH_ENABLED = process.env.NEXT_PUBLIC_BYPASS_AUTH !== "false"
+const BYPASS_USER_TEMPLATE: Usuario = {
+  id: 0,
+  nome: "Usuário Demo",
+  email: "demo@fast-erp.local",
+  perfilId: null,
+  perfilNome: "Acesso Livre",
+  empresaId: null,
+}
+
+const createBypassPayload = (): PersistedAuth => ({
+  user: { ...BYPASS_USER_TEMPLATE },
+  token: "bypass-token",
+})
 
 export const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
@@ -53,15 +67,6 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [token, setToken] = useState<string | null>(null)
   const [initializing, setInitializing] = useState(true)
 
-  useEffect(() => {
-    const persisted = readPersistedAuth()
-    if (persisted) {
-      setUser(persisted.user)
-      setToken(persisted.token)
-    }
-    setInitializing(false)
-  }, [])
-
   const persistAuth = useCallback((payload: PersistedAuth | null, remember: boolean) => {
     if (typeof window === "undefined") return
 
@@ -75,8 +80,34 @@ export function AuthProvider({ children }: PropsWithChildren) {
     }
   }, [])
 
+  useEffect(() => {
+    if (BYPASS_AUTH_ENABLED) {
+      const payload = createBypassPayload()
+      setUser(payload.user)
+      setToken(payload.token)
+      persistAuth(payload, true)
+      setInitializing(false)
+      return
+    }
+
+    const persisted = readPersistedAuth()
+    if (persisted) {
+      setUser(persisted.user)
+      setToken(persisted.token)
+    }
+    setInitializing(false)
+  }, [persistAuth])
+
   const login = useCallback(
     async (email: string, senha: string, remember = true) => {
+      if (BYPASS_AUTH_ENABLED) {
+        const payload = createBypassPayload()
+        setUser(payload.user)
+        setToken(payload.token)
+        persistAuth(payload, remember)
+        return payload.user
+      }
+
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
