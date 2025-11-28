@@ -8,6 +8,9 @@ type SyncResult = {
 }
 
 type Sender = (payload: OfflineOsRecord) => Promise<{ remoteId?: string }>
+type SyncOptions = {
+  onProgress?: (current: number, total: number, item: OfflineOsRecord) => void
+}
 
 export const offlineSync = (() => {
   let isSyncing = false
@@ -86,7 +89,7 @@ export const offlineSync = (() => {
     throw lastError instanceof Error ? lastError : new Error("Falha ao enviar OS após tentativas")
   }
 
-  const syncQueued = async (): Promise<SyncResult> => {
+  const syncQueued = async (options?: SyncOptions): Promise<SyncResult> => {
     const senderToUse = sender ?? sendWithRetry
     if (isSyncing) return { synced: [], failed: [] }
 
@@ -96,8 +99,10 @@ export const offlineSync = (() => {
 
     try {
       const queued = await offlineOsQueue.listQueued()
+      const total = queued.length
 
-      for (const item of queued) {
+      for (const [index, item] of queued.entries()) {
+        options?.onProgress?.(index + 1, total, item)
         try {
           await offlineOsQueue.markSyncing(item.localId)
           const result = await senderToUse(item)

@@ -95,6 +95,14 @@ const tecnicosDisponiveis = [
 
 const tiposDefeito = ["Refrigeração", "Iluminação", "Estrutura", "Outros"]
 
+const formatarDataHora = (iso: string) => {
+  try {
+    return new Date(iso).toLocaleString("pt-BR")
+  } catch {
+    return iso
+  }
+}
+
 const criarFormVazio = (): Chamado => {
   const hoje = new Date().toISOString().split("T")[0]
   return {
@@ -171,6 +179,7 @@ export function ChamadoForm({ chamado }: ChamadoFormProps) {
 
   const [formData, setFormData] = useState<Chamado>(chamado || criarFormVazio())
   const [carregadoDeRascunho, setCarregadoDeRascunho] = useState(false)
+  const [progressMessage, setProgressMessage] = useState<string | null>(null)
 
   const [activeTab, setActiveTab] = useState("descricao")
   const payload = useMemo(
@@ -456,14 +465,17 @@ export function ChamadoForm({ chamado }: ChamadoFormProps) {
 
     setIsQueueing(true)
     try {
+      setProgressMessage("Enfileirando para envio...")
       const saved = await offlineOsQueue.queueForSync(payload)
       setLocalId(saved.localId)
       setOfflineStatus(saved.status)
       setLastError(undefined)
+      setProgressMessage(`Na fila. ID local: ${saved.localId}`)
     } catch (error) {
       console.error("Erro ao enfileirar chamado offline", error)
       setOfflineStatus("failed")
       setLastError("Falha ao enfileirar para sincronização.")
+      setProgressMessage(null)
     } finally {
       setIsQueueing(false)
     }
@@ -471,13 +483,13 @@ export function ChamadoForm({ chamado }: ChamadoFormProps) {
 
   const handleSaveOffline = async () => {
     setIsSaving(true)
-    try {
-      const saved = await offlineOsQueue.saveDraft(payload)
-      setLocalId(saved.localId)
-      setOfflineStatus(saved.status)
-      setLastError(undefined)
-    } catch (error) {
-      console.error("Erro ao salvar rascunho offline", error)
+      try {
+        const saved = await offlineOsQueue.saveDraft(payload)
+        setLocalId(saved.localId)
+        setOfflineStatus(saved.status)
+        setLastError(undefined)
+      } catch (error) {
+        console.error("Erro ao salvar rascunho offline", error)
       setLastError("Não foi possível salvar o rascunho offline.")
       setOfflineStatus("failed")
     } finally {
@@ -536,6 +548,7 @@ export function ChamadoForm({ chamado }: ChamadoFormProps) {
                 <p className="text-sm text-muted-foreground">Status offline</p>
                 <div className="flex items-center gap-2">{statusChip}</div>
                 {lastError ? <p className="text-xs text-destructive">{lastError}</p> : null}
+                {progressMessage ? <p className="text-xs text-muted-foreground">{progressMessage}</p> : null}
               </div>
               {isSaving ? <span className="text-xs text-muted-foreground">Salvando rascunho...</span> : null}
             </div>

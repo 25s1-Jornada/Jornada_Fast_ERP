@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { PlusCircle } from "lucide-react"
+import Link from "next/link"
 import { ChamadosTable } from "./chamados-table"
 import { ChamadoModal } from "./chamado-modal"
 
@@ -109,11 +110,19 @@ export default function ChamadosPage() {
   return (
     <div className="container mx-auto py-6 px-3 sm:px-4 lg:px-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
-        <h1 className="text-3xl font-bold">Chamados</h1>
-        <Button onClick={handleNovoChamado} className="w-full sm:w-auto justify-center">
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Novo Chamado
-        </Button>
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold">Chamados</h1>
+          <p className="text-sm text-muted-foreground">Gerencie, crie e acompanhe envios offline.</p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <Button variant="outline" asChild className="w-full sm:w-auto justify-center">
+            <Link href="/ordem-de-servico/chamados/pendentes">Envios pendentes</Link>
+          </Button>
+          <Button onClick={handleNovoChamado} className="w-full sm:w-auto justify-center">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Novo Chamado
+          </Button>
+        </div>
       </div>
 
       <ChamadosTable key={refreshKey} onEditarChamado={handleEditarChamado} chamadosExternos={chamados} />
