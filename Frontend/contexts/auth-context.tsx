@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useCallback, useEffect, useMemo, useState, type PropsWithChildren } from "react"
+import { secureStorage } from "@/lib/secure-storage"
 
 type Usuario = {
   id: number
@@ -42,60 +43,48 @@ const createBypassPayload = (): PersistedAuth => ({
 
 export const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
-const readPersistedAuth = (): PersistedAuth | null => {
-  if (typeof window === "undefined") {
-    return null
-  }
-
-  const raw = window.localStorage.getItem(STORAGE_KEY) ?? window.sessionStorage.getItem(STORAGE_KEY)
-  if (!raw) {
-    return null
-  }
-
-  try {
-    return JSON.parse(raw) as PersistedAuth
-  } catch (error) {
-    console.warn("Erro ao ler dados de autenticação persistidos", error)
-    window.localStorage.removeItem(STORAGE_KEY)
-    window.sessionStorage.removeItem(STORAGE_KEY)
-    return null
-  }
-}
-
 export function AuthProvider({ children }: PropsWithChildren) {
   const [user, setUser] = useState<Usuario | null>(null)
   const [token, setToken] = useState<string | null>(null)
   const [initializing, setInitializing] = useState(true)
 
-  const persistAuth = useCallback((payload: PersistedAuth | null, remember: boolean) => {
+  const persistAuth = useCallback(async (payload: PersistedAuth | null) => {
     if (typeof window === "undefined") return
-
-    window.localStorage.removeItem(STORAGE_KEY)
-    window.sessionStorage.removeItem(STORAGE_KEY)
-
-    if (payload) {
-      const serialized = JSON.stringify(payload)
-      const storage = remember ? window.localStorage : window.sessionStorage
-      storage.setItem(STORAGE_KEY, serialized)
+    if (!payload) {
+      await secureStorage.removeItem(STORAGE_KEY)
+      return
     }
+    const serialized = JSON.stringify(payload)
+    await secureStorage.setItem(STORAGE_KEY, serialized)
   }, [])
 
   useEffect(() => {
-    if (BYPASS_AUTH_ENABLED) {
-      const payload = createBypassPayload()
-      setUser(payload.user)
-      setToken(payload.token)
-      persistAuth(payload, true)
-      setInitializing(false)
-      return
+    const init = async () => {
+      if (BYPASS_AUTH_ENABLED) {
+        const payload = createBypassPayload()
+        setUser(payload.user)
+        setToken(payload.token)
+        await persistAuth(payload)
+        setInitializing(false)
+        return
+      }
+
+      try {
+        const raw = await secureStorage.getItem(STORAGE_KEY)
+        if (raw) {
+          const persisted = JSON.parse(raw) as PersistedAuth
+          setUser(persisted.user)
+          setToken(persisted.token)
+        }
+      } catch (error) {
+        console.warn("Erro ao carregar auth seguro", error)
+        await secureStorage.removeItem(STORAGE_KEY)
+      } finally {
+        setInitializing(false)
+      }
     }
 
-    const persisted = readPersistedAuth()
-    if (persisted) {
-      setUser(persisted.user)
-      setToken(persisted.token)
-    }
-    setInitializing(false)
+    void init()
   }, [persistAuth])
 
   const login = useCallback(
@@ -104,7 +93,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         const payload = createBypassPayload()
         setUser(payload.user)
         setToken(payload.token)
-        persistAuth(payload, remember)
+        await persistAuth(payload)
         return payload.user
       }
 
@@ -125,7 +114,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       const payload: PersistedAuth = { user: data.usuario, token: data.token }
       setUser(payload.user)
       setToken(payload.token)
-      persistAuth(payload, remember)
+      await persistAuth(payload)
 
       return payload.user
     },
@@ -135,7 +124,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const logout = useCallback(() => {
     setUser(null)
     setToken(null)
-    persistAuth(null, true)
+    void persistAuth(null)
   }, [persistAuth])
 
   const value = useMemo<AuthContextValue>(
