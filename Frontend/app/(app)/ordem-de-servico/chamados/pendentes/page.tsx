@@ -41,7 +41,7 @@ export default function PendentesPage() {
       })
       toast({
         title: "Sincronização concluída",
-        description: `${result.synced.length} enviado(s), ${result.failed.length} falhou/ram.`,
+        description: `${result.synced.length} enviado(s), ${result.failed.length} falhou/ram. Tentativas: ${result.attempts}`,
         variant: result.failed.length > 0 ? "destructive" : "default",
       })
       await load()
@@ -65,7 +65,7 @@ export default function PendentesPage() {
       })
       toast({
         title: "Retentativa concluída",
-        description: `${result.synced.length} enviado(s), ${result.failed.length} falhou/ram.`,
+        description: `${result.synced.length} enviado(s), ${result.failed.length} falhou/ram. Tentativas: ${result.attempts}`,
         variant: result.failed.length > 0 ? "destructive" : "default",
       })
       await load()

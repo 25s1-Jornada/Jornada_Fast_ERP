@@ -5,11 +5,13 @@ import { offlineOsQueue, type OfflineOsAttachment, type OfflineOsRecord } from "
 type SyncResult = {
   synced: OfflineOsRecord[]
   failed: OfflineOsRecord[]
+  attempts: number
 }
 
 type Sender = (payload: OfflineOsRecord) => Promise<{ remoteId?: string }>
 type SyncOptions = {
   onProgress?: (current: number, total: number, item: OfflineOsRecord) => void
+  onLog?: (message: string, context?: Record<string, unknown>) => void
 }
 
 export const offlineSync = (() => {
@@ -91,11 +93,12 @@ export const offlineSync = (() => {
 
   const syncQueued = async (options?: SyncOptions): Promise<SyncResult> => {
     const senderToUse = sender ?? sendWithRetry
-    if (isSyncing) return { synced: [], failed: [] }
+    if (isSyncing) return { synced: [], failed: [], attempts: 0 }
 
     isSyncing = true
     const synced: OfflineOsRecord[] = []
     const failed: OfflineOsRecord[] = []
+    let attempts = 0
 
     try {
       const queued = await offlineOsQueue.listQueued()
@@ -104,6 +107,7 @@ export const offlineSync = (() => {
       for (const [index, item] of queued.entries()) {
         options?.onProgress?.(index + 1, total, item)
         try {
+          attempts += 1
           await offlineOsQueue.markSyncing(item.localId)
           const result = await senderToUse(item)
           const updated = await offlineOsQueue.markSynced(item.localId, result.remoteId)
@@ -114,6 +118,7 @@ export const offlineSync = (() => {
             synced.push(updated)
           }
         } catch (error) {
+          options?.onLog?.("sync_failed", { localId: item.localId, error: String(error) })
           console.error("Erro ao sincronizar OS", item.localId, error)
           const message =
             error instanceof Error && error.message.startsWith("VALIDATION:")
@@ -127,7 +132,7 @@ export const offlineSync = (() => {
       isSyncing = false
     }
 
-    return { synced, failed }
+    return { synced, failed, attempts }
   }
 
   const registerNetworkListener = () => {
