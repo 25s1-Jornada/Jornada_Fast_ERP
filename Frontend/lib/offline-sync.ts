@@ -17,11 +17,13 @@ type SyncOptions = {
 export const offlineSync = (() => {
   let isSyncing = false
   let sender: Sender | null = null
-  const apiBase =
-    process.env.NEXT_PUBLIC_API_URL ?? process.env.API_URL ?? process.env.BACKEND_API_URL ?? "http://localhost:8080"
-  const osEndpoint = `${apiBase}/api/ordem-de-servico`
-  const maxRetries = 3
-  const baseDelay = 500
+const apiBase =
+  process.env.NEXT_PUBLIC_API_URL ?? process.env.API_URL ?? process.env.BACKEND_API_URL ?? "http://localhost:8080"
+const osEndpoint = `${apiBase}/api/ordem-de-servico`
+const maxRetries = 3
+const baseDelay = 500
+const syncFlag = process.env.NEXT_PUBLIC_OFFLINE_SYNC_ENABLED ?? process.env.OFFLINE_SYNC_ENABLED ?? "true"
+const SYNC_ENABLED = syncFlag !== "false"
 
   const setSender = (fn: Sender) => {
     sender = fn
@@ -92,6 +94,11 @@ export const offlineSync = (() => {
   }
 
   const syncQueued = async (options?: SyncOptions): Promise<SyncResult> => {
+    if (!SYNC_ENABLED) {
+      options?.onLog?.("sync_disabled", { reason: "OFFLINE_SYNC_ENABLED=false" })
+      return { synced: [], failed: [], attempts: 0 }
+    }
+
     const senderToUse = sender ?? sendWithRetry
     if (isSyncing) return { synced: [], failed: [], attempts: 0 }
 
@@ -136,6 +143,7 @@ export const offlineSync = (() => {
   }
 
   const registerNetworkListener = () => {
+    if (!SYNC_ENABLED) return
     if (typeof window === "undefined") return
     Network.addListener("networkStatusChange", async (status) => {
       if (status.connected) {
